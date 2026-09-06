@@ -39,7 +39,9 @@ void print_src_slice(const src_slice *slice, FILE *stream);                     
 void adj_strptr(strptr *ptr, int n);                                            // string pointer adjust
 void inc_strptr(strptr *ptr);                                                   // string pointer increment
 void dec_strptr(strptr *ptr);                                                   // string pointer decrement
+
 [[nodiscard]] char to_lwr_chr(char chr);                                        // character to lower
+[[nodiscard]] bool is_whitespace(char chr);                                     // whitespace characters
 
 /*-MACROS-------------------------------------------------------------------------------------------------------------*/
 

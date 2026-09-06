@@ -316,6 +316,7 @@ void reset_args(void) {                                                         
         if (arg[0] != '-') {
             if (c_args.target == nullptr) {
                 c_args.target   =   argv[i];
+                // TODO : maybe check file extension? also maybe not? for now too lazy
             } else {
                 acama_msg(&t_err, "multiple assembly targets given");
                 error   =   true;

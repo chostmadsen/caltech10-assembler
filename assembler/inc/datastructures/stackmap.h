@@ -13,8 +13,8 @@
 
 /*-CONSTANTS----------------------------------------------------------------------------------------------------------*/
 
-constexpr   unsigned    STACKMAP_ST_S       =   2;                              // initial stackmap stack size
-constexpr   float       STACKMAP_LAMBDA_MAX =   0.75f;                          // maximum load factor
+constexpr   unsigned    STACKMAP_ST_S       =   4;                              // initial stackmap stack size
+constexpr   float       STACKMAP_LAMBDA_MAX =   0.5f;                           // maximum load factor
 
 /*-STRUCTS-/-ENUMS----------------------------------------------------------------------------------------------------*/
 
