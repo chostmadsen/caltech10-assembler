@@ -1,0 +1,142 @@
+/**
+ * inc/argparse/argparse.h
+ * documentation @ src/argparse/argparse
+ */
+
+#pragma     once
+
+#include    <stddef.h>
+
+#include    "helpers/general.h"
+#include    "output/external.h"
+
+/*-FLAG-BASE-INFORMATION-ITEMS----------------------------------------------------------------------------------------*/
+
+struct str_f_t {                                                                // string flag argument item
+    const   char       *const   arg;
+    const   size_t              offset;
+    const   char       *const   desc;
+};
+
+typedef enum {                                                                  // flag types
+    flag_bool_t,    flag_val_t,     flag_str_t,     flag_stra_t
+} flag_type;
+typedef struct {                                                                // flag info struct
+    const   char                flag;
+    const   flag_type           type;
+    const   size_t              offset;
+    const   bool                exit;
+    union {
+        struct {                                                                // value flag arguments
+            const   int         min;
+            const   int         max;
+            const   int         dflt;
+        };
+        struct {                                                                // string flag arguments
+            const           size_t              str_num;
+            const   struct  str_f_t     *const  strs;
+        };
+    };
+    const   char       *const   arg_itm;
+    const   char       *const   desc;
+} flag_itm;
+
+/*-FLAG-SPECIFIC-INFORMATION-ITEMS------------------------------------------------------------------------------------*/
+
+struct wrn_t_ {                                                                 // warning options
+    bool                off;
+    bool                err;
+};
+
+struct emit_t_ {                                                                // emit options
+    bool                file;
+    bool                aasm;
+};
+
+typedef struct {                                                                // assemble flags struct
+    // flags
+            int         verbosity;
+    struct  wrn_t_      warnings;
+    struct  emit_t_     emit;
+            int         max_errs;
+            int         n_thrds;
+            int         n_files;
+
+    // exit on set flags
+            bool        help;
+            bool        version;
+
+    // compilation target
+    const   char       *output;
+    const   char       *target;
+} assemble_args;
+
+/*-FLAG-ITEMS---------------------------------------------------------------------------------------------------------*/
+
+static  const   flag_itm        verbosity_f =   { .flag='v',            .desc="verbosity of compilation",
+                                                  .type=flag_val_t,     .offset=offsetof(assemble_args, verbosity),
+                                                  .exit=false,          .arg_itm="verbosity",
+                                                  .min=0,               .max=4,
+                                                  .dflt=0                                                             };
+
+static  const   struct  str_f_t wrn_itm_[]  =   { { .arg="off",         .desc="warnings off",
+                                                    .offset=offsetof(struct wrn_t_, off)                            },
+                                                  { .arg="error",       .desc="warnings as errors",
+                                                    .offset=offsetof(struct wrn_t_, err)                            } };
+static  const   flag_itm        warnings_f  =   { .flag='W',            .desc="compilation warning message level",
+                                                  .type=flag_str_t,     .offset=offsetof(assemble_args, warnings), 
+                                                  .exit=false,          .arg_itm="level",
+                                                  .strs=wrn_itm_,       .str_num=arr_s(wrn_itm_)                      };
+
+static  const   struct  str_f_t emit_itm_[] =   { { .arg="file",        .desc="emit read file",
+                                                    .offset=offsetof(struct emit_t_, file)                          },
+                                                  { .arg="asm",         .desc="emit asm",
+                                                    .offset=offsetof(struct emit_t_, aasm)                          } };
+static  const   flag_itm        emit_f      =   { .flag='E',            .desc="compilation stage emitter toggle",
+                                                  .type=flag_str_t,     .offset=offsetof(assemble_args, emit),
+                                                  .exit=false,          .arg_itm="stage",
+                                                  .strs=emit_itm_,      .str_num=arr_s(emit_itm_)                     };
+
+static  const   flag_itm        max_errs_f  =   { .flag='e',            .desc="maximum allowed errors before exit",
+                                                  .type=flag_val_t,     .offset=offsetof(assemble_args, max_errs),
+                                                  .exit=false,          .arg_itm="number",
+                                                  .min=1,               .max=0x7fff,
+                                                  .dflt=20                                                            };
+
+static  const   flag_itm        n_files_f   =   { .flag='T',            .desc="number of files concurrently assembled",
+                                                  .type=flag_val_t,     .offset=offsetof(assemble_args, n_files),
+                                                  .exit=false,          .arg_itm="number",
+                                                  .min=1,               .max=0x7fff,
+                                                  .dflt=1                                                             };
+
+static  const   flag_itm        n_thrds_f   =   { .flag='t',            .desc="number of threads per file "
+                                                                              "(0 to split processors across files)",
+                                                  .type=flag_val_t,     .offset=offsetof(assemble_args, n_thrds),
+                                                  .exit=false,          .arg_itm="number",
+                                                  .min=0,               .max=0x7fff,
+                                                  .dflt=0                                                             };
+
+static  const   flag_itm        help_f      =   { .flag='h',            .desc="print assembler flag usage information",
+                                                  .type=flag_bool_t,    .offset=offsetof(assemble_args, help),
+                                                  .exit=true,           .arg_itm=nullptr                              };
+
+static  const   flag_itm        version_f   =   { .flag='V',            .desc="print assembler version and built type",
+                                                  .type=flag_bool_t,    .offset=offsetof(assemble_args, version),
+                                                  .exit=true,           .arg_itm=nullptr                              };
+
+static  const   flag_itm        output_f    =   { .flag='o',            .desc="compilation output folder target",
+                                                  .type=flag_stra_t,    .offset=offsetof(assemble_args, output),
+                                                  .exit=false,          .arg_itm="output"                             };
+
+// flag item arrays
+static  const   flag_itm    *const  a_flg[] =   { &verbosity_f, &warnings_f,    &emit_f,    &max_errs_f,  &n_files_f,
+                                                  &n_thrds_f,   &help_f,        &version_f, &output_f                 };
+
+/*-GLOBAL-ASSEMBLE-ARGS-STRUCT----------------------------------------------------------------------------------------*/
+
+extern  assemble_args    c_args;                                                // assemble flag struct item
+
+/*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
+
+void reset_args(void);                                                          // reset assembler arguments
+[[nodiscard]] bool parse_args(int arc, const char *const *argv);                // assembler argument parser

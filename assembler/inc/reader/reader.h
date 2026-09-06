@@ -1,0 +1,30 @@
+/**
+ * inc/reader/reader.h
+ * documentation @ src/reader/reader.c
+ */
+
+#pragma     once
+
+#include    <stddef.h>
+
+/*-CONSTANTS----------------------------------------------------------------------------------------------------------*/
+
+constexpr   size_t      F_PAD               =   128;                            // number of end padding bytes
+constexpr   char        ENDLNS[]            =   { ';',  '{',    '}',            // line tokenizer end items
+                                                  '[',  ']'          };
+
+/*-STRUCTS-/-ENUMS----------------------------------------------------------------------------------------------------*/
+
+typedef struct {
+    const   char       *f_name;
+  /*const*/ char       *text;
+  /*const*/ size_t     *ln_idxs;
+  /*const*/ size_t      ln_num,     len,    size;
+} src_f;
+
+/*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
+
+[[nodiscard]] src_f read_source(const char *f_name);                            // read source file
+
+[[nodiscard]] const char *src_f_getline(const src_f *source_f, size_t idx);     // readline of struct
+void free_src_f(src_f *source_f);                                               // free source struct

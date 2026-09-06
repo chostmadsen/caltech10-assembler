@@ -1,0 +1,2 @@
+# .h as c headers always
+*.h linguist-language=C
