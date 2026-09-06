@@ -1,2 +1,4 @@
 # .h as c headers always
 *.h linguist-language=C
+# .asm as assembly
+*.asm linguist-language=Assembly
