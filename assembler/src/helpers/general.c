@@ -81,7 +81,7 @@ void print_src_slice(const src_slice *const slice, FILE *const stream) {        
  */
 void adj_strptr(strptr *const ptr, const int n) {                               // string pointer adjust
     ptr->str    +=  n;
-    ptr->idx    +=  n;
+    ptr->col    +=  n;
 }
 
 /**
@@ -91,7 +91,7 @@ void adj_strptr(strptr *const ptr, const int n) {                               
  */
 void inc_strptr(strptr *const ptr) {                                            // string pointer increment
     ++ptr->str;
-    ++ptr->idx;
+    ++ptr->col;
 }
 
 /**
@@ -101,5 +101,5 @@ void inc_strptr(strptr *const ptr) {                                            
  */
 void dec_strptr(strptr *const ptr) {                                            // string pointer decrement
     --ptr->str;
-    --ptr->idx;
+    --ptr->col;
 }

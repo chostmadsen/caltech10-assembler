@@ -16,6 +16,7 @@
 
 constexpr   char        PSEUDOOP_CHR        =   '.';                            // pseudo-op start character
 constexpr   char        NUM_SEP             =   '_';                            // number seperator
+constexpr   unsigned    MAX_NUM_PARSE       =   16;                             // maximum number parse (16-bit max)
 
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
 

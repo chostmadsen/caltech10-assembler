@@ -26,7 +26,7 @@ typedef struct {                                                                
 
 typedef struct {                                                                // string pointer to constant text
     const   char               *str;
-            size_t              idx;
+            size_t              ln,     col;
 } strptr;
 
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/

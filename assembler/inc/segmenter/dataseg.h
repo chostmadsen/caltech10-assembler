@@ -6,6 +6,7 @@
 #pragma     once
 
 #include    "datastructures/stackmap.h"
+#include    "reader/reader.h"
 
 /*-STRUCTS-/-ENUMS----------------------------------------------------------------------------------------------------*/
 
@@ -13,3 +14,7 @@ typedef struct {
             smap_head   head;
             size_t      loc;
 } data_var;
+
+/*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
+
+[[nodiscard]] stackmap dataseg(const src_f *source);

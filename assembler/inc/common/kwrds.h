@@ -7,6 +7,10 @@
 
 #include    "perfhash/inc/hash_table.h"
 
+/*-GENERAL-ITEMS------------------------------------------------------------------------------------------------------*/
+
+constexpr   char        CMMT_CHR            =   ';';                            // comment character
+
 /*-PSEUDO-OP-SPECIFIERS-----------------------------------------------------------------------------------------------*/
 /**
  * NOTE : These aren't actually specified in any spec, I just made them up. If you want to change the actual string

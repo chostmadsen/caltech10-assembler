@@ -210,7 +210,7 @@ void acama_msg(const msg_info *const info, const char *const fmt, ...) {
 /*-LOGGING-HEPLER-FUNCTIONS-------------------------------------------------------------------------------------------*/
 
 /**
- * Locates the line and column from a character index. Stores length as 1 by default
+ * Locates the line and column from a character index. Stores length as 1 by default.
  *
  * @param       file            report file
  * @param       idx             character index

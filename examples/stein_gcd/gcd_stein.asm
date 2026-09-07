@@ -17,6 +17,7 @@
 
 ;-CODE-SEGMENT-------------------------------------------------------------------------------------;
 .code
+.org        0x0000
 
 ;-gcd_stein----------------------------------------------------------------------------------------;
 ;~  description         Finds the GCD of two words using Stein's algorithm (and program entry).
@@ -177,6 +178,7 @@ gcd_stein:
 
 ;-DATA-SEGMENT-------------------------------------------------------------------------------------;
 .data
+.org        0x0000
 
 ; gcd arguments
 a_l                 db          ?                                   ; number a [l]

@@ -6,7 +6,6 @@
 #include    <stddef.h>
 
 #include    "helpers/general.h"
-#include    "helpers/mem.h"
 #include    "output/errors.h"
 #include    "output/messages.h"
 #include    "segmenter/segment.h"
@@ -37,7 +36,7 @@
     acama_asrt(('0' <= *text->str && *text->str <= '9') || *text->str == '$');
 
     // get numeric slice
-    const   size_t  start   =   text->idx;
+    const   size_t  start   =   text->col;
     src_slice       slice   =   { .str=text->str, .len=0 };
     for (; is_alphanum_(*text->str); inc_strptr(text), ++slice.len);
 
@@ -46,30 +45,34 @@
 
     // get parse start
     const   char   *str     =   slice.str;
-    size_t          m_size  =   slice.len + 1;
+    size_t          offs    =   0;
 
     // get base
     int             base    =   10;
     if (*slice.str == '$') {
         base    =   16;
+        str     +=  1;
+        offs    +=  1;
     } else if (*slice.str == '0' && !('0' <= slice.str[1] && slice.str[1] <= '9') && slice.str[1] != NUM_SEP) {
-        m_size      -=  2;
         str         +=  2;
+        offs        +=  2;
         switch (to_lwr_chr(slice.str[1])) {
             case 'x':
-                base    =   16;
+                base        =   16;
                 break;
             case 'd':
                 // default
                 break;
             case 'o':
-                base    =   8;
+                base        =   8;
                 break;
             case 'b':
-                base    =   2;
+                base        =   2;
                 break;
             default:
-                find_file_loc(err_f, start + 1);
+                err_f->ln   =   text->ln;
+                err_f->col  =   start + 1;
+                err_f->len  =   1;
                 acama_msg( &(msg_info){ .type=msg_err_t, .header="invalid base specifier", .report_f=err_f },
                            "base specifier must be one of '$', 'x', 'd', 'o', or 'b'"                         );
                 return  -1;
@@ -77,25 +80,32 @@
     }
 
     // parse number
-    char    *const  n_str   =   chckd_malloc(m_size * sizeof(char), "string conversion char*");
-    size_t          s_idx   =   0;
-    for (size_t i = 0; i < m_size - 1; ++i) {
+    char    n_str[MAX_NUM_PARSE + 1]    =   { '\0' };
+    size_t  s_idx                       =   0;
+    for (size_t i = 0; str[i] == NUM_SEP || is_alphanum_(str[i]); ++i) {
         // skip number seperators
         if (str[i] != NUM_SEP)  n_str[s_idx++]  =   str[i];
+        if (s_idx > MAX_NUM_PARSE) {
+            err_f->ln   =   text->ln;
+            err_f->col  =   start + offs;
+            err_f->len  =   i - (start + offs);
+            acama_msg( &(msg_info){ .type=msg_err_t, .header="invalid number", .report_f=err_f },
+                       "number too large to parse (maximally 16-bit)"                             );
+            return  -1;
+        }
     }
-    n_str[s_idx]            =   '\0';
 
     // convert number
     char   *end_chr;
     int     ret             =   (int)strtol(n_str, &end_chr, base);
     if (*end_chr != '\0') {
         // conversion fail
-        find_file_loc(err_f, start);
-        err_f->len  =   text->idx - start;
+        err_f->ln   =   text->ln;
+        err_f->col  =   start;
+        err_f->len  =   text->col - start;
         acama_msg(&(msg_info){ .type=msg_err_t, .header="number parse error", .report_f=err_f}, "invalid number");
         ret         =   -1;
     }
-    free(n_str);
     return  ret;
 }
 
@@ -114,7 +124,9 @@
 
     // try to parse number
     if (('0' <= *text->str && *text->str <= '9') || *text->str == '$')      return  parse_num(err_f, text);
-    find_file_loc(err_f, text->idx);
+    err_f->ln   =   text->ln;
+    err_f->col  =   text->col;
+    err_f->len  =   1;
     acama_msg( &(msg_info){ .type=msg_err_t, .header="expected number", .report_f=err_f},
                "expected a number after `.org`"                                           );
     return  -1;

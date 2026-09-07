@@ -16,6 +16,7 @@
 #include    "argparse/argparse.h"
 #include    "reader/reader.h"
 #include    "reader/reader_out.h"
+#include    "segmenter/dataseg.h"
 
 /*-MAIN---------------------------------------------------------------------------------------------------------------*/
 
@@ -38,6 +39,7 @@ int main(const int argc, const char *const *const argv) {                       
     // TODO : preprocessor
 
     // segment processor
+    dataseg(&source_f);
 
     // assembly
 
