@@ -88,9 +88,9 @@
         if (s_idx > MAX_NUM_PARSE) {
             err_f->ln   =   text->ln;
             err_f->col  =   start + offs;
-            err_f->len  =   i - (start + offs);
+            err_f->len  =   i;
             cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid number", .report_f=err_f },
-                        "number too large to parse (maximally 16-bit)"                             );
+                        "number too large to parse (maximally %d-bit)", MAX_NUM_PARSE              );
             return  -1;
         }
     }

@@ -23,14 +23,26 @@
 }
 
 /**
- * Whitespace character comparison; unrolled for performance.
+ * Check if the given character is whitespace.
  *
  * @param       chr             character to compare
  * @return                      whether chr is a whitespace character
  */
 [[nodiscard]] bool is_whitespace(const char chr) {                              // whitespace characters
-    return  ( chr == ' ' || chr == '\t' || chr == '\0' );
+    return  ( chr == ' ' || chr == '\t' );
 }
+
+/**
+ * Check if the given character is alphanumeric.
+ *
+ * @param       chr             character to compare
+ * @return                      whether chr is alphanumeric
+ */
+[[nodiscard]] bool is_alphanum(const char chr) {                                // alphanumeric characters
+    return  ( ( 'A' <= chr && chr <= 'Z' ) || ( 'a' <= chr && chr <= 'z' ) ||
+              ( '0' <= chr && chr <= '9' ) || ( '_' == chr               )    );
+}
+
 /*-STRING-SLICE-FUNCTIONS---------------------------------------------------------------------------------------------*/
 
 /**

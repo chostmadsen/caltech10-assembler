@@ -13,10 +13,11 @@
 
 #include    "output/errors.h"
 #include    "output/external.h"
+#include    "datastructures/stackmap.h"
 #include    "argparse/argparse.h"
 #include    "reader/reader.h"
 #include    "reader/reader_out.h"
-#include    "segmenter/dataseg.h"
+#include    "segmenter/constseg.h"
 
 /*-MAIN---------------------------------------------------------------------------------------------------------------*/
 
@@ -31,7 +32,7 @@ int main(const int argc, const char *const *const argv) {                       
     if (c_args.verbosity >= 3)      cit10a_startup();
 
     // read source file
-    src_f       source_f        =   read_source(c_args.target);  // TODO : this will fuck me later
+    src_f       source_f        =   read_source(c_args.target);
     // source file output
     if (c_args.verbosity >= 3)                          print_src_f_info(&source_f);
     if (c_args.verbosity >= 4 || c_args.emit.file)      print_src_f(&source_f);
@@ -39,7 +40,9 @@ int main(const int argc, const char *const *const argv) {                       
     // TODO : preprocessor
 
     // segment processor
-    dataseg(&source_f);
+    bool        seg_err         =   false;
+    stackmap    const_smap      =   constseg(&source_f, &seg_err);
+    print_const_map(&const_smap);
 
     // assembly
 
@@ -48,4 +51,3 @@ comp_exit:
     if (c_args.verbosity >= 1)      cit10a_exit_msg(0);
     return  0;
 }
-

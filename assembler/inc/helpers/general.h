@@ -31,6 +31,10 @@ typedef struct {                                                                
 
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
 
+[[nodiscard]] char to_lwr_chr(char chr);                                        // character to lower
+[[nodiscard]] bool is_whitespace(char chr);                                     // whitespace characters
+[[nodiscard]] bool is_alphanum(char chr);                                       // alphanumeric characters
+
 void print_src_slice(const src_slice *slice, FILE *stream);                     // source slice printer
 [[nodiscard]] bool srcslc_eq(const src_slice *slc_1, const src_slice *slc_2);   // source slice equality check
 [[nodiscard]] bool srcslc_eq_lwr( const src_slice *slc_1, 
@@ -39,9 +43,6 @@ void print_src_slice(const src_slice *slice, FILE *stream);                     
 void adj_strptr(strptr *ptr, int n);                                            // string pointer adjust
 void inc_strptr(strptr *ptr);                                                   // string pointer increment
 void dec_strptr(strptr *ptr);                                                   // string pointer decrement
-
-[[nodiscard]] char to_lwr_chr(char chr);                                        // character to lower
-[[nodiscard]] bool is_whitespace(char chr);                                     // whitespace characters
 
 /*-MACROS-------------------------------------------------------------------------------------------------------------*/
 

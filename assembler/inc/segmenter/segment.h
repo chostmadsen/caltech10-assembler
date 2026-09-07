@@ -16,7 +16,11 @@
 
 constexpr   char        PSEUDOOP_CHR        =   '.';                            // pseudo-op start character
 constexpr   char        NUM_SEP             =   '_';                            // number seperator
-constexpr   unsigned    MAX_NUM_PARSE       =   16;                             // maximum number parse (16-bit max)
+constexpr   char        NEG_SYMB            =   '-';                            // negative value symbol
+
+constexpr   unsigned    MAX_NUM_PARSE       =   8;                              // maximum number parse (8-bit max)
+constexpr   unsigned    MAX_NUM             =   (1 << MAX_NUM_PARSE) - 1;       // maximum number
+constexpr   unsigned    MAX_NUM_NEG         =   1 << (MAX_NUM_PARSE - 1);       // maximum negative number
 
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
 

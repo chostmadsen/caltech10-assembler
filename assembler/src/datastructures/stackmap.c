@@ -28,7 +28,7 @@
     // bucket creation
     cit10a_asrt(!(buckets & (buckets - 1)));
     stack   *const  smap_heads          =   chckd_malloc(buckets * sizeof(stack), "stackmap stack*");
-    for (size_t i = 0; i < buckets; ++i)    smap_heads[i]   =   new_stack(STACKMAP_ST_S, elm_s);
+    for (size_t i = 0; i < buckets; ++i)    smap_heads[i]   =   new_stack(elm_s, STACKMAP_ST_S);
     return  smap_heads;
 }
 
@@ -47,9 +47,9 @@ static void smap_realloc_buckets_(stackmap *const smap) {                       
     // stack movement
     for (size_t i = 0; i < smap->buckets >> 1; ++i) {
         stack   *const  st      =   smap->heads + i;
-        while (st->size != 0) {
+        while (st->len != 0) {
             const   void    *const  itm =   pop_stack(st);
-            const   size_t          loc =   ((smap_head*)itm)->hash & (smap->buckets & (smap->buckets - 1));
+            const   size_t          loc =   ((smap_head*)itm)->hash & (smap->buckets - 1);
             push_stack(new_heads + loc, itm);
         }
     }
@@ -76,7 +76,6 @@ static void smap_realloc_buckets_(stackmap *const smap) {                       
     return  (stackmap){ .buckets=buckets, .elements=0, .elm_s=elm_s, .heads=stackmap_alloc_heads_(buckets, elm_s) };
 }
 
-
 /*-STACKMAP-DATA-MODIFIER-/-VIEWER-FUNCTIONS--------------------------------------------------------------------------*/
 
 /**
@@ -93,16 +92,20 @@ static void smap_realloc_buckets_(stackmap *const smap) {                       
     const   smap_head   *const  head    =   (smap_head*)data;
 
     // map insert index
-    const   size_t  buck_n  =   head->hash & (smap->buckets - 1);
-    stack   *const  st      =   smap->heads + buck_n;
-    for (int i = 0; i < st->size; ++i) {
+    size_t  buck_n  =   head->hash & (smap->buckets - 1);
+    stack  *st      =   smap->heads + buck_n;
+    for (int i = 0; i < st->len; ++i) {
         // verify no repition
         const   smap_head   *const  s_hd                                    =   (smap_head*)peek_stack(st, i);
         if (head->hash == s_hd->hash && srcslc_eq(&head->key, &s_hd->key))      return  false;
     }
 
     // realloc check
-    if ((float)smap->elements / (float)smap->buckets > STACKMAP_LAMBDA_MAX)     smap_realloc_buckets_(smap);
+    if ((float)(smap->elements + 1) / (float)smap->buckets > STACKMAP_LAMBDA_MAX) {
+        smap_realloc_buckets_(smap);
+        buck_n  =   head->hash & (smap->buckets - 1);
+        st      =   smap->heads + buck_n;
+    }
 
     // stack push
     push_stack(st, data);
@@ -126,9 +129,9 @@ static void smap_realloc_buckets_(stackmap *const smap) {                       
     const   smap_head   *const  head    =   (smap_head*)data;
 
     // map insert index
-    const   size_t  buck_n  =   head->hash & (smap->buckets - 1);
-    stack   *const  st      =   smap->heads + buck_n;
-    for (int i = 0; i < st->size; ++i) {
+    size_t  buck_n  =   head->hash & (smap->buckets - 1);
+    stack  *st      =   smap->heads + buck_n;
+    for (int i = 0; i < st->len; ++i) {
         const   smap_head   *const  s_hd            =   (smap_head*)peek_stack(st, i);
         if (head->hash != s_hd->hash)                   continue;
         if (srcslc_eq(&head->key, &s_hd->key))          return  smap_full_clsn_t;
@@ -136,7 +139,11 @@ static void smap_realloc_buckets_(stackmap *const smap) {                       
     }
 
     // realloc check
-    if ((float)smap->elements / (float)smap->buckets > STACKMAP_LAMBDA_MAX)     smap_realloc_buckets_(smap);
+    if ((float)(smap->elements + 1) / (float)smap->buckets > STACKMAP_LAMBDA_MAX) {
+        smap_realloc_buckets_(smap);
+        buck_n  =   head->hash & (smap->buckets - 1);
+        st      =   smap->heads + buck_n;
+    }
 
     // stack push
     push_stack(st, data);
@@ -164,7 +171,7 @@ static void smap_realloc_buckets_(stackmap *const smap) {                       
     stack   *const  st      =   smap->heads + buck_n;
 
     // get stackmap data
-    for (int i = 0; i < st->size; ++i) {
+    for (int i = 0; i < st->len; ++i) {
         const   smap_head   *const  s_hd                    =   (smap_head*)peek_stack(st, i);
         if (s_hd->hash == hash && srcslc_eq(&s_hd->key, key))   return  peek_stack(st, i);
     }

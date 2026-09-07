@@ -12,7 +12,7 @@
 ;*                      b_h                         Gcd number b [h]
 
 ; constants
-.const      LOW_BIT_MASK        =   0x01                            ; low bit check mask
+.const      LOW_BIT_MASK            0x01                            ; low bit check mask
 
 
 ;-CODE-SEGMENT-------------------------------------------------------------------------------------;

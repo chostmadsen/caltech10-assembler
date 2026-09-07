@@ -42,6 +42,7 @@
  */
 [[nodiscard]] stack new_stack_(const size_t data_s, const unsigned size) {      // stack creation on the stack
     // stack data allocation
+    cit10a_asrt(size != 0);
     return  (stack){ .data=alloc_st_data_(data_s, size), .len=0, .size=(int)size, .data_s=data_s };
 }
 
