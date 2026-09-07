@@ -7,9 +7,7 @@ cd "$root";
 assembler_dir="$(cd "$root/../assembler" && pwd)";
 
 # cleanup catch
-cleanup() {
-    rm -f "$assembler_dir/perfhash.out";
-}
+cleanup() { rm -f "$assembler_dir/perfhash.out"; }
 trap cleanup EXIT INT TERM;
 
 # argparse
@@ -79,7 +77,7 @@ $compiler ${flags[@]} -Iinc -I.. -I../assembler/inc src/*.c impl/assembler_main.
 
 # move to correct dir and run
 cd "$assembler_dir";
-./perfhash.out
+./perfhash.out;
 
 # clean and exit
 cleanup;
