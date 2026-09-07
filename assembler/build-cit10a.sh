@@ -121,7 +121,7 @@ fi
 
 # check source files
 [[ -d inc && -d src ]] || {
-    printf "%b\n" "$build_n$err_msg missing acama source code";
+    printf "%b\n" "$build_n$err_msg missing cit10a source code";
     printf "%b\n" "$build_n$err_exit";
     exit 1;
 }
@@ -132,19 +132,19 @@ inc_dirs="-Iinc -I.. $(find inc -mindepth 1 -type d -exec printf -- '-I%s ' {} +
 # src/ files
 src_fs="$(find src -type f -name '*.c' -exec printf '%s ' {} +)";
 if [[ -z src_fs ]]; then
-    printf "%b\n" "$build_n$err_msg missing acama src/ files\n";
+    printf "%b\n" "$build_n$err_msg missing cit10a src/ files\n";
     printf "%b\n" "$build_n$err_exit";
     exit 1;
 fi
 
 # compile compiler
-$compiler ${flags[@]} $inc_dirs $src_fs -o bin/acama || {
+$compiler ${flags[@]} $inc_dirs $src_fs -o bin/cit10a || {
     printf "%b\n" "$build_n$err_msg $compiler compiler failure";
     printf "%b\n" "$build_n$err_exit";
     exit 1;
 }
 
 # success log
-printf "%b\n" "$build_n$dbg_msg built at $root/bin/acama \x1b[2m[ $(date +"%Y-%m-%d") ]\x1b[0m";
+printf "%b\n" "$build_n$dbg_msg built at $root/bin/cit10a \x1b[2m[ $(date +"%Y-%m-%d") ]\x1b[0m";
 printf "%b\n" "$build_n$scs_exit";
 exit 0;

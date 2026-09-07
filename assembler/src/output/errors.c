@@ -24,7 +24,7 @@ int                     err_num             =   0;                              
  *
  * @param       code            exit code
  */
-void acama_exit_msg(const unsigned code) {                                      // assembler exit message
+void cit10a_exit_msg(const unsigned code) {                                     // assembler exit message
     // exit message
     if      (code == 0)             fputs(ASSEMBLER_HEAD CLR_OK     "exit code", stdout);
     else if (code < EX_EXT_THRS)    fputs(ASSEMBLER_HEAD CLR_ERR    "exit code", stderr);
@@ -41,11 +41,11 @@ void acama_exit_msg(const unsigned code) {                                      
  *
  * @param       code            exit code
  */
-[[noreturn]] void acama_exit(const unsigned code) {                             // assembler exit
+[[noreturn]] void cit10a_exit(const unsigned code) {                            // assembler exit
     // io mutex perma-lock
     pthread_mutex_lock(&io_mutex);
 
     // message and exit
-    acama_exit_msg(code);
+    cit10a_exit_msg(code);
     exit((int)code);
 }

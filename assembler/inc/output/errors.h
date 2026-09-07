@@ -24,8 +24,8 @@ extern      int         err_num;                                                
 
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
 
-void acama_exit_msg(unsigned code);                                             // assembler exit message
-[[noreturn]] void acama_exit(unsigned code);                                    // assembler exit
+void cit10a_exit_msg(unsigned code);                                            // assembler exit message
+[[noreturn]] void cit10a_exit(unsigned code);                                   // assembler exit
 
 /*-MACROS-------------------------------------------------------------------------------------------------------------*/
 
@@ -45,7 +45,7 @@ void acama_exit_msg(unsigned code);                                             
 #define _STR_INDR_(x)   #x
 #define _STR_(x)        _STR_INDR_(x)
 
-#define acama_asrt(expr) (                                                                                             \
+#define cit10a_asrt(expr) (                                                                                            \
             (expr) ? (void)0 : (                                                                                       \
                 fputs( "\r\x1b[2K" ASSEMBLER_HEAD CLR_INTRNL "failed assertion"                                        \
                        "\x1b[0m [ " __FILE__ "::"_STR_(__LINE__) " ] : " CLR_DIM #expr "\x1b[0m\n", stderr ),          \
@@ -54,5 +54,5 @@ void acama_exit_msg(unsigned code);                                             
         )
 
 #else
-#define acama_asrt(expr)        ((void)0)
+#define cit10a_asrt(expr)        ((void)0)
 #endif  /* NDEBUG */

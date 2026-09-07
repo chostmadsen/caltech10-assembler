@@ -33,7 +33,7 @@
  * @return                      number
  */
 [[nodiscard]] int parse_num(rprt_f *const err_f, strptr *const text) {          // number parser
-    acama_asrt(('0' <= *text->str && *text->str <= '9') || *text->str == '$');
+    cit10a_asrt(('0' <= *text->str && *text->str <= '9') || *text->str == '$');
 
     // get numeric slice
     const   size_t  start   =   text->col;
@@ -73,8 +73,8 @@
                 err_f->ln   =   text->ln;
                 err_f->col  =   start + 1;
                 err_f->len  =   1;
-                acama_msg( &(msg_info){ .type=msg_err_t, .header="invalid base specifier", .report_f=err_f },
-                           "base specifier must be one of '$', 'x', 'd', 'o', or 'b'"                         );
+                cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid base specifier", .report_f=err_f },
+                            "base specifier must be one of '$', 'x', 'd', 'o', or 'b'"                         );
                 return  -1;
         }
     }
@@ -89,8 +89,8 @@
             err_f->ln   =   text->ln;
             err_f->col  =   start + offs;
             err_f->len  =   i - (start + offs);
-            acama_msg( &(msg_info){ .type=msg_err_t, .header="invalid number", .report_f=err_f },
-                       "number too large to parse (maximally 16-bit)"                             );
+            cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid number", .report_f=err_f },
+                        "number too large to parse (maximally 16-bit)"                             );
             return  -1;
         }
     }
@@ -103,7 +103,7 @@
         err_f->ln   =   text->ln;
         err_f->col  =   start;
         err_f->len  =   text->col - start;
-        acama_msg(&(msg_info){ .type=msg_err_t, .header="number parse error", .report_f=err_f}, "invalid number");
+        cit10a_msg(&(msg_info){ .type=msg_err_t, .header="number parse error", .report_f=err_f}, "invalid number");
         ret         =   -1;
     }
     return  ret;
@@ -127,7 +127,7 @@
     err_f->ln   =   text->ln;
     err_f->col  =   text->col;
     err_f->len  =   1;
-    acama_msg( &(msg_info){ .type=msg_err_t, .header="expected number", .report_f=err_f},
-               "expected a number after `.org`"                                           );
+    cit10a_msg( &(msg_info){ .type=msg_err_t, .header="expected number", .report_f=err_f},
+                "expected a number after `.org`"                                           );
     return  -1;
 }

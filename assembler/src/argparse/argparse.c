@@ -33,7 +33,7 @@ static void arg_help_msg_(void) {                                               
     constexpr   int     strt    =   7;
 
     // header
-    acama_msg(&(msg_info){ .type=msg_norm_t, .header="compilation flags"}, nullptr);
+    cit10a_msg(&(msg_info){ .type=msg_norm_t, .header="compilation flags"}, nullptr);
 
     for (size_t i = 0; i < arr_s(a_flg); ++i) {
         // print flag info
@@ -44,7 +44,7 @@ static void arg_help_msg_(void) {                                               
                 // find number print number
                 const   int num_mn_prnt =   snprintf(nullptr, 0, "%d", flg.min);
                 const   int num_mx_prnt =   snprintf(nullptr, 0, "%d", flg.max);
-                acama_asrt(num_mn_prnt > 0 && num_mx_prnt > 0);
+                cit10a_asrt(num_mn_prnt > 0 && num_mx_prnt > 0);
                 const   int num_pad     =   num_mn_prnt + num_mx_prnt;
                 printf("[ %d, %d ]\x1b[0m%*s", flg.min, flg.max, tabs - strt - num_pad - 6, "- ");
                 break;
@@ -56,8 +56,8 @@ static void arg_help_msg_(void) {                                               
                 printf("\x1b[0m%*s", tabs - strt, "- ");
                 break;
             default:
-                acama_asrt(!"invalid flag type");
-                acama_exit(INTRNL_ERRNO);
+                cit10a_asrt(!"invalid flag type");
+                cit10a_exit(INTRNL_ERRNO);
         }
 
         // flag description
@@ -93,13 +93,13 @@ static const flag_itm *next_bool_f_(const char flg, bool *const error) {        
         const   flag_itm    *const  flag    =   a_flg[j];
         if (flg != flag->flag)                  continue;
         if (flag->type != flag_bool_t) {
-            acama_msg(&f_err, "assembler flag `-%c` requires an argument", flag->flag);
+            cit10a_msg(&f_err, "assembler flag `-%c` requires an argument", flag->flag);
             *error  =   true;
             return  nullptr;
         }
         return  flag;
     }
-    acama_msg(&f_err, "unknown assembler flag `-%c`", flg);
+    cit10a_msg(&f_err, "unknown assembler flag `-%c`", flg);
     *error  =   true;
     return  nullptr;
 }
@@ -154,7 +154,7 @@ static void process_val_f_( const flag_itm *const         flag,
         // use next value
         ++*idx;
         if (*idx >= argc || argv[*idx][0] == '-') {
-            acama_msg(&f_err, "assembler flag `-%c` requires an integer-valued argument", flag->flag);
+            cit10a_msg(&f_err, "assembler flag `-%c` requires an integer-valued argument", flag->flag);
             *error  =   true;
             return;
         }
@@ -165,7 +165,7 @@ static void process_val_f_( const flag_itm *const         flag,
     char           *endptr;
     const   int     f_val   =   (int)strtol(val, &endptr, 10);
     if (*endptr != '\0') {
-        acama_msg(&f_err, "assembler flag `-%c` requires an integer-value argument", flag->flag);
+        cit10a_msg(&f_err, "assembler flag `-%c` requires an integer-value argument", flag->flag);
         *error  =   true;
         return;
     }
@@ -176,7 +176,7 @@ static void process_val_f_( const flag_itm *const         flag,
         *field      =   f_val;
         return;
     }
-    acama_msg(&f_err, "assembler flag `-%c` has range [ %d, %d ]", flag->flag, flag->min, flag->max);
+    cit10a_msg(&f_err, "assembler flag `-%c` has range [ %d, %d ]", flag->flag, flag->min, flag->max);
     *error  =   true;
 }
 
@@ -205,7 +205,7 @@ static void process_str_f_( const flag_itm *const         flag,
         // use next string
         ++*idx;
         if (*idx >= argc || argv[*idx][0] == '-') {
-            acama_msg(&f_err, "assembler flag `-%c` requires a string argument", flag->flag);
+            cit10a_msg(&f_err, "assembler flag `-%c` requires a string argument", flag->flag);
             *error  =   true;
             return;
         }
@@ -224,7 +224,7 @@ static void process_str_f_( const flag_itm *const         flag,
         *field_itm                  =   true;
         return;
     }
-    acama_msg(&f_err, "assembler flag `-%c` recieved an invalid argument", flag->flag);
+    cit10a_msg(&f_err, "assembler flag `-%c` recieved an invalid argument", flag->flag);
     *error  =   true;
 }
 
@@ -253,7 +253,7 @@ static void process_stra_f_( const flag_itm *const         flag,
         // use next string
         ++*idx;
         if (*idx >= argc || argv[*idx][0] == '-') {
-            acama_msg(&f_err, "assembler flag `-%c` requires a string argument", flag->flag);
+            cit10a_msg(&f_err, "assembler flag `-%c` requires a string argument", flag->flag);
             *error  =   true;
             return;
         }
@@ -295,7 +295,7 @@ void reset_args(void) {                                                         
  */
 [[nodiscard]] bool parse_args( const int                argc,
                                const char *const *const argv  ) {                  // assembler argument parser
-    acama_asrt(argv != nullptr);
+    cit10a_asrt(argv != nullptr);
 
     // reset args
     reset_args();
@@ -318,7 +318,7 @@ void reset_args(void) {                                                         
                 c_args.target   =   argv[i];
                 // TODO : maybe check file extension? also maybe not? for now too lazy
             } else {
-                acama_msg(&t_err, "multiple assembly targets given");
+                cit10a_msg(&t_err, "multiple assembly targets given");
                 error   =   true;
             }
             continue;
@@ -326,7 +326,7 @@ void reset_args(void) {                                                         
 
         // verify flag item
         if (arg[1] == '\0') {
-            acama_msg(&f_err, "no flag name after `-`");
+            cit10a_msg(&f_err, "no flag name after `-`");
             error   =   true;
             continue;
         }
@@ -350,8 +350,8 @@ void reset_args(void) {                                                         
                     process_stra_f_(flag, &i, argc, argv, &error);
                     break;
                 default:
-                    acama_asrt(!"invalid flag type");
-                    acama_exit(INTRNL_ERRNO);
+                    cit10a_asrt(!"invalid flag type");
+                    cit10a_exit(INTRNL_ERRNO);
             }
             found_flag  =   true;
             if (flag->exit)     end_comp    =   true;
@@ -360,25 +360,25 @@ void reset_args(void) {                                                         
 
         // verify proper flag
         if (found_flag)         continue;
-        acama_msg(&f_err, "unknown assembler flag `-%c`", arg[1]);
+        cit10a_msg(&f_err, "unknown assembler flag `-%c`", arg[1]);
         error   =   true;
     }
 
     // process special flags
     if (c_args.help)            arg_help_msg_();
-    if (c_args.version)         acama_info();
+    if (c_args.version)         cit10a_info();
 
     // assembly target check
     if (!c_args.target && end_comp == false) {
         // no build target
-        acama_msg(&t_err, "no assembler targets given");
+        cit10a_msg(&t_err, "no assembler targets given");
         error   =   true;
     }
 
     // exit on error
     if (error) {
-        acama_msg(&(msg_info){ .type=msg_norm_t, .header="use the -h flag for assembler flag usage" }, nullptr);
-        acama_exit(ARGPARSE_ERRNO);
+        cit10a_msg(&(msg_info){ .type=msg_norm_t, .header="use the -h flag for assembler flag usage" }, nullptr);
+        cit10a_exit(ARGPARSE_ERRNO);
     }
 
     // get processor number

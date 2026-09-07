@@ -19,7 +19,7 @@
  * @param       source_f        source file struct
  */
 void print_src_f(const src_f *const source_f) {                                 // one-lined raw print full source file
-    acama_asrt(source_f != nullptr);
+    cit10a_asrt(source_f != nullptr);
 
     // info
     printf( DEBUG_DELIM CLR_DIM " [[ src_f %s::%zulns::%zuB ]]\x1b[0m\n",
@@ -46,8 +46,8 @@ void print_src_f(const src_f *const source_f) {                                 
  * @param       source_f        source file struct
  */
 void print_src_f_info(const src_f *const source_f) {                            // print source file struct info
-    acama_asrt(source_f != nullptr);
-    acama_msg( &(msg_info){ .type=msg_vrbse_t, .header="source file read",
-                            .report_f=&(rprt_f){ .file=source_f, .len=0 } },
-                            "%zu lines, %zu characters", source_f->ln_num, source_f->len );
+    cit10a_asrt(source_f != nullptr);
+    cit10a_msg( &(msg_info){ .type=msg_vrbse_t, .header="source file read",
+                             .report_f=&(rprt_f){ .file=source_f, .len=0 } },
+                             "%zu lines, %zu characters", source_f->ln_num, source_f->len );
 }

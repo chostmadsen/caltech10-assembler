@@ -10,9 +10,9 @@
 
 /*-CONSTANTS----------------------------------------------------------------------------------------------------------*/
 
-#define                 ASSEMBLER_NAME          "acama"                         // assembler name
-#define                 OUT_INDENT              "      "                        // output indent size
-#define                 ASSEMBLER_INDENT             " "                        // assembler output indent size
+#define                 ASSEMBLER_NAME          "cit10a"                        // assembler name
+#define                 OUT_INDENT              "       "                       // output indent size
+#define                 ASSEMBLER_INDENT              " "                       // assembler output indent size
 #define                 ASSEMBLER_VERSION       "0.1.9"                         // assembler version
 #define                 ASSEMBLER_DATE          "2026.09.04"                    // assembler release date
 
@@ -60,5 +60,5 @@ extern      pthread_mutex_t     io_mutex;                                       
 
 void print_raw_str(const char *str, int n, FILE *stream);                       // raw string print
 
-void acama_info(void);                                                          // assembler info message
-void acama_startup(void);                                                       // assembler start message
+void cit10a_info(void);                                                         // assembler info message
+void cit10a_startup(void);                                                      // assembler start message

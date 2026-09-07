@@ -19,7 +19,7 @@
  * @return                      size_t* to vstack data
  */
 [[nodiscard]] static size_t *alloc_vst_data_(const unsigned size) {             // vstack data allocation
-    acama_asrt(size > 0);
+    cit10a_asrt(size > 0);
 
     // data allocation
     size_t *vst_data    =   chckd_malloc(sizeof(size_t) * (int)size, "vstack array void*");
@@ -65,7 +65,7 @@
  * @param       val             value to push
  */
 void push_vstack(vstack *const vst, const size_t val) {                         // push to vstack
-    acama_asrt(vst != nullptr);
+    cit10a_asrt(vst != nullptr);
 
     if (++vst->len > vst->size) {
         // double size
@@ -87,7 +87,7 @@ void push_vstack(vstack *const vst, const size_t val) {                         
  * @return                      void* of popped data
  */
 size_t pop_vstack(vstack *const vst) {                                          // pop from vstack
-    acama_asrt(vst != nullptr && vst->len - 1 >= 0);
+    cit10a_asrt(vst != nullptr && vst->len - 1 >= 0);
     return  vst->data[--vst->len];
 }
 
@@ -97,7 +97,7 @@ size_t pop_vstack(vstack *const vst) {                                          
  * @param       vst             pointer to vstack
  */
 void rm_vstack(vstack *const vst) {                                             // remove from vstack
-    acama_asrt(vst != nullptr && vst->len - 1 >= 0);
+    cit10a_asrt(vst != nullptr && vst->len - 1 >= 0);
     --vst->len;
 }
 
@@ -108,7 +108,7 @@ void rm_vstack(vstack *const vst) {                                             
  * @param       n               number of items to remove
  */
 void rm_vstack_n(vstack *const vst, const unsigned n) {                         // multiple removals from vstack
-    acama_asrt(vst != nullptr && vst->len - (int)n >= 0);
+    cit10a_asrt(vst != nullptr && vst->len - (int)n >= 0);
     vst->len -=  (int)n;
 }
 
@@ -120,7 +120,7 @@ void rm_vstack_n(vstack *const vst, const unsigned n) {                         
  * @return                      vstack value
  */
 [[nodiscard]] size_t peek_vstack(const vstack *const vst, const unsigned n) {   // vstack peek
-    acama_asrt(vst != nullptr && vst->len > (int)n);
+    cit10a_asrt(vst != nullptr && vst->len > (int)n);
     return  vst->data[n];
 }
 
@@ -132,7 +132,7 @@ void rm_vstack_n(vstack *const vst, const unsigned n) {                         
  * @return                      vstack value
  */
 [[nodiscard]] size_t peek_vstack_tail(const vstack *const vst) {                // vstack peek at tail
-    acama_asrt(vst->len != 0);
+    cit10a_asrt(vst->len != 0);
     return  vst->data[vst->len - 1];
 }
 
@@ -144,7 +144,7 @@ void rm_vstack_n(vstack *const vst, const unsigned n) {                         
  * @param       vst          pointer to vstack
  */
 void free_vstack(vstack *const vst) {                                           // free stack vstack
-    acama_asrt(vst != nullptr);
+    cit10a_asrt(vst != nullptr);
     safe_free(vst->data);
 
 #ifndef NDEBUG

@@ -23,8 +23,8 @@ int main(void) {                                                                
     const   char        *const  inc     =   "common/kwrds.h";
 
     // hash
-    hash_full(pseudo_itms_, arr_s(pseudo_itms_), 0, 0, max, inc, "pseudo", "inc/common/hash_tables/pseudo.h");
-    hash_full(opcode_itms_, arr_s(opcode_itms_), 0, 0, max, inc, "opcode", "inc/common/hash_tables/opcode.h");
+    hash_full(pseudo_itms_, arr_s(pseudo_itms_), 0x0, 0, max, inc, "pseudo", "inc/common/hash_tables/pseudo.h");
+    hash_full(opcode_itms_, arr_s(opcode_itms_), 0x0, 1, max, inc, "opcode", "inc/common/hash_tables/opcode.h");
 
     // program end
     return  0;

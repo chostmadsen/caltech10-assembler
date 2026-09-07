@@ -31,13 +31,13 @@ done
 has_install=0;
 
 # remove installations
-if [[ -f "$user_path/acama" ]] ; then
-    rm -f "$user_path/acama";
+if [[ -f "$user_path/cit10a" ]] ; then
+    rm -f "$user_path/cit10a";
     has_install=1;
 fi
-if [[ -f "$system_path/acama" ]] ; then
-    printf "%b\n" "$unins_n$msg_msg sudo required for acama global uninstallation";
-    sudo rm -f "$system_path/acama";
+if [[ -f "$system_path/cit10a" ]] ; then
+    printf "%b\n" "$unins_n$msg_msg sudo required for cit10a global uninstallation";
+    sudo rm -f "$system_path/cit10a";
     has_install=1;
     printf "%b\n" "";
 fi
@@ -46,7 +46,7 @@ fi
 if (( has_install )) ; then
     printf "%b\n" "$unins_n$dbg_msg uninstalled \x1b[2m[ $(date +"%Y-%m-%d") ]\x1b[0m";
 else
-    printf "%b\n" "$unins_n$wrn_msg no acama installation";
+    printf "%b\n" "$unins_n$wrn_msg no cit10a installation";
 fi
 printf "%b\n" "$unins_n$scs_exit";
 exit 0;

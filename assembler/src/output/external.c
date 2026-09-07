@@ -28,7 +28,7 @@ pthread_mutex_t             io_mutex        =   PTHREAD_MUTEX_INITIALIZER;      
  * @param       stream          output stream
  */
 void print_raw_str(const char *str, int n, FILE *const stream) {
-    acama_asrt(str != nullptr && stream != nullptr);
+    cit10a_asrt(str != nullptr && stream != nullptr);
 
     while (n-- > 0) {
         const   char    chr =   *(str++);
@@ -42,7 +42,7 @@ void print_raw_str(const char *str, int n, FILE *const stream) {
 /**
  * Prints the assembler version.
  */
-static void acama_version(void) {
+static void cit10a_version(void) {                                              // assembler version dump
     fputs(CLR_UNDRLN ASSEMBLER_NAME "v" ASSEMBLER_VERSION, stdout);
     fprintf(stdout, CLR_UNDRLN_OFF "*");
 #ifndef NDEBUG
@@ -61,8 +61,8 @@ static void acama_version(void) {
 /**
  * Prints the assembler info.
  */
-void acama_info(void) {                                                         // assembler info message
-    acama_version();
+void cit10a_info(void) {                                                        // assembler info message
+    cit10a_version();
     fprintf(stdout, CLR_DIM " [ %uB cache alignment ]" "\x1b[0m", CACHE_LN_S);
 #ifndef NDEBUG
     fputs(" " CLR_INTRNL "DEBUG BUILD\x1b[0m", stdout);
@@ -76,9 +76,9 @@ void acama_info(void) {                                                         
 /**
  * Prints assembler startup info (thread usage, files detected, structure, etc.)
  */
-void acama_startup(void) {                                                      // assembler start message
+void cit10a_startup(void) {                                                     // assembler start message
     fputs(CLR_DIM, stdout);
-    acama_version();
+    cit10a_version();
     fprintf( stdout, " | utilizing up to %d threads [ %d threads / %d file ]\x1b[0m\n",
                       c_args.n_thrds * c_args.n_files, c_args.n_thrds, c_args.n_files );
 }

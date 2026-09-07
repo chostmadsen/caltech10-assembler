@@ -27,8 +27,8 @@ static  const       msg_info    alloc_msg   =   { .type=msg_intrnl_t, .header="a
     void    *const  ret     =   malloc(size);
     if (ret == nullptr) {
         // alloc failure
-        acama_msg(&alloc_msg, "%s malloc [ %zuB - errno %d ]", itm, size, errno);
-        acama_exit(ALLOC_ERRNO);
+        cit10a_msg(&alloc_msg, "%s malloc [ %zuB - errno %d ]", itm, size, errno);
+        cit10a_exit(ALLOC_ERRNO);
     }
     return  ret;
 }
@@ -49,8 +49,8 @@ static  const       msg_info    alloc_msg   =   { .type=msg_intrnl_t, .header="a
     void    *const  ret     =   calloc(n, size);
     if (ret == nullptr) {
         // alloc failure
-        acama_msg(&alloc_msg, "%s calloc [ %zuB - errno %d ]", itm, n * size, errno);
-        acama_exit(ALLOC_ERRNO);
+        cit10a_msg(&alloc_msg, "%s calloc [ %zuB - errno %d ]", itm, n * size, errno);
+        cit10a_exit(ALLOC_ERRNO);
     }
     return  ret;
 }
@@ -71,8 +71,8 @@ static  const       msg_info    alloc_msg   =   { .type=msg_intrnl_t, .header="a
     void    *const  ret     =   realloc(ptr, size);
     if (ret == nullptr) {
         // alloc failure
-        acama_msg(&alloc_msg, "%s realloc [ %zuB - errno %d ]", itm, size, errno);
-        acama_exit(ALLOC_ERRNO);
+        cit10a_msg(&alloc_msg, "%s realloc [ %zuB - errno %d ]", itm, size, errno);
+        cit10a_exit(ALLOC_ERRNO);
     }
     return  ret;
 }

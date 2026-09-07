@@ -26,7 +26,7 @@
 [[nodiscard]] static stack *stackmap_alloc_heads_( const size_t buckets, 
                                                    const size_t elm_s    ) {    // stackmap bucket allocator
     // bucket creation
-    acama_asrt(!(buckets & (buckets - 1)));
+    cit10a_asrt(!(buckets & (buckets - 1)));
     stack   *const  smap_heads          =   chckd_malloc(buckets * sizeof(stack), "stackmap stack*");
     for (size_t i = 0; i < buckets; ++i)    smap_heads[i]   =   new_stack(STACKMAP_ST_S, elm_s);
     return  smap_heads;
@@ -72,7 +72,7 @@ static void smap_realloc_buckets_(stackmap *const smap) {                       
  * @return                      new stackmap
  */
 [[nodiscard]] stackmap new_stackmap(const size_t buckets, const size_t elm_s) { // stackmap creation
-    acama_asrt(buckets != 0);
+    cit10a_asrt(buckets != 0);
     return  (stackmap){ .buckets=buckets, .elements=0, .elm_s=elm_s, .heads=stackmap_alloc_heads_(buckets, elm_s) };
 }
 
@@ -88,7 +88,7 @@ static void smap_realloc_buckets_(stackmap *const smap) {                       
  * @return                      whether the item was sucessfully added
  */
 [[nodiscard]] bool stackmap_add(stackmap *const smap, const void *const data) { // stackmap kv add
-    acama_asrt(smap != nullptr && data != nullptr);
+    cit10a_asrt(smap != nullptr && data != nullptr);
 
     const   smap_head   *const  head    =   (smap_head*)data;
 
@@ -120,7 +120,7 @@ static void smap_realloc_buckets_(stackmap *const smap) {                       
  */
 [[nodiscard]] smap_clsn_t stackmap_add_lwr(       stackmap *const smap,
                                             const void     *const data  ) {     // stackmap kv add (lower)
-    acama_asrt(smap != nullptr && data != nullptr);
+    cit10a_asrt(smap != nullptr && data != nullptr);
 
     smap_clsn_t                 ret     =   smap_no_clsn_t;
     const   smap_head   *const  head    =   (smap_head*)data;
@@ -157,7 +157,7 @@ static void smap_realloc_buckets_(stackmap *const smap) {                       
 [[nodiscard]] void *stackmap_get_h( const stackmap  *const smap,
                                     const src_slice *const key,
                                     const uint64_t         hash  ) {             // stackmap item get (hash)
-    acama_asrt(smap != nullptr && key != nullptr);
+    cit10a_asrt(smap != nullptr && key != nullptr);
 
     // map insert index
     const   size_t  buck_n  =   hash & (smap->buckets - 1);
@@ -205,7 +205,7 @@ static void smap_realloc_buckets_(stackmap *const smap) {                       
  * @param       smap        stackmap
  */
 void free_stackmap(stackmap *const smap) {                                      // free stackmap
-    acama_asrt(smap != nullptr);
+    cit10a_asrt(smap != nullptr);
 
     // free stacks
     for (size_t i = 0; i < smap->buckets; ++i)  free_stack(smap->heads + i);

@@ -22,7 +22,7 @@
  */
 [[nodiscard]] static void *alloc_st_data_( const size_t   data_s,
                                            const unsigned size    ) {           // stack data allocation
-    acama_asrt(data_s > 0 && size > 0);
+    cit10a_asrt(data_s > 0 && size > 0);
 
     // data allocation
     void   *st_data     =   chckd_malloc(data_s * (int)size, "stack array void*");
@@ -70,7 +70,7 @@
  * @param       itm             pointer to item to push
  */
 void push_stack(stack *const st, const void *const itm) {                       // push to stack
-    acama_asrt(st != nullptr && itm != nullptr);
+    cit10a_asrt(st != nullptr && itm != nullptr);
 
     if (++st->len > st->size) {
         // double size
@@ -93,7 +93,7 @@ void push_stack(stack *const st, const void *const itm) {                       
  * @return                      void* of popped data
  */
 void *pop_stack(stack *const st) {                                              // pop from stack
-    acama_asrt(st != nullptr && st->len - 1 >= 0);
+    cit10a_asrt(st != nullptr && st->len - 1 >= 0);
     return  (char*)st->data + (--st->len) * st->data_s;
 }
 
@@ -103,7 +103,7 @@ void *pop_stack(stack *const st) {                                              
  * @param       st              pointer to stack
  */
 void rm_stack(stack *const st) {                                                // remove from stack
-    acama_asrt(st != nullptr && st->len - 1 >= 0);
+    cit10a_asrt(st != nullptr && st->len - 1 >= 0);
     --st->len;
 }
 
@@ -114,7 +114,7 @@ void rm_stack(stack *const st) {                                                
  * @param       n               number of items to remove
  */
 void rm_stack_n(stack *const st, const unsigned n) {                            // multiple removals from stack
-    acama_asrt(st != nullptr && st->len - (int)n >= 0);
+    cit10a_asrt(st != nullptr && st->len - (int)n >= 0);
     st->len  -=  (int)n;
 }
 
@@ -126,7 +126,7 @@ void rm_stack_n(stack *const st, const unsigned n) {                            
  * @return                      pointer to stack data
  */
 [[nodiscard]] void *peek_stack(const stack *const st, const unsigned n) {       // stack peek
-    acama_asrt(st != nullptr && st->len > (int)n);
+    cit10a_asrt(st != nullptr && st->len > (int)n);
     return  (char*)st->data + (int)n * st->data_s;
 }
 
@@ -138,7 +138,7 @@ void rm_stack_n(stack *const st, const unsigned n) {                            
  * @return                      pointer to stack data
  */
 [[nodiscard]] void *peek_stack_tail(const stack *const st) {                    // stack peek at tail
-    acama_asrt(st->len != 0);
+    cit10a_asrt(st->len != 0);
     return  (char*)st->data + (int)(st->len - 1) * st->data_s;
 }
 
@@ -150,7 +150,7 @@ void rm_stack_n(stack *const st, const unsigned n) {                            
  * @param       st          pointer to stack
  */
 void free_stack(stack *const st) {                                              // free stack stack
-    acama_asrt(st != nullptr);
+    cit10a_asrt(st != nullptr);
     safe_free(st->data);
 
 #ifndef NDEBUG

@@ -26,7 +26,7 @@
 #include    "output/errors.h"
 
 #define safe_free(ptr) (                                                                                               \
-            acama_asrt(ptr != nullptr),                                                                                \
+            cit10a_asrt(ptr != nullptr),                                                                               \
             free(ptr),                                                                                                 \
             ptr     =   nullptr                                                                                        \
         )

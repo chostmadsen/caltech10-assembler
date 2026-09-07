@@ -24,7 +24,7 @@
  * @param       stream          output stream
  * @param       indents         number of indents
  */
-static void acama_msg_start_(FILE *const stream, const size_t indents) {        // assembler message start printer
+static void cit10a_msg_start_(FILE *const stream, const size_t indents) {       // assembler message start printer
     fprintf(stream, "\x1b[0m" OUT_INDENT MSG_DELIM "\x1b[0m%*s", (int)indents, "");
 }
 
@@ -50,11 +50,11 @@ bool                    werror_exit         =   false;                          
  * @param       fmt             message format
  * @param       args            variadic args
  */
-void acama_msg_v( const msg_info *const info, 
-                  const char     *const fmt,
-                  const va_list  *const args  ) {                               // assembler message emitter (va)
+void cit10a_msg_v( const msg_info *const info, 
+                   const char     *const fmt,
+                   const va_list  *const args  ) {                              // assembler message emitter (va)
     // assembler message emitter
-    acama_asrt(info != nullptr);
+    cit10a_asrt(info != nullptr);
 
     // warning message suppression
     if (c_args.warnings.off && info->type == msg_warn_t)            return;
@@ -98,8 +98,8 @@ void acama_msg_v( const msg_info *const info,
             fputs(MSG_INTRNL_WRN_CLR "\x1b[0m", stream);
             break;
         default:
-            acama_asrt(!"message type oob");
-            acama_exit_msg(INTRNL_ERRNO);
+            cit10a_asrt(!"message type oob");
+            cit10a_exit_msg(INTRNL_ERRNO);
             exit((int)INTRNL_ERRNO);
     }
 
@@ -107,10 +107,10 @@ void acama_msg_v( const msg_info *const info,
     size_t  indent_len      =   0;
     if (info->report_f != nullptr) {
         // file info
-        acama_asrt(info->report_f->file != nullptr);
+        cit10a_asrt(info->report_f->file != nullptr);
         const   rprt_f  *const  report_f    =   info->report_f;
         const   src_f   *const  file        =   report_f->file;
-        acama_asrt(file->f_name != nullptr);
+        cit10a_asrt(file->f_name != nullptr);
         fprintf(stream, " [ %s", file->f_name);
 
         if (report_f->len != 0) {
@@ -128,7 +128,7 @@ void acama_msg_v( const msg_info *const info,
 
             // set indent length and put `^` / `~` characters
             indent_len      =   report_f->col;
-            acama_msg_start_(stream, indent_len);
+            cit10a_msg_start_(stream, indent_len);
             fputs(CLR_DIM "^", stream);
             for (size_t i = 1; i < report_f->len; ++i) {
                 fputc('~', stream);
@@ -137,12 +137,12 @@ void acama_msg_v( const msg_info *const info,
             indent_len      +=  report_f->len + 1;
         } else {
             // message start
-            acama_msg_start_(stream, 0);
+            cit10a_msg_start_(stream, 0);
         }
     } else {
         // message header and start
         fprintf(stream, " : %s\x1b[0m\n", info->header);
-        acama_msg_start_(stream, 0);
+        cit10a_msg_start_(stream, 0);
     }
 
     // no main message content
@@ -153,7 +153,7 @@ void acama_msg_v( const msg_info *const info,
 
     // message buffer copy
     const   int         msg_len     =   vsnprintf(msg_buf, MAX_MSG_S, fmt, *args);
-    acama_asrt(msg_len >= 0);
+    cit10a_asrt(msg_len >= 0);
     const   size_t      msg_end_c   =   ((unsigned)msg_len >= MAX_MSG_S) ? MAX_MSG_S - 1 : (size_t)msg_len;
     msg_buf[msg_end_c]              =   '\0';
 
@@ -168,7 +168,7 @@ void acama_msg_v( const msg_info *const info,
         if (*ptr == '\0')                       break;
 
         fputc('\n', stream);
-        acama_msg_start_(stream, indent_len);
+        cit10a_msg_start_(stream, indent_len);
         ln_strt     =   ptr + 1;
     }
 
@@ -179,7 +179,7 @@ msg_end:
     if (err_num >= c_args.max_errs) {
         // error count overflow
         fprintf(stderr, ASSEMBLER_HEAD MSG_ERR_CLR "\x1b[0m : too many errors [ -e%d ]\n", c_args.max_errs);
-        acama_exit_msg(EXCESS_ERRNO);
+        cit10a_exit_msg(EXCESS_ERRNO);
         exit((int)EXCESS_ERRNO);
     }
     // mutex unlock
@@ -194,16 +194,16 @@ msg_end:
  * @param       fmt             message format
  * @param       ...             variadic args
  */
-void acama_msg(const msg_info *const info, const char *const fmt, ...) {
+void cit10a_msg(const msg_info *const info, const char *const fmt, ...) {       // assembler message emitter
     if (fmt == nullptr) {
         // nullptr handle
-        acama_msg_v(info, nullptr, nullptr);
+        cit10a_msg_v(info, nullptr, nullptr);
         return;
     }
     // va start
     va_list     args;
     va_start(args, fmt);
-    acama_msg_v(info, fmt, &args);
+    cit10a_msg_v(info, fmt, &args);
     va_end(args);
 }
 

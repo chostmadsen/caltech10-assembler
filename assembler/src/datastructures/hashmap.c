@@ -25,7 +25,7 @@
  */
 [[nodiscard]] static llist *hashmap_alloc_buckets_(const size_t buckets) {      // hashmap bucket allocator
     // bucket creation
-    acama_asrt(!(buckets & (buckets - 1)));
+    cit10a_asrt(!(buckets & (buckets - 1)));
     llist   *const  new_heads   =   chckd_malloc(buckets * sizeof(llist), "hashmap head llist*");
 
     for (size_t i = 0; i < buckets; ++i)    *(new_heads + i)    =   new_llist(nullptr, 0, nullptr);
@@ -99,8 +99,8 @@ static void realloc_buckets_(hashmap *const hmap) {                             
 [[nodiscard]] void *hashmap_get_h( const hashmap   *const hmap,
                                    const src_slice *const key,
                                    const uint64_t         hash  ) {             // hashmap value get (hash)
-    acama_asrt(hmap != nullptr && key != nullptr);
-    acama_asrt(hmap->heads != nullptr);
+    cit10a_asrt(hmap != nullptr && key != nullptr);
+    cit10a_asrt(hmap->heads != nullptr);
 
     // get key val
     const   size_t      buck_n  =   hash & (hmap->buckets - 1);
@@ -131,8 +131,8 @@ static void realloc_buckets_(hashmap *const hmap) {                             
 bool hashmap_has_h( const hashmap   *const hmap,
                     const src_slice *const key,
                     const uint64_t         hash  ) {                            // hashmap check (hash)
-    acama_asrt(hmap != nullptr && key != nullptr);
-    acama_asrt(hmap->heads != nullptr);
+    cit10a_asrt(hmap != nullptr && key != nullptr);
+    cit10a_asrt(hmap->heads != nullptr);
 
     // check hashmap
     const   size_t      buck_n  =   hash & (hmap->buckets - 1);
@@ -161,7 +161,7 @@ bool hashmap_has_k(const hashmap *const hmap, const src_slice *const key) {     
 void hashmap_rm_h(       hashmap   *const hmap,
                    const src_slice *const key,
                    const uint64_t         hash  ) {                             // hashmap item remove (hash)
-    acama_asrt(hmap != nullptr && key != nullptr);
+    cit10a_asrt(hmap != nullptr && key != nullptr);
 
     // remove key val
     const   size_t      buck_n  =   hash & (hmap->buckets - 1);
@@ -190,14 +190,14 @@ void hashmap_rm_k(hashmap *const hmap, const src_slice *const key) {            
  */
 void hashmap_add_h( hashmap *const hmap, const src_slice *const key, 
                     void    *const val,  const uint64_t         hash ) {        // hashmap kv add (hash)
-    acama_asrt(hmap != nullptr && key != nullptr);
+    cit10a_asrt(hmap != nullptr && key != nullptr);
 
     // internal update
     if ((float)++hmap->elements / (float)hmap->buckets > LAMBDA_MAX)        realloc_buckets_(hmap);
     const   size_t      buck_n  =   hash & (hmap->buckets - 1);
 
     // externally address this for user input
-    acama_asrt(!hashmap_has_h(hmap, key, hash));
+    cit10a_asrt(!hashmap_has_h(hmap, key, hash));
 
     // add val
     llist_append(hmap->heads + buck_n, key, hash, val);
@@ -225,7 +225,7 @@ void hashmap_add_k(       hashmap   *const hmap,
  * @return                      hashmap caps
  */
 [[nodiscard]] hmap_caps get_caps(const hashmap *const hmap) {                   // hashmap cap get
-    acama_asrt(hmap != nullptr);
+    cit10a_asrt(hmap != nullptr);
 
     // find caps
     hmap_caps   caps    =   { .buckets=hmap->buckets };
@@ -248,8 +248,8 @@ void hashmap_add_k(       hashmap   *const hmap,
                                        const src_slice *const key,
                                        const uint64_t         hash,
                                        const hmap_caps *const caps  ) {         // capped hashmap value get (hash)
-    acama_asrt(hmap != nullptr && key != nullptr);
-    acama_asrt(hmap->heads != nullptr);
+    cit10a_asrt(hmap != nullptr && key != nullptr);
+    cit10a_asrt(hmap->heads != nullptr);
 
     // get key val
     const   size_t      buck_n  =   hash & (hmap->buckets - 1);
@@ -283,8 +283,8 @@ bool hashmap_has_h_cap( const hashmap   *const hmap,
                         const src_slice *const key,
                         const uint64_t         hash,
                         const hmap_caps *const caps  ) {                        // capped hashmap check (hash)
-    acama_asrt(hmap != nullptr && key != nullptr);
-    acama_asrt(hmap->heads != nullptr);
+    cit10a_asrt(hmap != nullptr && key != nullptr);
+    cit10a_asrt(hmap->heads != nullptr);
 
     // check hashmap
     const   size_t      buck_n  =   hash & (hmap->buckets - 1);
@@ -314,7 +314,7 @@ bool hashmap_has_k_cap( const hashmap   *const hmap,
  * @param       hmap        pointer to hashmap
  */
 void free_hashmap(hashmap *const hmap) {                                        // free stack hashmap
-    acama_asrt(hmap != nullptr);
+    cit10a_asrt(hmap != nullptr);
 
     for (size_t i = 0; i < hmap->buckets; ++i)      free_llist(hmap->heads + i);
     safe_free(hmap->heads);
@@ -333,7 +333,7 @@ void free_hashmap(hashmap *const hmap) {                                        
  * @param       hmap        pointer to pointer to hashmap
  */
 void free_m_hashmap(hashmap **const hmap) {                                     // free heap hashmap
-    acama_asrt(hmap != nullptr);
+    cit10a_asrt(hmap != nullptr);
     free_hashmap(*hmap);
     safe_free(*hmap);
 }

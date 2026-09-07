@@ -20,7 +20,7 @@
  * @return                      hash
  */
 [[nodiscard]] uint64_t hash_fnv1a(const char *str, size_t n) {                  // 64-bit fnv1a hash
-    acama_asrt(str != nullptr);
+    cit10a_asrt(str != nullptr);
 
     uint64_t    hash    =   FNV_OFFSET_64;
     while (n--) {
@@ -37,7 +37,7 @@
  * @return                      hash
  */
 [[nodiscard]] uint64_t hash_fnv1a_slc(const src_slice *const slice) {           // 64-bit fnv1a hash (slc)
-    acama_asrt(slice != nullptr);
+    cit10a_asrt(slice != nullptr);
     return  hash_fnv1a(slice->str, slice->len);
 }
 
@@ -51,7 +51,7 @@
  * @return                      hash
  */
 [[nodiscard]] uint64_t hash_fnv1a_lwr(const char *str, size_t n) {              // lower 64-bit fnv1a hash
-    acama_asrt(str != nullptr);
+    cit10a_asrt(str != nullptr);
 
     uint64_t    hash    =   FNV_OFFSET_64;
     while (n--) {
@@ -68,7 +68,7 @@
  * @return                      hash
  */
 [[nodiscard]] uint64_t hash_fnv1a_slc_lwr(const src_slice *const slice) {       // lower 64-bit fnv1a hash (slc)
-    acama_asrt(slice != nullptr);
+    cit10a_asrt(slice != nullptr);
     return  hash_fnv1a_lwr(slice->str, slice->len);
 }
 
@@ -84,8 +84,8 @@
  */
 [[nodiscard]] uint64_t hash_fnv1a_lwr_f( const char        *str, size_t n, 
                                                bool *const  flg            ) {  // flagged lower 64-bit fnv1a hash
-    acama_asrt(str != nullptr);
-    acama_asrt(flg != nullptr);
+    cit10a_asrt(str != nullptr);
+    cit10a_asrt(flg != nullptr);
 
     uint64_t    hash        =   FNV_OFFSET_64;
     while (n--) {
@@ -106,6 +106,6 @@
  */
 [[nodiscard]] uint64_t hash_fnv1a_slc_lwr_f( const src_slice *const slice,       
                                                    bool      *const flg    ) {  // flagged lower 64-bit fnv1a hash (slc)
-    acama_asrt(slice != nullptr);
+    cit10a_asrt(slice != nullptr);
     return  hash_fnv1a_lwr_f(slice->str, slice->len, flg);
 }

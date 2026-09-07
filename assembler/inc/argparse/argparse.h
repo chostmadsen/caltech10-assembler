@@ -8,7 +8,6 @@
 #include    <stddef.h>
 
 #include    "helpers/general.h"
-#include    "output/external.h"
 
 /*-FLAG-BASE-INFORMATION-ITEMS----------------------------------------------------------------------------------------*/
 

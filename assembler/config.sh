@@ -2,9 +2,9 @@
 set -euo pipefail;
 
 # colors / strings
-build_n="\x1b[0m\x1b[4m\x1b[3macama-build\x1b[0m -";
-instl_n="\x1b[0m\x1b[4m\x1b[3macama-install\x1b[0m -";
-unins_n="\x1b[0m\x1b[4m\x1b[3macama-uninstall\x1b[0m -";
+build_n="\x1b[0m\x1b[4m\x1b[3mcit10a-build\x1b[0m -";
+instl_n="\x1b[0m\x1b[4m\x1b[3mcit10a-install\x1b[0m -";
+unins_n="\x1b[0m\x1b[4m\x1b[3mcit10a-uninstall\x1b[0m -";
 
 dbg_clr="\x1b[36m";
 msg_clr="\x1b[34m";

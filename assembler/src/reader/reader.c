@@ -32,15 +32,15 @@
     FILE   *const       fp      =   fopen(f_name, "rb");
     if (fp == nullptr) {
         // invalid file
-        acama_msg(&f_err, "couldn't open / read file");
-        acama_exit(READER_ERRNO);
+        cit10a_msg(&f_err, "couldn't open / read file");
+        cit10a_exit(READER_ERRNO);
     }
 
     // get file info
     long    ftell_s;
     if (fseek(fp, 0, SEEK_END) != 0 || (ftell_s = ftell(fp)) < 0) {
         // read error
-        acama_msg(&f_err, "couldn't determine filesize");
+        cit10a_msg(&f_err, "couldn't determine filesize");
         goto    read_cleanup;
     }
 
@@ -53,7 +53,7 @@
     const   size_t      n_rd    =   fread(buf, 1, (size_t)ftell_s, fp);
     if (n_rd != (size_t)ftell_s) {
         // buffer copy error
-        acama_msg(&f_err, "only read %zu / %zu bytes of source file", n_rd, (size_t)ftell_s);
+        cit10a_msg(&f_err, "only read %zu / %zu bytes of source file", n_rd, (size_t)ftell_s);
         free(buf);
         goto    read_cleanup;
     }
@@ -65,7 +65,7 @@
 read_cleanup:
     // close and exit
     fclose(fp);
-    acama_exit(READER_ERRNO);
+    cit10a_exit(READER_ERRNO);
 }
 
 /*-SOURCE-FILE-STRUCT-SETUP-------------------------------------------------------------------------------------------*/
@@ -81,7 +81,7 @@ read_cleanup:
     // read file
     size_t          f_size;
     char    *const  file_buf    =   buffer_read_src_(f_name, &f_size);
-    acama_asrt(file_buf != nullptr);
+    cit10a_asrt(file_buf != nullptr);
 
     // line index array
     size_t          ln_num      =   1;
@@ -124,9 +124,9 @@ read_cleanup:
  */
 [[nodiscard]] const char *src_f_getline( const src_f  *const source_f,
                                          const size_t        ln        ) {      // readline of struct
-    acama_asrt(source_f != nullptr);
-    acama_asrt(source_f->text != nullptr && source_f->ln_idxs != nullptr);
-    acama_asrt(ln < source_f->ln_num);
+    cit10a_asrt(source_f != nullptr);
+    cit10a_asrt(source_f->text != nullptr && source_f->ln_idxs != nullptr);
+    cit10a_asrt(ln < source_f->ln_num);
 
     return  &source_f->text[source_f->ln_idxs[ln]];
 }
@@ -139,7 +139,7 @@ read_cleanup:
  * @param       source_f        source file struct
  */
 void free_src_f(src_f *source_f) {                                              // free source struct
-    acama_asrt(source_f != nullptr);
+    cit10a_asrt(source_f != nullptr);
     free((void*)source_f->f_name);
     safe_free(source_f->ln_idxs);
     safe_free(source_f->text);

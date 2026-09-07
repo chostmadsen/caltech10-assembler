@@ -30,7 +30,7 @@
                                        const uint64_t         hash,
                                              void      *const data,
                                              ll_node   *const next      ) {     // linked list node allocation
-    acama_asrt(key != nullptr);
+    cit10a_asrt(key != nullptr);
 
     // node creation
     ll_node     *const  node    =   chckd_malloc(sizeof(ll_node), "list node ll_node*");
@@ -49,7 +49,7 @@
  * @param       node            node to free.
  */
 void free_ll_node_(ll_node *const node) {                                       // linked list node free
-    acama_asrt(node != nullptr);
+    cit10a_asrt(node != nullptr);
 
     safe_free(node->data);
 
@@ -118,14 +118,14 @@ void free_ll_node_(ll_node *const node) {                                       
 void llist_add(       llist    *const list, const src_slice  *const key,
                 const uint64_t        hash,       void       *const data,
                       size_t          n                                   ) {   // linked list node insert
-    acama_asrt(list != nullptr && n <= list->size);
-    acama_asrt(key->len != 0);
+    cit10a_asrt(list != nullptr && n <= list->size);
+    cit10a_asrt(key->len != 0);
 
     // node insertion search
     ll_node    *prev    =   nullptr;
     ll_node    *curr    =   list->head;
     for (; n != 0; --n) {
-        acama_asrt(curr != nullptr);
+        cit10a_asrt(curr != nullptr);
         prev    =   curr;
         curr    =   curr->next;
     }
@@ -152,8 +152,8 @@ void llist_add_head(       llist      *const list,
                      const src_slice  *const key,
                      const uint64_t          hash,
                            void       *const data  ) {                          // linked list head insert
-    acama_asrt(list != nullptr);
-    acama_asrt(key->len != 0);
+    cit10a_asrt(list != nullptr);
+    cit10a_asrt(key->len != 0);
 
     // new node creation and insertion
     ll_node     *const  node    =   alloc_ll_node_(key, hash, data, list->head);
@@ -176,8 +176,8 @@ void llist_append(       llist      *const list,
                    const src_slice  *const key,
                    const uint64_t          hash,
                          void       *const data  ) {                            // linked list node append
-    acama_asrt(list != nullptr);
-    acama_asrt(key->len != 0);
+    cit10a_asrt(list != nullptr);
+    cit10a_asrt(key->len != 0);
 
     // new node creation
     ll_node     *const  node    =   alloc_ll_node_(key, hash, data, nullptr);
@@ -196,13 +196,13 @@ void llist_append(       llist      *const list,
  * @param       n               index to remove
  */
 void llist_rm_n(llist *const list, size_t n) {                                  // linked list node remove (num)
-    acama_asrt(list != nullptr && n < list->size);
+    cit10a_asrt(list != nullptr && n < list->size);
 
     // node removal search
     ll_node    *prev    =   nullptr;
     ll_node    *curr    =   list->head;
     for (; n != 0; --n) {
-        acama_asrt(curr != nullptr);
+        cit10a_asrt(curr != nullptr);
         prev            =   curr;
         curr            =   curr->next;
     }
@@ -234,17 +234,17 @@ void llist_rm_n(llist *const list, size_t n) {                                  
 void llist_rm_h(       llist     *const list,
                  const src_slice *const key,
                  const uint64_t         hash  ) {                               // linked list node remove (hash)
-    acama_asrt(list != nullptr && key != nullptr && list->size != 0);
-    acama_asrt(key->len != 0);
+    cit10a_asrt(list != nullptr && key != nullptr && list->size != 0);
+    cit10a_asrt(key->len != 0);
 
     // node removal search
-    acama_asrt(list->head != nullptr);
+    cit10a_asrt(list->head != nullptr);
     ll_node    *prev    =   nullptr;
     ll_node    *curr    =   list->head;
     while (curr->hash != hash || !srcslc_eq(key, &curr->key)) {
         prev            =   curr;
         curr            =   curr->next;
-        acama_asrt(curr != nullptr);
+        cit10a_asrt(curr != nullptr);
     }
 
     // node removal
@@ -281,11 +281,11 @@ void llist_rm_k(llist *const list, const src_slice *const key) {                
  * @param       n               set index
  */
 void llist_set_n(llist *const list, void *const data, size_t n) {               // linked list node set (num)
-    acama_asrt(list != nullptr && n < list->size);
+    cit10a_asrt(list != nullptr && n < list->size);
 
     ll_node    *itm     =   list->head;
     for (; n != 0; --n) {
-        acama_asrt(itm->next != nullptr);
+        cit10a_asrt(itm->next != nullptr);
         itm             =   itm->next;
     }
     free(itm->data);
@@ -303,13 +303,13 @@ void llist_set_n(llist *const list, void *const data, size_t n) {               
  */
 void llist_set_h(       llist     *const list,       void     *const data,
                   const src_slice *const key,  const uint64_t        hash  ) {  // linked list node set (hash)
-    acama_asrt(list != nullptr && list->size != 0 && key != nullptr);
-    acama_asrt(key->len != 0);
+    cit10a_asrt(list != nullptr && list->size != 0 && key != nullptr);
+    cit10a_asrt(key->len != 0);
 
     // node set search
     ll_node    *itm     =   list->head;
     while (itm->hash != hash || !srcslc_eq(key, &itm->key)) {
-        acama_asrt(itm->next != nullptr);
+        cit10a_asrt(itm->next != nullptr);
         itm             =   itm->next;
     }
     free(itm->data);
@@ -339,12 +339,12 @@ void llist_set_k(       llist     *const list,
  * @return                      pointer to linked list data
  */
 [[nodiscard]] void *llist_peek_n(const llist *const list, size_t n) {           // linked list peek (num)
-    acama_asrt(list != nullptr && n < list->size);
+    cit10a_asrt(list != nullptr && n < list->size);
 
     // get and return data
     const   ll_node    *itm     =   list->head;
     for (; n != 0; --n) {
-        acama_asrt(itm->next != nullptr);
+        cit10a_asrt(itm->next != nullptr);
         itm                     =   itm->next;
     }
     return  itm->data;
@@ -362,8 +362,8 @@ void llist_set_k(       llist     *const list,
 [[nodiscard]] void *llist_peek_h( const llist     *const list,
                                   const src_slice *const key,
                                   const uint64_t         hash  ) {              // linked list peek (hash)
-    acama_asrt(list != nullptr && key != nullptr);
-    acama_asrt(key->len != 0);
+    cit10a_asrt(list != nullptr && key != nullptr);
+    cit10a_asrt(key->len != 0);
 
     // get and return data
     const   ll_node    *itm     =   list->head;
@@ -399,8 +399,8 @@ void llist_set_k(       llist     *const list,
  */
 bool llist_has_h( const llist    *const list, const src_slice *const key,
                   const uint64_t        hash                              ) {   // linked list check (hash)
-    acama_asrt(list != nullptr && key != nullptr);
-    acama_asrt(key->len != 0);
+    cit10a_asrt(list != nullptr && key != nullptr);
+    cit10a_asrt(key->len != 0);
 
     // get and return data
     const   ll_node    *itm     =   list->head;
@@ -440,13 +440,13 @@ bool llist_has_k(const llist *const list, const src_slice *const key) {         
                                       const src_slice *const key,
                                       const uint64_t         hash,
                                             size_t           cap   ) {          // capped linked list peek (hash)
-    acama_asrt(list != nullptr && key != nullptr);
-    acama_asrt(key->len != 0);
+    cit10a_asrt(list != nullptr && key != nullptr);
+    cit10a_asrt(key->len != 0);
 
     // get and return data
     const   ll_node    *itm     =   list->head;
     while (cap--) {
-        acama_asrt(itm != nullptr);
+        cit10a_asrt(itm != nullptr);
         if (itm->hash == hash && srcslc_eq(key, &itm->key)) {
             return  itm->data;
         }
@@ -483,13 +483,13 @@ bool llist_has_h_cap( const llist     *const list,
                       const src_slice *const key,
                       const uint64_t         hash,       
                             size_t           cap   ) {                          // capped linked list check (hash)
-    acama_asrt(list != nullptr && key != nullptr);
-    acama_asrt(key->len != 0);
+    cit10a_asrt(list != nullptr && key != nullptr);
+    cit10a_asrt(key->len != 0);
 
     // get and return data
     const   ll_node    *itm     =   list->head;
     while (cap--) {
-        acama_asrt(itm != nullptr);
+        cit10a_asrt(itm != nullptr);
         if (itm->hash == hash && srcslc_eq(key, &itm->key)) {
             return  true;
         }
@@ -522,8 +522,8 @@ bool llist_has_k_cap( const llist     *const list,
  * @param       src             source linked list
  */
 void llist_move_head(llist *const dst, llist *const src) {                      // linked list head move
-    acama_asrt(dst != nullptr && src != nullptr);
-    acama_asrt(src->head != nullptr);
+    cit10a_asrt(dst != nullptr && src != nullptr);
+    cit10a_asrt(src->head != nullptr);
 
     ll_node     *const  src_h   =   src->head;
 
@@ -546,14 +546,14 @@ void llist_move_head(llist *const dst, llist *const src) {                      
  * @param       list            pointer to linked list
  */
 void free_llist(llist *const list) {                                            // free stack linked list
-    acama_asrt(list != nullptr);
+    cit10a_asrt(list != nullptr);
 
     // no-op on empty list
     if (list->size == 0)    return;
 
     ll_node    *next    =   list->head;
     for (size_t i = 0; i < list->size; ++i) {
-        acama_asrt(next != nullptr);
+        cit10a_asrt(next != nullptr);
 
         ll_node    *const   rm_node =   next;
         next                        =   next->next;
@@ -575,7 +575,7 @@ void free_llist(llist *const list) {                                            
  * @param       list            pointer to pointer to linked list
  */
 void free_m_llist(llist **const list) {                                         // free heap linked list
-    acama_asrt(list != nullptr);
+    cit10a_asrt(list != nullptr);
     free_llist(*list);
     safe_free(*list);
 }

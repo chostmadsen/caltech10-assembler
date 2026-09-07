@@ -35,9 +35,9 @@ while getopts ":hg" opt ; do
 done
 
 # get build
-[[ -f bin/acama && -x bin/acama ]] || {
+[[ -f bin/cit10a && -x bin/cit10a ]] || {
     # no build
-    printf "%b\n" "$instl_n$err_msg acama build missing; build with ./build-acama.sh";
+    printf "%b\n" "$instl_n$err_msg cit10a build missing; build with ./build-cit10a.sh";
     printf "%b\n" "$instl_n$err_exit";
     exit 1;
 }
@@ -46,16 +46,16 @@ if (( glob_instl )) ; then
     # /usr/local/bin/ installation
     printf "%b\n" "$instl_n$msg_msg sudo required for installation at $system_path";
     sudo mkdir -p "$install_dir";
-    sudo install -m755 bin/acama "$install_dir/acama";
+    sudo install -m755 bin/cit10a "$install_dir/cit10a";
     printf "%b\n" "";
 else
     # $HOME/.local/bin/ installation
     mkdir -p "$install_dir";
-    install -m755 bin/acama "$install_dir/acama";
+    install -m755 bin/cit10a "$install_dir/cit10a";
 fi
 
 # success log
-printf "%b\n" "$instl_n$dbg_msg installed at $install_dir/acama \x1b[2m[ $(date +"%Y-%m-%d") ]\x1b[0m";
-printf "%b\n" "$instl_n$msg_msg ./uninstall-acama.sh to uninstall";
+printf "%b\n" "$instl_n$dbg_msg installed at $install_dir/cit10a \x1b[2m[ $(date +"%Y-%m-%d") ]\x1b[0m";
+printf "%b\n" "$instl_n$msg_msg ./uninstall-cit10a.sh to uninstall";
 printf "%b\n" "$instl_n$scs_exit";
 exit 0;
