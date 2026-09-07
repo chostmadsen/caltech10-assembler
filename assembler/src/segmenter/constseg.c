@@ -105,7 +105,7 @@ void print_const_map(const stackmap *const smap) {                              
                     "maximum number range excession"                                            );
         return  true;
     }
-    smap_itm.val                =   (neg) ? -const_v : const_v;
+    smap_itm.val                =   (neg) ? (const_v ^ MAX_NUM) + 1 : const_v;
 
     // check trailing characters
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
