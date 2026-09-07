@@ -10,6 +10,27 @@
 #include    "output/external.h"
 #include    "helpers/general.h"
 
+/*-STRING-HELPERS-----------------------------------------------------------------------------------------------------*/
+
+/**
+ * Converts a character to lowercase.
+ *
+ * @param       chr                 character
+ * @return                          lowercase
+ */
+[[nodiscard]] char to_lwr_chr(const char chr) {                                 // character to lower
+    return  chr | (uint8_t)((chr - 'A') < 26) << 5;
+}
+
+/**
+ * Whitespace character comparison; unrolled for performance.
+ *
+ * @param       chr             character to compare
+ * @return                      whether chr is a whitespace character
+ */
+[[nodiscard]] bool is_whitespace(const char chr) {                              // whitespace characters
+    return  ( chr == ' ' || chr == '\t' || chr == '\0' );
+}
 /*-STRING-SLICE-FUNCTIONS---------------------------------------------------------------------------------------------*/
 
 /**
@@ -81,26 +102,4 @@ void inc_strptr(strptr *const ptr) {                                            
 void dec_strptr(strptr *const ptr) {                                            // string pointer decrement
     --ptr->str;
     --ptr->idx;
-}
-
-/*-STRING-HELPERS-----------------------------------------------------------------------------------------------------*/
-
-/**
- * Converts a character to lowercase.
- *
- * @param       chr                 character
- * @return                          lowercase
- */
-[[nodiscard]] char to_lwr_chr(const char chr) {                                 // character to lower
-    return  chr | (uint8_t)((chr - 'A') < 26) << 5;;
-}
-
-/**
- * Whitespace character comparison; unrolled for performance.
- *
- * @param       chr             character to compare
- * @return                      whether chr is a whitespace character
- */
-[[nodiscard]] bool is_whitespace(const char chr) {                              // whitespace characters
-    return  ( chr == ' ' || chr == '\t' || chr == '\0' );
 }
