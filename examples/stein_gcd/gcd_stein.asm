@@ -11,6 +11,9 @@
 ;*                      b_l                         Gcd number b [l]
 ;*                      b_h                         Gcd number b [h]
 
+; constants
+.const      LOW_BIT_MASK        =   0x01                            ; low bit check mask
+
 
 ;-CODE-SEGMENT-------------------------------------------------------------------------------------;
 .code
@@ -70,7 +73,7 @@ gcd_stein:
                 ldd     a_l                                         ; [*] a_l preload
 
     pair_shft:  or      b_l                                         ; check if a or b is odd
-                andi    0x01
+                andi    LOW_BIT_MASK
                 jnz     store_k
 
                 ldd     a_h                                         ; shift a
@@ -95,7 +98,7 @@ gcd_stein:
                 std     k
                 ldd     a_l                                         ; [*] a_l preload
 
-    find_gcd:   andi    0x01                                        ; check if a is odd
+    find_gcd:   andi    LOW_BIT_MASK                                ; check if a is odd
                 jnz     a_odd      
 
                 ldd     a_h                                         ; shift a

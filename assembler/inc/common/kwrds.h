@@ -1,6 +1,6 @@
 /**
  * inc/common/kwrds.h
- * Keywords recognized by the assembler. IMPORTANT : rehash on modification.
+ * Keywords recognized by the assembler. IMPORTANT : Rehash on modification.
  */
 
 #pragma     once
