@@ -14,7 +14,6 @@
 ; constants
 .const      LOW_BIT_MASK            0x01                            ; low bit check mask
 
-
 ;-CODE-SEGMENT-------------------------------------------------------------------------------------;
 .code
 .org        0x0000

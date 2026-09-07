@@ -18,6 +18,7 @@
 #include    "reader/reader.h"
 #include    "reader/reader_out.h"
 #include    "segmenter/constseg.h"
+#include    "segmenter/dataseg.h"
 
 /*-MAIN---------------------------------------------------------------------------------------------------------------*/
 
@@ -43,6 +44,7 @@ int main(const int argc, const char *const *const argv) {                       
     bool        seg_err         =   false;
     stackmap    const_smap      =   constseg(&source_f, &seg_err);
     print_const_map(&const_smap);
+    stackmap    data_smap       =   dataseg(&source_f, &seg_err);
 
     // assembly
 

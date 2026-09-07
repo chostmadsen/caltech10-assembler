@@ -43,6 +43,18 @@
               ( '0' <= chr && chr <= '9' ) || ( '_' == chr               )    );
 }
 
+/**
+ * Check if the given character is alphabetic.
+ *
+ * @param       chr             character to compare
+ * @return                      whether chr is alphabetic
+ */
+[[nodiscard]] bool is_alpha(const char chr) {                                   // alphabetic characters
+    return  ( ( 'A' <= chr && chr <= 'Z' ) || ( 'a' <= chr && chr <= 'z' ) ||
+              ( '_' == chr               )                                    );
+}
+
+
 /*-STRING-SLICE-FUNCTIONS---------------------------------------------------------------------------------------------*/
 
 /**

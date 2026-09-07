@@ -10,10 +10,6 @@
 
 /*-CONSTANTS----------------------------------------------------------------------------------------------------------*/
 
-#define                 DATA_SEG                "data"                          // data segment start
-#define                 CODE_SEG                "code"                          // code segment start
-#define                 ORG_SEG                 "org"                           // org specification
-
 constexpr   char        PSEUDOOP_CHR        =   '.';                            // pseudo-op start character
 constexpr   char        NUM_SEP             =   '_';                            // number seperator
 constexpr   char        NEG_SYMB            =   '-';                            // negative value symbol

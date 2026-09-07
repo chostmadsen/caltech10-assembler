@@ -34,6 +34,7 @@ typedef struct {                                                                
 [[nodiscard]] char to_lwr_chr(char chr);                                        // character to lower
 [[nodiscard]] bool is_whitespace(char chr);                                     // whitespace characters
 [[nodiscard]] bool is_alphanum(char chr);                                       // alphanumeric characters
+[[nodiscard]] bool is_alpha(char chr);                                          // alphabetic characters
 
 void print_src_slice(const src_slice *slice, FILE *stream);                     // source slice printer
 [[nodiscard]] bool srcslc_eq(const src_slice *slc_1, const src_slice *slc_2);   // source slice equality check

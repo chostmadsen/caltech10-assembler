@@ -76,6 +76,13 @@ void print_const_map(const stackmap *const smap) {                              
     // get identifier
     const       size_t  slc_strt    =   sptr->col;
     src_slice           slc         =   { .str=sptr->str, .len=0 };
+    if (!is_alpha(*sptr->str)) {
+        err_f->col  =   sptr->col;
+        err_f->len  =   1;
+        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid identifier", .report_f=err_f },
+                    "invalid constant identifier"                                                  );
+        return  true;
+    }
     for (; is_alphanum(*sptr->str); inc_strptr(sptr), ++slc.len);
     const_var           smap_itm    =   { .head=(smap_head){ .hash=hash_fnv1a_slc_lwr(&slc), .key=slc } };
 
@@ -112,8 +119,8 @@ void print_const_map(const stackmap *const smap) {                              
     if (*sptr->str != CMMT_CHR && *sptr->str != '\0') {
         err_f->col  =   sptr->col;
         err_f->len  =   1;
-        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="trailing character(s)", .report_f=err_f },
-                    "trailing character(s) after a `.const` definition"                               );
+        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="trailing character", .report_f=err_f },
+                    "trailing character after a `.const` definition"                               );
         return  true;
     }
 
@@ -148,14 +155,14 @@ void print_const_map(const stackmap *const smap) {                              
 
     for (size_t i = 0; i < source->ln_num; ++i) {
         // skip over non pseudo-op items
-        strptr  sptr    =               { .str=src_f_getline(source, i), .ln=i, .col=0 };
+        strptr  sptr                =   { .str=src_f_getline(source, i), .ln=i, .col=0 };
         for (; is_whitespace(*sptr.str); inc_strptr(&sptr));
         if (*sptr.str != PSEUDOOP_CHR)  continue;
 
         // check for .const
         inc_strptr(&sptr);
-        size_t  n       =   0;
-        for (; !is_whitespace(sptr.str[n]); ++n);
+        size_t  n                   =   0;
+        for (; !is_whitespace(sptr.str[n]) && sptr.str[n] != '\0'; ++n);
         if (pseudo_hash_lu(sptr.str, n).tok != tok_const)   continue;
 
         // add const value
