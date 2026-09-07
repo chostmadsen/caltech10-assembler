@@ -14,7 +14,7 @@ constexpr   size_t      CONST_BUCKETS       =   8;                              
 
 /*-STRUCTS-/-ENUMS----------------------------------------------------------------------------------------------------*/
 
-typedef struct {
+typedef struct {                                                                // constant var stackmap head
             smap_head   head;
             int         val;
 } const_var;

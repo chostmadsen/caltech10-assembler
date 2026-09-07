@@ -22,7 +22,7 @@ constexpr   size_t      PSEUDO_MAX_STR      =   7;                              
 
 /*-PSEUDO-HASH-TABLE--------------------------------------------------------------------------------------------------*/
 
-const   hash_entry  pseudo_table[PSEUDO_TBL_S]  =   {                           // pseudo hash table
+static  const   hash_entry  pseudo_table[PSEUDO_TBL_S]  =   {                   // pseudo hash table
     [2]     =   { 0x6fd6d7b4540bf04a, "data",    4, { .tok=tok_data,  .grp=pseudo_segspec_t, .instr=0 } },
     [7]     =   { 0x2406a9cc2754cf2f, "code",    4, { .tok=tok_code,  .grp=pseudo_segspec_t, .instr=0 } },
     [1]     =   { 0x3be2a69d65cafeb1, "org",     3, { .tok=tok_org,   .grp=pseudo_pseudoa_t, .instr=0 } },
