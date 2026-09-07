@@ -9,9 +9,11 @@
 
 #include    "helpers/general.h"
 #include    "output/external.h"
+#include    "output/messages.h"
 #include    "datastructures/hash.h"
 #include    "datastructures/stack.h"
 #include    "datastructures/stackmap.h"
+#include    "common/kwrds.h"
 #include    "common/hash_tables/pseudo.h"
 #include    "reader/reader.h"
 #include    "segmenter/segment.h"
@@ -104,6 +106,16 @@ void print_const_map(const stackmap *const smap) {                              
         return  true;
     }
     smap_itm.val                =   (neg) ? -const_v : const_v;
+
+    // check trailing characters
+    for (; is_whitespace(*sptr->str); inc_strptr(sptr));
+    if (*sptr->str != CMMT_CHR && *sptr->str != '\0') {
+        err_f->col  =   sptr->col;
+        err_f->len  =   1;
+        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="trailing character(s)", .report_f=err_f },
+                    "trailing character(s) after a `.const` definition"                               );
+        return  true;
+    }
 
     // check collisions
     const   smap_clsn_t clsn_t  =   stackmap_add_lwr(smap, &smap_itm);
