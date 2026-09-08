@@ -48,7 +48,6 @@ gcd_stein:
     or      a_h
     jnz     a_nz
   ; jz      ret_b
-  ; TODO : nop?
 
     ret_b:      ldd     b_h                                         ; a is zero, return b
                 tax
@@ -60,7 +59,6 @@ gcd_stein:
                 or      b_l
                 jnz     set_k
               ; jz      ret_a
-              ; TODO : nop?
 
     ret_a:      ldd     b_h                                         ; a is zero, return b
                 tax
