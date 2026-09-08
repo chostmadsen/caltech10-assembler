@@ -10,19 +10,6 @@
 #include    "output/messages.h"
 #include    "segmenter/segment.h"
 
-/*-SEGMENTER-HELPERS--------------------------------------------------------------------------------------------------*/
-
-/**
- * Check if the given character is alphanumeric.
- *
- * @param       chr             character
- * @return                      if alphabetic
- */
-[[nodiscard]] static bool is_alphanum_(const char chr) {                        // alphanumeric character
-    return  ( ( 'A' <= chr && chr <= 'Z' ) || ( 'a' <= chr && chr <= 'z' ) ||
-              ( '0' <= chr && chr <= '9' ) || ( '_' == chr               )    );
-}
-
 /*-NUMBER-PARSER------------------------------------------------------------------------------------------------------*/
 
 /**
@@ -38,7 +25,7 @@
     // get numeric slice
     const   size_t  start   =   text->col;
     src_slice       slice   =   { .str=text->str, .len=0 };
-    for (; is_alphanum_(*text->str); inc_strptr(text), ++slice.len);
+    for (; is_alphanum(*text->str); inc_strptr(text), ++slice.len);
 
     // single number
     if (slice.len == 1)         return  (int)strtol(text->str, nullptr, 10);
@@ -82,7 +69,7 @@
     // parse number
     char    n_str[MAX_NUM_PARSE + 1]    =   { '\0' };
     size_t  s_idx                       =   0;
-    for (size_t i = 0; str[i] == NUM_SEP || is_alphanum_(str[i]); ++i) {
+    for (size_t i = 0; str[i] == NUM_SEP || is_alphanum(str[i]); ++i) {
         // skip number seperators
         if (str[i] != NUM_SEP)  n_str[s_idx++]  =   str[i];
         if (s_idx > MAX_NUM_PARSE) {
