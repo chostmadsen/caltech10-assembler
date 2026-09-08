@@ -70,8 +70,8 @@ static void arg_help_msg_(void) {                                               
         if (flg.type == flag_str_t) {
             // flag argument usage
             for (size_t j = 0; j < flg.str_num; ++j) {
-                printf( "%*s" CLR_BOLD CLR_DIM "%s\x1b[0m" CLR_DIM " : %s\x1b[0m\n",
-                        tabs - 3 - (int)strlen(flg.strs[j].arg), "", flg.strs[j].arg, flg.strs[j].desc );
+                printf( "%*s" CLR_BOLD CLR_DIM "%-*s\x1b[0m" CLR_DIM ": %s\x1b[0m\n",
+                        strt, "", tabs - strt - 2, flg.strs[j].arg, flg.strs[j].desc  );
             }
         }
     }
@@ -382,6 +382,6 @@ void reset_args(void) {                                                         
     }
 
     // get processor number
-    if (c_args.n_thrds == 0)    c_args.n_thrds  =   sysconf(_SC_NPROCESSORS_ONLN) / c_args.n_files;
+    if (c_args.n_thrds == 0)    c_args.n_thrds  =   sysconf(_SC_NPROCESSORS_ONLN);
     return  end_comp;
 }

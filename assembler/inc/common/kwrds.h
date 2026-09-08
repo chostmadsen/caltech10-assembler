@@ -13,6 +13,7 @@ constexpr   char        CMMT_CHR            =   ';';                            
 constexpr   char        NUM_SEP             =   '_';                            // number seperator
 constexpr   char        NEG_SYMB            =   '-';                            // negative value symbol
 constexpr   char        POS_SYMB            =   '+';                            // positive value symbol
+constexpr   char        HEADER_CHR          =   ':';                            // header end character
 
 /*-PSEUDO-OP-SPECIFIERS-----------------------------------------------------------------------------------------------*/
 /**

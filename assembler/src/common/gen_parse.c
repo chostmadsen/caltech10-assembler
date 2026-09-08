@@ -44,11 +44,15 @@
  * @return                      number
  */
 [[nodiscard]] int parse_num(strptr *const sptr, rprt_f *const err_f) {          // number parser
-    cit10a_asrt(('0' <= *sptr->str && *sptr->str <= '9') || *sptr->str == '$');
+    cit10a_asrt(('0' <= *sptr->str && *sptr->str <= '9') || *sptr->str == HEX_CHR_ALT);
 
     // get numeric slice
     const   size_t  start   =   sptr->col;
     src_slice       slice   =   { .str=sptr->str, .len=0 };
+    if (*sptr->str == HEX_CHR_ALT) {
+        inc_strptr(sptr);
+        ++slice.len;
+    }
     for (; is_alphanum(*sptr->str); inc_strptr(sptr), ++slice.len);
 
     // single number
@@ -60,7 +64,7 @@
 
     // get base
     int             base    =   10;
-    if (*slice.str == '$') {
+    if (*slice.str == HEX_CHR_ALT) {
         base    =   16;
         str     +=  1;
         offs    +=  1;
@@ -85,7 +89,7 @@
                 err_f->col  =   start + 1;
                 err_f->len  =   1;
                 cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid base specifier", .report_f=err_f },
-                            "base specifier must be one of '$', 'x', 'd', 'o', or 'b'"                         );
+                            "base specifier must be one of %c, 'x', 'd', 'o', or 'b'", HEX_CHR_ALT             );
                 return  -1;
         }
     }
@@ -138,7 +142,7 @@
     if (neg || pos)                 inc_strptr(sptr);
 
     // get value
-    if (!('0' <= *sptr->str && *sptr->str <= '9') && *sptr->str != '$') {
+    if (!('0' <= *sptr->str && *sptr->str <= '9') && *sptr->str != HEX_CHR_ALT) {
         err_f->col  =   sptr->col;
         err_f->len  =   1;
         cit10a_msg( &(msg_info){ .type=msg_err_t, .header="expected number", .report_f=err_f },

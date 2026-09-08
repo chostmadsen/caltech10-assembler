@@ -79,6 +79,5 @@ void cit10a_info(void) {                                                        
 void cit10a_startup(void) {                                                     // assembler start message
     fputs(CLR_DIM, stdout);
     cit10a_version();
-    fprintf( stdout, " | utilizing up to %d threads [ %d threads / %d file ]\x1b[0m\n",
-                      c_args.n_thrds * c_args.n_files, c_args.n_thrds, c_args.n_files );
+    fprintf(stdout, " | utilizing up to %d threads\x1b[0m\n", c_args.n_thrds);
 }

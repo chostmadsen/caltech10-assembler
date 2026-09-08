@@ -51,6 +51,7 @@ struct wrn_t_ {                                                                 
 
 struct emit_t_ {                                                                // emit options
     bool                file;
+    bool                table;
     bool                aasm;
 };
 
@@ -61,7 +62,7 @@ typedef struct {                                                                
     struct  emit_t_     emit;
             int         max_errs;
             int         n_thrds;
-            int         n_files;
+            bool        case_sens;
 
     // exit on set flags
             bool        help;
@@ -95,6 +96,8 @@ static  const   flag_itm        warnings_f  =   { .flag='W',            .desc="c
 
 static  const   struct  str_f_t emit_itm_[] =   { { .arg="file",        .desc="emit read file",
                                                     .offset=offsetof(struct emit_t_, file)                          },
+                                                  { .arg="table",       .desc="emit generated lookup tables",
+                                                    .offset=offsetof(struct emit_t_, table)                         },
                                                   { .arg="asm",         .desc="emit asm",
                                                     .offset=offsetof(struct emit_t_, aasm)                          } };
 static  const   flag_itm        emit_f      =   { .flag='E',            .desc="compilation stage emitter toggle",
@@ -108,14 +111,12 @@ static  const   flag_itm        max_errs_f  =   { .flag='e',            .desc="m
                                                   .min=1,               .max=0x7fff,
                                                   .dflt=20                                                            };
 
-static  const   flag_itm        n_files_f   =   { .flag='T',            .desc="number of files concurrently assembled",
-                                                  .type=flag_val_t,     .offset=offsetof(assemble_args, n_files),
-                                                  .exit=false,          .arg_itm="number",
-                                                  .min=1,               .max=0x7fff,
-                                                  .dflt=1                                                             };
+static  const   flag_itm        case_sens_f =   { .flag='C',            .desc="case-sensitive identifiers",
+                                                  .type=flag_bool_t,    .offset=offsetof(assemble_args, case_sens),
+                                                  .exit=false,          .arg_itm=nullptr                              };
 
-static  const   flag_itm        n_thrds_f   =   { .flag='t',            .desc="number of threads per file "
-                                                                              "(0 to split processors across files)",
+static  const   flag_itm        n_thrds_f   =   { .flag='t',            .desc="maximum number of threads deployed "
+                                                                              "(0 to use processor count)",
                                                   .type=flag_val_t,     .offset=offsetof(assemble_args, n_thrds),
                                                   .exit=false,          .arg_itm="number",
                                                   .min=0,               .max=0x7fff,
@@ -125,7 +126,7 @@ static  const   flag_itm        help_f      =   { .flag='h',            .desc="p
                                                   .type=flag_bool_t,    .offset=offsetof(assemble_args, help),
                                                   .exit=true,           .arg_itm=nullptr                              };
 
-static  const   flag_itm        version_f   =   { .flag='V',            .desc="print assembler version and built type",
+static  const   flag_itm        version_f   =   { .flag='V',            .desc="print assembler version and build type",
                                                   .type=flag_bool_t,    .offset=offsetof(assemble_args, version),
                                                   .exit=true,           .arg_itm=nullptr                              };
 
@@ -134,8 +135,8 @@ static  const   flag_itm        output_f    =   { .flag='o',            .desc="c
                                                   .exit=false,          .arg_itm="output"                             };
 
 // flag item arrays
-static  const   flag_itm    *const  a_flg[] =   { &verbosity_f, &warnings_f,    &emit_f,    &max_errs_f,  &n_files_f,
-                                                  &n_thrds_f,   &help_f,        &version_f, &output_f                 };
+static  const   flag_itm    *const  a_flg[] =   { &verbosity_f, &warnings_f,    &emit_f,    &max_errs_f,
+                                                  &case_sens_f, &n_thrds_f,     &help_f,    &version_f,     &output_f };
 
 /*-GLOBAL-ASSEMBLE-ARGS-STRUCT----------------------------------------------------------------------------------------*/
 

@@ -35,7 +35,7 @@ int main(const int argc, const char *const *const argv) {                       
     // read source file
     src_f       source_f        =   read_source(c_args.target);
     // source file output
-    if (c_args.verbosity >= 3)                          print_src_f_info(&source_f);
+    if (c_args.verbosity >= 2)                          print_src_f_info(&source_f);
     if (c_args.verbosity >= 4 || c_args.emit.file)      print_src_f(&source_f);
 
     // TODO : preprocessor

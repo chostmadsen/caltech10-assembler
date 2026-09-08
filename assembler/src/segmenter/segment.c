@@ -10,6 +10,7 @@
 #include    "helpers/general.h"
 #include    "output/errors.h"
 #include    "output/messages.h"
+#include    "argparse/argparse.h"
 #include    "datastructures/hash.h"
 #include    "datastructures/stackmap.h"
 #include    "common/gen_parse.h"
@@ -55,7 +56,7 @@
     while (is_whitespace(*sptr->str))   inc_strptr(sptr);
 
     // try to parse number
-    if (('0' <= *sptr->str && *sptr->str <= '9') || *sptr->str == '$') {
+    if (('0' <= *sptr->str && *sptr->str <= '9') || *sptr->str == HEX_CHR_ALT) {
         const   int     ret         =   parse_num(sptr, err_f);
         if (ret == -1)                  return  ret;
 
@@ -104,22 +105,23 @@
     const   size_t              col     =   redef->col + 1;
     const   size_t              col_e   =   redef->col + redef->head.key.len;
 
-    if (clsn_t == smap_lwr_clsn_t) {
+    if (clsn_t == smap_lwr_clsn_t && !c_args.case_sens) {
         // get old def
         char                    key[head->head.key.len + 1];
         memcpy(key, redef->head.key.str, head->head.key.len);
         key[head->head.key.len]         =   '\0';
 
         // case collision
-        cit10a_msg( &(msg_info){ .type=msg_warn_t, .header="case-variant redefinition", .report_f=err_f },
-                    "case-variant redefinition of identifier [ %s @ %d::%d-%d ]", key, ln, col, col_e      );
-        return  false;
-    }
-
-    // full collision
-    cit10a_msg( &(msg_info){ .type=msg_err_t, .header="redefinition", .report_f=err_f },
+        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="case-variant redefinition", .report_f=err_f },
+                    "case-variant redefinition of identifier [ %s @ %d::%d-%d ]", key, ln, col, col_e     );
+        return  true;
+    } else if (clsn_t == smap_full_clsn_t){
+        // full collision
+        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="redefinition", .report_f=err_f },
                 "redefinition of identifier [ @ %d::%d-%d ]", ln, col, col_e             );
-    return  true;
+        return  true;
+    }
+    return  false;
 }
 
 /*-VARIABLE-TOKEN-PRINTER---------------------------------------------------------------------------------------------*/
