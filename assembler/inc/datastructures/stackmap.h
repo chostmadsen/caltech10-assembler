@@ -41,10 +41,17 @@ typedef enum {                                                                  
 [[nodiscard]] void *stackmap_get_h( const stackmap   *smap,
                                     const src_slice *key,
                                           uint64_t   hash  );                   // stackmap item get (hash)
+[[nodiscard]] void *stackmap_get_h_lwr( const stackmap  *smap,
+                                        const src_slice *key,
+                                              uint64_t   hash  );               // stackmap item get lower (hash)
 [[nodiscard]] void *stackmap_get_k(const stackmap *smap, const src_slice *key); // stackmap item get (key)
 [[nodiscard]] void *stackmap_get_k_lwr( const stackmap *smap, 
                                         const src_slice *key  );                // stackmap item get (key, lower)
+[[nodiscard]] void *stackmap_get_k_lwr_lwr( const stackmap  *smap,
+                                            const src_slice *key   );           // stackmap item get lower (key, lower)
 
 void free_stackmap(stackmap *smap);                                             // free stackmap
 
-
+void print_stackmap( const stackmap                         *smap,
+                     const char                             *name,
+                           void     (*prnt_fn)(const void*)        );           // stackmap printer

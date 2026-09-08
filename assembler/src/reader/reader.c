@@ -9,6 +9,7 @@
 #include    <errno.h>
 
 #include    "helpers/mem.h"
+#include    "helpers/general.h"
 #include    "output/messages.h"
 #include    "output/errors.h"
 #include    "reader/reader.h"
@@ -150,4 +151,44 @@ void free_src_f(src_f *source_f) {                                              
     source_f->ln_num    =   0;
     source_f->size      =   0;
 #endif  /* NDEBUG */
+}
+
+/*-SOURCE-FILE-STRINGPOINTER-NEW-LINE---------------------------------------------------------------------------------*/
+
+/**
+ * Adjusts a string pointer one line forward from the source file.
+ *
+ * @param       sptr            string pointer
+ * @param       source          source file
+ * @return                      whether an error occurred
+ */
+[[nodiscard]] bool newln_strptr(       strptr *const sptr, 
+                                 const src_f  *const source ) {                 // strptr newline
+    // verify overflow
+    if (sptr->ln + 1 >= source->ln_num)     return  true;
+
+    // get new line
+    ++sptr->ln;
+    sptr->col   =   0;
+    sptr->str   =   src_f_getline(source, sptr->ln);
+    return  false;
+}
+
+/**
+ * Sets a string pointer to the specified line (must be in-bounds).
+ *
+ * @param       sptr            string pointer
+ * @param       source          source file
+ * @param       ln              line
+ * @return                      whether an error occurred
+ */
+void setln_strptr(       strptr *const sptr,
+                   const src_f  *const source, 
+                   const size_t        ln      ) {                              // strptr set line
+    cit10a_asrt(ln < source->ln_num);
+
+    // get new line
+    sptr->ln    =   ln;
+    sptr->col   =   0;
+    sptr->str   =   src_f_getline(source, ln);
 }

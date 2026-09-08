@@ -44,7 +44,9 @@ int main(const int argc, const char *const *const argv) {                       
     bool        seg_err         =   false;
     stackmap    const_smap      =   constseg(&source_f, &seg_err);
     print_const_map(&const_smap);
+    seg_err                     =   false;
     stackmap    data_smap       =   dataseg(&source_f, &seg_err);
+    print_data_map(&data_smap);
 
     // assembly
 

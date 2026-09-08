@@ -1,0 +1,169 @@
+/*
+ * src/common/gen_parse.c
+ * General parser items.
+ */
+
+#include    "helpers/general.h"
+#include    "output/errors.h"
+#include    "output/messages.h"
+#include    "common/kwrds.h"
+#include    "common/gen_parse.h"
+
+/*-LINE-VERIFIERS-----------------------------------------------------------------------------------------------------*/
+
+/**
+ * At the string pointer, verify the line ends normally.
+ *
+ * @param       sptr            string pointer
+ * @param       err_f           error report file
+ * @return                      whether the line ends abnormally
+ */
+[[nodiscard]] bool check_ln_end(strptr *const sptr, rprt_f *const err_f) {      // line end checker
+    cit10a_asrt(sptr != nullptr && sptr->str != nullptr);
+    cit10a_asrt(err_f != nullptr);
+
+    for (; is_whitespace(*sptr->str); inc_strptr(sptr));
+    if (*sptr->str != CMMT_CHR && *sptr->str != '\0') {
+        err_f->ln   =   sptr->ln;
+        err_f->col  =   sptr->col;
+        err_f->len  =   1;
+        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="trailing character", .report_f=err_f },
+                    "unexpected trailing character"                                                );
+        return  true;
+    }
+    return  false;
+}
+
+/*-NUMBER-PARSERS-----------------------------------------------------------------------------------------------------*/
+
+/**
+ * Find a number (positive representation), and store the representation and value.
+ *
+ * @param       sptr            sptr
+ * @param       err_f           error report file
+ * @return                      number
+ */
+[[nodiscard]] int parse_num(strptr *const sptr, rprt_f *const err_f) {          // number parser
+    cit10a_asrt(('0' <= *sptr->str && *sptr->str <= '9') || *sptr->str == '$');
+
+    // get numeric slice
+    const   size_t  start   =   sptr->col;
+    src_slice       slice   =   { .str=sptr->str, .len=0 };
+    for (; is_alphanum(*sptr->str); inc_strptr(sptr), ++slice.len);
+
+    // single number
+    if (slice.len == 1)         return  (int)strtol(sptr->str, nullptr, 10);
+
+    // get parse start
+    const   char   *str     =   slice.str;
+    size_t          offs    =   0;
+
+    // get base
+    int             base    =   10;
+    if (*slice.str == '$') {
+        base    =   16;
+        str     +=  1;
+        offs    +=  1;
+    } else if (*slice.str == '0' && !('0' <= slice.str[1] && slice.str[1] <= '9') && slice.str[1] != NUM_SEP) {
+        str         +=  2;
+        offs        +=  2;
+        switch (to_lwr_chr(slice.str[1])) {
+            case 'x':
+                base        =   16;
+                break;
+            case 'd':
+                // default
+                break;
+            case 'o':
+                base        =   8;
+                break;
+            case 'b':
+                base        =   2;
+                break;
+            default:
+                err_f->ln   =   sptr->ln;
+                err_f->col  =   start + 1;
+                err_f->len  =   1;
+                cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid base specifier", .report_f=err_f },
+                            "base specifier must be one of '$', 'x', 'd', 'o', or 'b'"                         );
+                return  -1;
+        }
+    }
+
+    // parse number
+    char    n_str[MAX_NUM_PARSE + 1]    =   { '\0' };
+    size_t  s_idx                       =   0;
+    for (size_t i = 0; str[i] == NUM_SEP || is_alphanum(str[i]); ++i) {
+        // skip number seperators
+        if (str[i] != NUM_SEP)  n_str[s_idx++]  =   str[i];
+        if (s_idx > MAX_NUM_PARSE) {
+            err_f->ln   =   sptr->ln;
+            err_f->col  =   start + offs;
+            err_f->len  =   i;
+            cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid number", .report_f=err_f },
+                        "number too large to parse (maximally %d-bit)", MAX_NUM_PARSE              );
+            return  -1;
+        }
+    }
+
+    // convert number
+    char   *end_chr;
+    int     ret             =   (int)strtol(n_str, &end_chr, base);
+    if (*end_chr != '\0') {
+        // conversion fail
+        err_f->ln   =   sptr->ln;
+        err_f->col  =   start;
+        err_f->len  =   sptr->col - start;
+        cit10a_msg(&(msg_info){ .type=msg_err_t, .header="number parse error", .report_f=err_f}, "invalid number");
+        ret         =   -1;
+    }
+    return  ret;
+}
+
+/**
+ * Find a number's value, storing it as a two's compliment representation.
+ *
+ * @param       sptr            sptr
+ * @param       err_f           error report file
+ * @return                      number
+ */
+[[nodiscard]] int parse_num_repr(strptr *const sptr, rprt_f *const err_f) {     // number parser (negative repr)
+    cit10a_asrt(sptr != nullptr && sptr->str != nullptr);
+    cit10a_asrt(err_f != nullptr);
+
+    // check negative
+    for (; is_whitespace(*sptr->str); inc_strptr(sptr));
+    const   bool    neg         =   *sptr->str == NEG_SYMB;
+    const   bool    pos         =   *sptr->str == POS_SYMB;
+    if (neg || pos)                 inc_strptr(sptr);
+
+    // get value
+    if (!('0' <= *sptr->str && *sptr->str <= '9') && *sptr->str != '$') {
+        err_f->col  =   sptr->col;
+        err_f->len  =   1;
+        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="expected number", .report_f=err_f },
+                    "invalid number start"                                                      );
+        return  -1;
+    }
+
+    // parse number
+    const   int p_strt      =   sptr->col;
+    const   int const_v     =   parse_num(sptr, err_f);
+    if (const_v == -1)          return  -1;
+
+    int         max_num     =   MAX_NUM;
+    if (neg)    max_num     =   MAX_NUM_NEG;
+    if (pos)    max_num     =   MAX_NUM_POS;
+
+    if (const_v > max_num) {
+        err_f->col                  =   p_strt;
+        err_f->len                  =   sptr->col - p_strt;
+        const   char   *range_err   =   "";
+        if (neg)        range_err   =   "negative ";
+        if (pos)        range_err   =   "positive ";
+        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="number overflow", .report_f=err_f },
+                    "maximum %snumber range excession", range_err                               );
+        return  -1;
+    }
+    return  (neg) ? (const_v ^ MAX_NUM) + 1 : const_v;
+}

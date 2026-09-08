@@ -45,6 +45,8 @@ typedef struct {                                                                
 struct wrn_t_ {                                                                 // warning options
     bool                off;
     bool                err;
+    bool                noverc;
+    bool                noverd;
 };
 
 struct emit_t_ {                                                                // emit options
@@ -81,7 +83,11 @@ static  const   flag_itm        verbosity_f =   { .flag='v',            .desc="v
 static  const   struct  str_f_t wrn_itm_[]  =   { { .arg="off",         .desc="warnings off",
                                                     .offset=offsetof(struct wrn_t_, off)                            },
                                                   { .arg="error",       .desc="warnings as errors",
-                                                    .offset=offsetof(struct wrn_t_, err)                            } };
+                                                    .offset=offsetof(struct wrn_t_, err)                            },
+                                                  { .arg="novercode",   .desc="suppress overlap warnings in .code",
+                                                    .offset=offsetof(struct wrn_t_, noverc)                         },
+                                                  { .arg="noverdata",   .desc="suppress overlap warnings in .data",
+                                                    .offset=offsetof(struct wrn_t_, noverd)                         } };
 static  const   flag_itm        warnings_f  =   { .flag='W',            .desc="compilation warning message level",
                                                   .type=flag_str_t,     .offset=offsetof(assemble_args, warnings), 
                                                   .exit=false,          .arg_itm="level",

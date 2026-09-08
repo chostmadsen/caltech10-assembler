@@ -7,18 +7,23 @@
 
 #include    "helpers/general.h"
 #include    "output/messages.h"
+#include    "datastructures/stackmap.h"
 
-/*-CONSTANTS----------------------------------------------------------------------------------------------------------*/
+/*-VAR-TOKEN----------------------------------------------------------------------------------------------------------*/
 
-constexpr   char        PSEUDOOP_CHR        =   '.';                            // pseudo-op start character
-constexpr   char        NUM_SEP             =   '_';                            // number seperator
-constexpr   char        NEG_SYMB            =   '-';                            // negative value symbol
-
-constexpr   unsigned    MAX_NUM_PARSE       =   8;                              // maximum number parse (8-bit max)
-constexpr   unsigned    MAX_NUM             =   (1 << MAX_NUM_PARSE) - 1;       // maximum number
-constexpr   unsigned    MAX_NUM_NEG         =   1 << (MAX_NUM_PARSE - 1);       // maximum negative number
+typedef struct {                                                                // var token stackmap head
+            smap_head   head;
+            size_t      ln,     col;
+} var_tok;
 
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
 
-[[nodiscard]] int parse_num(rprt_f *err_f, strptr *text);                       // number parser
-[[nodiscard]] int org_parse(rprt_f *err_f, strptr *text);                       // .org parser
+[[nodiscard]] smap_head get_identifier(strptr *sptr, rprt_f *err_f);            // identifier getter
+
+[[nodiscard]] int parse_org(strptr *sptr, rprt_f *err_f);                       // .org parser
+
+[[nodiscard]] bool identifier_verify(       stackmap *smap,
+                                      const void     *smap_itm, 
+                                            rprt_f   *err_f     );              // identifier verification
+
+void print_var_tok(const var_tok *var);                                         // var_tok printer

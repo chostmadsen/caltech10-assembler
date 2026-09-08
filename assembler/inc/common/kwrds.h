@@ -10,11 +10,15 @@
 /*-GENERAL-ITEMS------------------------------------------------------------------------------------------------------*/
 
 constexpr   char        CMMT_CHR            =   ';';                            // comment character
+constexpr   char        NUM_SEP             =   '_';                            // number seperator
+constexpr   char        NEG_SYMB            =   '-';                            // negative value symbol
+constexpr   char        POS_SYMB            =   '+';                            // positive value symbol
 
 /*-PSEUDO-OP-SPECIFIERS-----------------------------------------------------------------------------------------------*/
 /**
  * NOTE : These aren't actually specified in any spec, I just made them up. If you want to change the actual string
  *        keywords for these, you can just change them here and the code will still work, after rehashing.
+ *        (new identifiers must be alphanumeric)
  */
 
 constexpr   char        PSEUDO_STRT         =   '.';                            // psuedo-op start
@@ -70,9 +74,9 @@ static  const   hash_itm    pseudo_itms_[]  =   {                               
  *        initialization a lot here. If anyone actually knows how dw works, or if initiazation is real, let me know.
  */
 
-constexpr   char        STORAGE_INIT        =   '?';                            // only storage init
 constexpr   char        STORAGE_IND         =   'd';                            // 'd' for data (6502 derived i think)
 constexpr   char        STORAGE_BYTE        =   'b';                            // only byte data storage
+constexpr   char        STORAGE_INIT        =   '?';                            // only storage init
 
 /*-ALU-OPCODES--------------------------------------------------------------------------------------------------------*/
 
@@ -224,7 +228,7 @@ constexpr   char        STORAGE_BYTE        =   'b';                            
 /*-CONGLOMERATED-OPCODES----------------------------------------------------------------------------------------------*/
 /**
  * NOTE : Derive addressing modes (if they apply) from the groups.
- *        It is faster to do lookup all at once, so this group is conglomerated.
+ *        A singular table provides O(1) lokup, so all opcodes are conglomerated here.
  */
 
 #define OPCODE_T    ALU_T   FLAG_T  IND_REG_T   LDST_T  JMP_T   SUBROUT_ST_T    IO_T    MISC_T

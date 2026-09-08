@@ -8,6 +8,7 @@
 #include    <stdint.h>
 
 #include    "output/external.h"
+#include "reader/reader.h"
 #include    "helpers/general.h"
 
 /*-STRING-HELPERS-----------------------------------------------------------------------------------------------------*/

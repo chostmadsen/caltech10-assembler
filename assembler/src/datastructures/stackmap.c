@@ -5,11 +5,13 @@
 
 #include    <stddef.h>
 #include    <stdint.h>
+#include    <stdio.h>
 #include    <string.h>
 #include    <limits.h>
 
 #include    "helpers/general.h"
 #include    "helpers/mem.h"
+#include    "output/external.h"
 #include    "output/errors.h"
 #include    "datastructures/hash.h"
 #include    "datastructures/stack.h"
@@ -180,6 +182,33 @@ static void smap_realloc_buckets_(stackmap *const smap) {                       
 
 /**
  * Gets the value at the key in the stackmap. Returns nullptr if no key could be found. Check the pointer for nullptr
+ * for the stackmap equivalent of `hashmap_has`. Additionally, finds case variants (first one only).
+ * Uses provided hash, rather than computing it.
+ *
+ * @param       smap            stackmap
+ * @param       key             search key
+ * @param       hash            hashed key
+ * @return                      stackmap data void*
+ */
+[[nodiscard]] void *stackmap_get_h_lwr( const stackmap  *const smap,
+                                        const src_slice *const key,
+                                        const uint64_t         hash  ) {        // stackmap item get lower (hash)
+    cit10a_asrt(smap != nullptr && key != nullptr);
+
+    // map insert index
+    const   size_t  buck_n  =   hash & (smap->buckets - 1);
+    stack   *const  st      =   smap->heads + buck_n;
+
+    // get stackmap data
+    for (int i = 0; i < st->len; ++i) {
+        const   smap_head   *const  s_hd                        =   (smap_head*)peek_stack(st, i);
+        if (s_hd->hash == hash && srcslc_eq_lwr(&s_hd->key, key))   return  peek_stack(st, i);
+    }
+    return  nullptr;
+}
+
+/**
+ * Gets the value at the key in the stackmap. Returns nullptr if no key could be found. Check the pointer for nullptr
  * for the stackmap equivalent of `hashmap_has`.
  *
  * @param       smap            stackmap
@@ -204,12 +233,25 @@ static void smap_realloc_buckets_(stackmap *const smap) {                       
     return  stackmap_get_h(smap, key, hash_fnv1a_slc_lwr(key));
 }
 
+/**
+ * Gets the value at the key in the stackmap. Returns nullptr if no key could be found. Check the pointer for nullptr
+ * for the stackmap equivalent of `hashmap_has`. Lowercase variant. Additionally, finds case variants (first one only).
+ *
+ * @param       smap            stackmap
+ * @param       key             search key
+ * @return                      stackmap data void*
+ */
+[[nodiscard]] void *stackmap_get_k_lwr_lwr( const stackmap  *const smap,
+                                            const src_slice *const key   ) {    // stackmap item get lower (key, lower)
+    return  stackmap_get_h_lwr(smap, key, hash_fnv1a_slc_lwr(key));
+}
+
 /*-STACKMAP-FREE-FUNCTIONS--------------------------------------------------------------------------------------------*/
 
 /**
  * Frees stackmap and associated data.
  *
- * @param       smap        stackmap
+ * @param       smap            stackmap
  */
 void free_stackmap(stackmap *const smap) {                                      // free stackmap
     cit10a_asrt(smap != nullptr);
@@ -224,4 +266,54 @@ void free_stackmap(stackmap *const smap) {                                      
     smap->elements  =   0;
     smap->elm_s     =   0;
 #endif  /* NDEBUG */
+}
+
+/*-STACKMAP-PRINTER-FUNCTIONS-----------------------------------------------------------------------------------------*/
+
+/**
+ * Stackmap printer.
+ *
+ * @param       smap            stackmap
+ * @param       name            stackmap name
+ * @param       prnt_fn         stackmap data printer
+ */
+void print_stackmap( const stackmap *const                        smap,
+                     const char     *const                        name,
+                           void     (*const prnt_fn)(const void*)       ) {     // stackmap printer
+    cit10a_asrt(smap != nullptr);
+    cit10a_asrt(prnt_fn != nullptr);
+
+    // info
+    printf(DEBUG_DELIM CLR_DIM " [[ %s %zuitm(s)::%zubckts ]]\x1b[0m\n", name, smap->elements, smap->buckets);
+
+    // alignment get
+    const   int     prnt_pad    =   snprintf(nullptr, 0, "%x", (int)smap->buckets - 1);
+
+    // stackmap print
+    bool            empty_prnt  =   false;
+    for (size_t i = 0; i < smap->buckets; ++i) {
+        const   stack   *const  head_st =   smap->heads + i;
+        if (head_st->len == 0) {
+            // empty concat
+            if (empty_prnt)     continue;
+            printf("    [ 0x%0*x::", prnt_pad, (int)i);
+            empty_prnt  =   true;
+            continue;
+        }
+
+        if (empty_prnt) {
+            printf("0x%0*x ] - " NULL_CHR "\n", prnt_pad, (int)i - 1);
+            empty_prnt  =   false;
+        }
+        // with the load factor, there always will be empty buckets, so padding is always correct
+        printf("    [ 0x%0*x%*s ] - ", prnt_pad, (int)i, prnt_pad + (int)sizeof("::0x") - 1, "");
+        for (int j = 0; j < head_st->len; ++j) {
+            // item print function
+            prnt_fn(peek_stack(head_st, j));
+            if (j != head_st->len - 1)      printf(", ");
+        }
+        fputc('\n', stdout);
+    }
+    if (empty_prnt)     printf("0x%0*x ] - " NULL_CHR "\n", prnt_pad, (int)smap->buckets - 1);
+    fputs(DEBUG_DELIM "\n", stdout);
 }

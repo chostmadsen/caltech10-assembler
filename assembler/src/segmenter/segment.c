@@ -4,96 +4,41 @@
  */
 
 #include    <stddef.h>
+#include    <string.h>
+#include    <inttypes.h>
 
 #include    "helpers/general.h"
 #include    "output/errors.h"
 #include    "output/messages.h"
+#include    "datastructures/hash.h"
+#include    "datastructures/stackmap.h"
+#include    "common/gen_parse.h"
 #include    "segmenter/segment.h"
 
-/*-NUMBER-PARSER------------------------------------------------------------------------------------------------------*/
+/*-PARSER-HELPERS-----------------------------------------------------------------------------------------------------*/
 
 /**
- * Find a number (positive representation), and store the representation and value.
+ * Gets the alphanumeric identifier (first character must be alphanumeric). Consumes it with the given strptr.
  *
+ * @param       sptr            string pointer
  * @param       err_f           error report file
- * @param       text            text
- * @return                      number
+ * @return                      stackmap head item
  */
-[[nodiscard]] int parse_num(rprt_f *const err_f, strptr *const text) {          // number parser
-    cit10a_asrt(('0' <= *text->str && *text->str <= '9') || *text->str == '$');
-
-    // get numeric slice
-    const   size_t  start   =   text->col;
-    src_slice       slice   =   { .str=text->str, .len=0 };
-    for (; is_alphanum(*text->str); inc_strptr(text), ++slice.len);
-
-    // single number
-    if (slice.len == 1)         return  (int)strtol(text->str, nullptr, 10);
-
-    // get parse start
-    const   char   *str     =   slice.str;
-    size_t          offs    =   0;
-
-    // get base
-    int             base    =   10;
-    if (*slice.str == '$') {
-        base    =   16;
-        str     +=  1;
-        offs    +=  1;
-    } else if (*slice.str == '0' && !('0' <= slice.str[1] && slice.str[1] <= '9') && slice.str[1] != NUM_SEP) {
-        str         +=  2;
-        offs        +=  2;
-        switch (to_lwr_chr(slice.str[1])) {
-            case 'x':
-                base        =   16;
-                break;
-            case 'd':
-                // default
-                break;
-            case 'o':
-                base        =   8;
-                break;
-            case 'b':
-                base        =   2;
-                break;
-            default:
-                err_f->ln   =   text->ln;
-                err_f->col  =   start + 1;
-                err_f->len  =   1;
-                cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid base specifier", .report_f=err_f },
-                            "base specifier must be one of '$', 'x', 'd', 'o', or 'b'"                         );
-                return  -1;
-        }
+[[nodiscard]] smap_head get_identifier( strptr *const sptr,
+                                        rprt_f *const err_f ) {                 // identifier getter
+    src_slice           slc         =   { .str=sptr->str, .len=0 };
+    if (!is_alpha(*sptr->str)) {
+        // invalid identifier
+        err_f->col  =   sptr->col;
+        err_f->len  =   1;
+        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid identifier", .report_f=err_f },
+                    "invalid identifier"                                                           );
+        return  (smap_head){ .hash=0, .key.str=nullptr, .key.len=0 };
     }
 
-    // parse number
-    char    n_str[MAX_NUM_PARSE + 1]    =   { '\0' };
-    size_t  s_idx                       =   0;
-    for (size_t i = 0; str[i] == NUM_SEP || is_alphanum(str[i]); ++i) {
-        // skip number seperators
-        if (str[i] != NUM_SEP)  n_str[s_idx++]  =   str[i];
-        if (s_idx > MAX_NUM_PARSE) {
-            err_f->ln   =   text->ln;
-            err_f->col  =   start + offs;
-            err_f->len  =   i;
-            cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid number", .report_f=err_f },
-                        "number too large to parse (maximally %d-bit)", MAX_NUM_PARSE              );
-            return  -1;
-        }
-    }
-
-    // convert number
-    char   *end_chr;
-    int     ret             =   (int)strtol(n_str, &end_chr, base);
-    if (*end_chr != '\0') {
-        // conversion fail
-        err_f->ln   =   text->ln;
-        err_f->col  =   start;
-        err_f->len  =   text->col - start;
-        cit10a_msg(&(msg_info){ .type=msg_err_t, .header="number parse error", .report_f=err_f}, "invalid number");
-        ret         =   -1;
-    }
-    return  ret;
+    // get and return identifier
+    for (; is_alphanum(*sptr->str); inc_strptr(sptr), ++slc.len);
+    return  (smap_head){ .hash=hash_fnv1a_slc_lwr(&slc), .key=slc };
 }
 
 /*-.ORG-PARSER--------------------------------------------------------------------------------------------------------*/
@@ -101,20 +46,93 @@
 /**
  * Try to return item after a .org specification.
  *
+ * @param       sptr            sptr
  * @param       err_f           error report file
- * @param       text            text
  * @return                      number
  */
-[[nodiscard]] int org_parse(rprt_f *const err_f, strptr *const text) {          // .org parser
-    // find context
-    while (is_whitespace(*text->str))   inc_strptr(text);
+[[nodiscard]] int parse_org(strptr *const sptr, rprt_f *const err_f) {          // .org parser
+    // find consptr
+    while (is_whitespace(*sptr->str))   inc_strptr(sptr);
 
     // try to parse number
-    if (('0' <= *text->str && *text->str <= '9') || *text->str == '$')      return  parse_num(err_f, text);
-    err_f->ln   =   text->ln;
-    err_f->col  =   text->col;
+    if (('0' <= *sptr->str && *sptr->str <= '9') || *sptr->str == '$') {
+        const   int     ret         =   parse_num(sptr, err_f);
+        if (ret == -1)                  return  ret;
+
+        // verify trailing items
+        if (check_ln_end(sptr, err_f))  return  -1;
+        return  ret;
+    }
+
+    // no number
+    err_f->ln   =   sptr->ln;
+    err_f->col  =   sptr->col;
     err_f->len  =   1;
     cit10a_msg( &(msg_info){ .type=msg_err_t, .header="expected number", .report_f=err_f},
                 "expected a number after `.org`"                                           );
     return  -1;
+}
+
+/*-STACKMAP-REPEAT-OUTPUT-VERIFIER------------------------------------------------------------------------------------*/
+
+/**
+ * Verify identifier pushed to stackmap. `smap_itm` must have the header `var_tok` to have proper error diagnostics.
+ *
+ * @param       smap            stackmap to push to
+ * @param       smap_itm        stackmap item
+ * @param       err_f           error report file
+ * @return                      whether a critical error occurred pushing an identifier
+ */
+[[nodiscard]] bool identifier_verify(       stackmap *const smap,
+                                      const void     *const smap_itm, 
+                                            rprt_f   *const err_f     ) {       // identifier verification
+    // check collisions
+    const   smap_clsn_t         clsn_t  =   stackmap_add_lwr(smap, smap_itm);
+    const   var_tok     *const  head    =   (var_tok*)smap_itm;
+    if (clsn_t == smap_no_clsn_t)           return  false;
+
+    // set locations
+    err_f->col  =   head->col;
+    err_f->len  =   head->head.key.len;
+
+    // get redefintion
+    const   var_tok     *const  redef   =   (clsn_t == smap_lwr_clsn_t) ? 
+                                            stackmap_get_h_lwr(smap, &head->head.key, head->head.hash) :
+                                            stackmap_get_h(smap, &head->head.key, head->head.hash);
+    cit10a_asrt(redef != nullptr);
+    const   size_t              ln      =   redef->ln;
+    const   size_t              col     =   redef->col + 1;
+    const   size_t              col_e   =   redef->col + redef->head.key.len;
+
+    if (clsn_t == smap_lwr_clsn_t) {
+        // get old def
+        char                    key[head->head.key.len + 1];
+        memcpy(key, redef->head.key.str, head->head.key.len);
+        key[head->head.key.len]         =   '\0';
+
+        // case collision
+        cit10a_msg( &(msg_info){ .type=msg_warn_t, .header="case-variant redefinition", .report_f=err_f },
+                    "case-variant redefinition of identifier [ %s @ %d::%d-%d ]", key, ln, col, col_e      );
+        return  false;
+    }
+
+    // full collision
+    cit10a_msg( &(msg_info){ .type=msg_err_t, .header="redefinition", .report_f=err_f },
+                "redefinition of identifier [ @ %d::%d-%d ]", ln, col, col_e             );
+    return  true;
+}
+
+/*-VARIABLE-TOKEN-PRINTER---------------------------------------------------------------------------------------------*/
+
+/**
+ * Prints the var_tok header.
+ *
+ * @param       var             variable token header
+ */
+void print_var_tok(const var_tok *const var) {                                  // var_tok printer
+    cit10a_asrt(var != nullptr);
+
+    printf("0x%016" PRIx64 " : ", var->head.hash);
+    print_src_slice(&var->head.key, stdout);
+    printf("[%zu::%zu]", var->ln, var->col);
 }
