@@ -68,14 +68,14 @@ typedef struct {                                                                
             bool        help;
             bool        version;
 
-    // compilation target
+    // assembler target
     const   char       *output;
     const   char       *target;
 } assemble_args;
 
 /*-FLAG-ITEMS---------------------------------------------------------------------------------------------------------*/
 
-static  const   flag_itm        verbosity_f =   { .flag='v',            .desc="verbosity of compilation",
+static  const   flag_itm        verbosity_f =   { .flag='v',            .desc="verbosity of assembly",
                                                   .type=flag_val_t,     .offset=offsetof(assemble_args, verbosity),
                                                   .exit=false,          .arg_itm="verbosity",
                                                   .min=0,               .max=4,
@@ -89,7 +89,7 @@ static  const   struct  str_f_t wrn_itm_[]  =   { { .arg="off",         .desc="w
                                                     .offset=offsetof(struct wrn_t_, noverc)                         },
                                                   { .arg="noverdata",   .desc="suppress overlap warnings in .data",
                                                     .offset=offsetof(struct wrn_t_, noverd)                         } };
-static  const   flag_itm        warnings_f  =   { .flag='W',            .desc="compilation warning message level",
+static  const   flag_itm        warnings_f  =   { .flag='W',            .desc="assembly warning message level",
                                                   .type=flag_str_t,     .offset=offsetof(assemble_args, warnings), 
                                                   .exit=false,          .arg_itm="level",
                                                   .strs=wrn_itm_,       .str_num=arr_s(wrn_itm_)                      };
@@ -100,7 +100,7 @@ static  const   struct  str_f_t emit_itm_[] =   { { .arg="file",        .desc="e
                                                     .offset=offsetof(struct emit_t_, table)                         },
                                                   { .arg="asm",         .desc="emit asm",
                                                     .offset=offsetof(struct emit_t_, aasm)                          } };
-static  const   flag_itm        emit_f      =   { .flag='E',            .desc="compilation stage emitter toggle",
+static  const   flag_itm        emit_f      =   { .flag='E',            .desc="assembly stage emitter toggle",
                                                   .type=flag_str_t,     .offset=offsetof(assemble_args, emit),
                                                   .exit=false,          .arg_itm="stage",
                                                   .strs=emit_itm_,      .str_num=arr_s(emit_itm_)                     };
@@ -130,7 +130,7 @@ static  const   flag_itm        version_f   =   { .flag='V',            .desc="p
                                                   .type=flag_bool_t,    .offset=offsetof(assemble_args, version),
                                                   .exit=true,           .arg_itm=nullptr                              };
 
-static  const   flag_itm        output_f    =   { .flag='o',            .desc="compilation output folder target",
+static  const   flag_itm        output_f    =   { .flag='o',            .desc="assembly output target",
                                                   .type=flag_stra_t,    .offset=offsetof(assemble_args, output),
                                                   .exit=false,          .arg_itm="output"                             };
 

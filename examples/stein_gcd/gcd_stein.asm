@@ -81,7 +81,6 @@ gcd_stein:
                 rrc
                 std     a_l
 
-                ld      X-,      1
                 ldd     b_h                                         ; shift b
                 lsr
                 std     b_h
