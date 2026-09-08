@@ -1,11 +1,6 @@
 # .DS_Store
 **/.DS_Store
 
-# JetBrains (debugger and linter)
-.idea
-CMakeLists.txt
-cmake-build-debug/*
-
 # lsp files
 compile_flags.txt
 
