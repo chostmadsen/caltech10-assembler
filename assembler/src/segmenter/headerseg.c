@@ -9,6 +9,7 @@
 #include    "helpers/general.h"
 #include    "output/external.h"
 #include    "output/errors.h"
+#include    "datastructures/stack.h"
 #include    "datastructures/stackmap.h"
 #include    "common/kwrds.h"
 #include    "reader/reader.h"
@@ -37,7 +38,7 @@ static void print_header_var_(const void *const h_var_v) {                      
  */
 void print_header_map(const headermap *const hmap) {                            // header stackmap printer
     print_stackmap(&hmap->smap, print_header_var_);
-    printf(CLR_DIM "    ( %d stmts )\x1b[0m\n", hmap->stmts);
+    printf(CLR_DIM "    ( %d stmts )\x1b[0m\n", hmap->stmts.len);
 }
 
 /*-CODESEG-PARSER-(HEADERS-ONLY)--------------------------------------------------------------------------------------*/
@@ -52,12 +53,11 @@ void print_header_map(const headermap *const hmap) {                            
  * @param       err_f           error report file
  * @return                      whether an error occurred
  */
-[[nodiscard]] static bool header_chck_add_( strptr   *const sptr,
-                                            int      *const loc,
-                                            int      *const stmts,
-                                            stackmap *const smap,
-                                            rprt_f   *const err_f  ) {          // header add
-    cit10a_asrt(sptr != nullptr && smap != nullptr);
+[[nodiscard]] static bool header_chck_add_( strptr    *const sptr,
+                                            int       *const loc,
+                                            headermap *const hmap,
+                                            rprt_f    *const err_f  ) {         // header add
+    cit10a_asrt(sptr != nullptr && hmap != nullptr);
     cit10a_asrt(*loc >= 0);
     cit10a_asrt(err_f != nullptr);
 
@@ -67,20 +67,18 @@ void print_header_map(const headermap *const hmap) {                            
     if (s_head.key.str == nullptr)      return  true;
     if (*sptr->str != HEADER_CHR) {
         // code line - skip
-        ++(*loc);
-        ++(*stmts);
+        push_stack(&hmap->stmts, &(ln_info){ .ln=sptr->ln, .loc=(*loc)++ });
         return  false;
     }
 
     // add header
     header_var          smap_itm    =   { .var={ .head=s_head, .ln=sptr->ln + 1, .col=slc_strt }, .loc=*loc };
-    const       bool    ret         =   identifier_verify(smap, &smap_itm, err_f);
+    const       bool    ret         =   identifier_verify(&hmap->smap, &smap_itm, err_f);
 
     // check for additional code
     for (inc_strptr(sptr); is_whitespace(*sptr->str); inc_strptr(sptr));
     if (*sptr->str != CMMT_CHR && *sptr->str != '\0') {
-        ++(*loc);
-        ++(*stmts);
+        push_stack(&hmap->stmts, &(ln_info){ .ln=sptr->ln, .loc=(*loc)++ });
     }
     return  ret;
 }
@@ -94,12 +92,11 @@ void print_header_map(const headermap *const hmap) {                            
  * @param       err_f           error report file
  * @return                      whether an error occurred
  */
-[[nodiscard]] static bool codeseg_parse_( strptr   *const sptr,
-                                          int      *const org,
-                                          int      *const stmts,
-                                          stackmap *const smap,
-                                          rprt_f   *const err_f  ) {            // code segment parse
-    cit10a_asrt(sptr != nullptr && smap != nullptr);
+[[nodiscard]] static bool codeseg_parse_( strptr    *const sptr,
+                                          int       *const org,
+                                          headermap *const hmap,
+                                          rprt_f    *const err_f  ) {           // code segment parse
+    cit10a_asrt(sptr != nullptr && hmap != nullptr);
     cit10a_asrt(org != nullptr && *org >= 0);
     cit10a_asrt(err_f != nullptr);
 
@@ -134,7 +131,7 @@ void print_header_map(const headermap *const hmap) {                            
             }
         } else if (*sptr->str != CMMT_CHR && *sptr->str != '\0') {
             // skip blank lines
-            if (header_chck_add_(sptr, org, stmts, smap, err_f))    ret =   true;
+            if (header_chck_add_(sptr, org, hmap, err_f))    ret =   true;
         }
     } while (!newln_strptr(sptr, err_f->file));
 
@@ -153,35 +150,28 @@ void print_header_map(const headermap *const hmap) {                            
     cit10a_asrt(hmap != nullptr);
 
     // initialize header items
-    int         stmts   =   0;
     int         org     =   0;
     bool        err     =   false;
 
-    // start in a .code section
-    strptr  sptr_i  =   { .str=src_f_getline(source, 0), .ln=0, .col=0 };
-    rprt_f  err_f_i =   (rprt_f){ .file=source, .ln=sptr_i.ln, .col=sptr_i.col};
-    if (codeseg_parse_(&sptr_i, &org, &stmts, &hmap->smap, &err_f_i))     err =   true;
-
-    for (size_t i = sptr_i.ln; i < source->ln_num; ++i) {
+    for (size_t i = 0; i < source->ln_num; ++i) {
         // skip over non pseudo-op items
         strptr  sptr                =   { .str=src_f_getline(source, i), .ln=i, .col=0 };
         for (; is_whitespace(*sptr.str); inc_strptr(&sptr));
         if (*sptr.str != PSEUDO_STRT)   continue;
 
         // check for .code start
-        if (pseudo_hash_lu_adj(&sptr) != tok_code)                  continue;
+        if (pseudo_hash_lu_adj(&sptr) != tok_code)          continue;
 
         // check .code line
         rprt_f  err_f   =   (rprt_f){ .file=source, .ln=sptr.ln, .col=sptr.col};
-        if (verify_sctn_strt(&sptr, &err_f))                        err =   true;
-        if (sptr.str == nullptr)    break;
+        if (verify_sctn_strt(&sptr, &err_f))                err =   true;
+        if (sptr.str == nullptr)                            break;
 
         // parse .code
-        if (codeseg_parse_(&sptr, &org, &stmts, &hmap->smap, &err_f))     err =   true;
+        if (codeseg_parse_(&sptr, &org, hmap, &err_f))      err =   true;
         i               =   sptr.ln;
     }
 
     // return populated constants
-    hmap->stmts         =   stmts;
     return  err;
 }

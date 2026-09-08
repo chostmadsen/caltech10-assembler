@@ -16,7 +16,7 @@
 
 ;-CODE-SEGMENT-------------------------------------------------------------------------------------;
 .code
-.org        0x0000
+.org        0x1234
 
 ;-gcd_stein----------------------------------------------------------------------------------------;
 ;~  description         Finds the GCD of two words using Stein's algorithm (and program entry).
@@ -83,6 +83,7 @@ gcd_stein:
                 rrc
                 std     a_l
 
+                ld      X-,      1
                 ldd     b_h                                         ; shift b
                 lsr
                 std     b_h
@@ -138,21 +139,21 @@ gcd_stein:
                 sbb     b_h
                 std     a_h
 
-                ldi     a_l                                         ; check if a is zero
+                ldd     a_l                                         ; check if a is zero
                 or      a_h
                 jz      k_load
                 ldd     k                                           ; [*] preload k && branch delay
                 jmp     find_gcd
 
     k_load:     ldd     k                                           ; check if k is zero
-                ori     0x00
+                tsti    0x00
                 jnz     get_gcd                                     ; [*] aka k_nz
               ; jz      k_zero
 
     k_zero:     ldd     b_h                                         ; k is zero, return b
                 tax
                 ldd     b_l
-                ret
+                rts
                 nop
     
     get_gcd:    ldd     b_l                                         ; shift b
@@ -171,13 +172,13 @@ gcd_stein:
     got_gcd:    ldd     b_h                                         ; return gcd (b)
                 tax
                 ldd     b_l
-                ret
+                rts
                 nop
 
 
 ;-DATA-SEGMENT-------------------------------------------------------------------------------------;
 .data
-.org        0x0000
+.org        0x1234
 
 ; gcd arguments
 a_l                 db          ?                                   ; number a [l]

@@ -20,7 +20,6 @@ typedef struct {
     alignas(CACHE_LN_S) stackmap   constmap;
     alignas(CACHE_LN_S) stackmap   datamap;
     alignas(CACHE_LN_S) headermap  headmap;
-    const               src_f      *source;
 } segmaps;
 
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/

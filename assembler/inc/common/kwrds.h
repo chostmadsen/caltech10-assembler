@@ -81,6 +81,9 @@ constexpr   char        STORAGE_INIT        =   '?';                            
 
 /*-ALU-OPCODES--------------------------------------------------------------------------------------------------------*/
 
+constexpr   unsigned    ALU_X_ADRS          =   0x0100;                         // alu x address adjustment
+constexpr   unsigned    ALU_S_ADRS          =   0x0200;                         // alu s address adjustment
+
 #define ALU_OFFSET_T        /* str, tok, grp, instr */                                                                 \
     X( "adc",       tok_adc,    alu_offset_t,       0x6000 )                                                           \
     X( "add",       tok_add,    alu_offset_t,       0x6800 )                                                           \
@@ -151,6 +154,13 @@ constexpr   char        STORAGE_INIT        =   '?';                            
 
 /*-LOAD-/-STORE-OPCODES-----------------------------------------------------------------------------------------------*/
 
+constexpr   unsigned    LDST_POST        =   0x1000;                            // load/store post adj
+constexpr   unsigned    LDST_PRE         =   0x0000;                            // load/store pre adj
+constexpr   unsigned    LDST_DEC         =   0x0800;                            // load/store decrement
+constexpr   unsigned    LDST_INC         =   0x0000;                            // load/store increment
+constexpr   unsigned    LDST_X_ADRS      =   0x0400;                            // load/store x address adjustment
+constexpr   unsigned    LDST_S_ADRS      =   0x0000;                            // load/store s address adjustment
+
 #define LDST_IMMEDIATE_T    /* str, tok, grp, instr */                                                                 \
     X( "ldi",       tok_ldi,    ldst_immediate_t,   0x8900 )
 
@@ -200,14 +210,17 @@ constexpr   char        STORAGE_INIT        =   '?';                            
 
 /*-SUBROUTINE-/-STACK-OPCODES-----------------------------------------------------------------------------------------*/
 
-#define SUBROUT_ST_T_T      /* str, tok, grp, instr */                                                                 \
-    X( "call",      tok_call,   subrout_st_t,       0xe000 )                                                           \
-    X( "rts",       tok_rts,    subrout_st_t,       0x1f00 )                                                           \
-    X( "popf",      tok_popf,   subrout_st_t,       0x0200 )                                                           \
-    X( "pushf",     tok_pushf,  subrout_st_t,       0x0e00 )
+#define SUBROUT_ST_ADRS_T   /* str, tok, grp, instr */                                                                 \
+    X( "call",      tok_call,   subrout_st_adrs_t,  0xe000 )
+
+#define SUBROUT_ST_LONE_T   /* str, tok, grp, instr */                                                                 \
+    X( "rts",       tok_rts,    subrout_st_lone_t,  0x1f00 )                                                           \
+    X( "popf",      tok_popf,   subrout_st_lone_t,  0x0200 )                                                           \
+    X( "pushf",     tok_pushf,  subrout_st_lone_t,  0x0e00 )
 
 #define SUBROUT_ST_T        /* macro, enum_t */                                                                        \
-    Y( SUBROUT_ST_T_T,      subrout_st_t )
+    Y( SUBROUT_ST_ADRS_T,   subrout_st_adrs_t )                                                                        \
+    Y( SUBROUT_ST_LONE_T,   subrout_st_lone_t )
 
 /*-IO-OPCODES---------------------------------------------------------------------------------------------------------*/
 
@@ -231,6 +244,13 @@ constexpr   char        STORAGE_INIT        =   '?';                            
  * NOTE : Derive addressing modes (if they apply) from the groups.
  *        A singular table provides O(1) lokup, so all opcodes are conglomerated here.
  */
+
+constexpr   char        S_REG_CHR           =   's';                            // s register symbol
+constexpr   char        X_REG_CHR           =   'x';                            // s register symbol
+constexpr   char        REG_DEC_CHR         =   '-';                            // register decrement symbol
+constexpr   char        REG_INC_CHR         =   '+';                            // register increment symbol
+constexpr   char        CMMA_CHR            =   ',';                            // comma character
+constexpr   char        PC_CHR              =   '.';                            // program counter character
 
 #define OPCODE_T    ALU_T   FLAG_T  IND_REG_T   LDST_T  JMP_T   SUBROUT_ST_T    IO_T    MISC_T
 

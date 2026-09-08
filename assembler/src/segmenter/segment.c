@@ -21,6 +21,7 @@
 
 /**
  * Gets the alphanumeric identifier (first character must be alphanumeric). Consumes it with the given strptr.
+ * Sets up an smap head.
  *
  * @param       sptr            string pointer
  * @param       err_f           error report file
@@ -28,18 +29,15 @@
  */
 [[nodiscard]] smap_head get_identifier( strptr *const sptr,
                                         rprt_f *const err_f ) {                 // identifier getter
-    src_slice           slc         =   { .str=sptr->str, .len=0 };
-    if (!is_alpha(*sptr->str)) {
+    src_slice       slc     =   get_ident(sptr, err_f);
+    if (slc.len == 0) {
         // invalid identifier
-        err_f->col  =   sptr->col;
-        err_f->len  =   1;
         cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid identifier", .report_f=err_f },
                     "invalid identifier"                                                           );
         return  (smap_head){ .hash=0, .key.str=nullptr, .key.len=0 };
     }
 
     // get and return identifier
-    for (; is_alphanum(*sptr->str); inc_strptr(sptr), ++slc.len);
     return  (smap_head){ .hash=hash_fnv1a_slc_lwr(&slc), .key=slc };
 }
 
@@ -58,7 +56,7 @@
 
     // try to parse number
     if (('0' <= *sptr->str && *sptr->str <= '9') || *sptr->str == HEX_CHR_ALT) {
-        const   int     ret         =   parse_num(sptr, err_f);
+        const   int     ret         =   parse_num_adrs(sptr, err_f);
         if (ret == -1)                  return  ret;
 
         // verify trailing items

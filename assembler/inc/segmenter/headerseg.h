@@ -5,6 +5,7 @@
 
 #pragma     once
 
+#include    "datastructures/stack.h"
 #include    "datastructures/stackmap.h"
 #include    "reader/reader.h"
 #include    "segmenter/segment.h"
@@ -12,6 +13,7 @@
 /*-CONSTANTS----------------------------------------------------------------------------------------------------------*/
 
 constexpr   size_t      HEADER_BUCKETS      =   64;                             // initial header stackmap buckets
+constexpr   unsigned    LINE_INIT           =   256;                            // initial header stackmap buckets
 
 /*-STRUCTS-/-ENUMS----------------------------------------------------------------------------------------------------*/
 
@@ -20,8 +22,13 @@ typedef struct {                                                                
             int         loc;
 } header_var;
 
+typedef struct {                                                                // line information
+            int         ln;
+            int         loc;
+} ln_info;
+
 typedef struct {                                                                // header stackmap
-            int         stmts;
+            stack       stmts;
             stackmap    smap;
 } headermap;
 

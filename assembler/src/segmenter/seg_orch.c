@@ -6,6 +6,7 @@
 #include    <pthread.h>
 #include    <stdatomic.h>
 
+#include "datastructures/stack.h"
 #include    "helpers/general.h"
 #include    "datastructures/stackmap.h"
 #include    "output/external.h"
@@ -85,8 +86,8 @@ static void *headerseg_call(void *const hseg_v) {                               
     // setup segmap
     segmaps segmap  =   (segmaps){ .constmap=new_stackmap(CONST_BUCKETS, sizeof(const_var)),
                                    .datamap=new_stackmap(DATA_BUCKETS, sizeof(data_var)),
-                                   .headmap={ .stmts=0, .smap=new_stackmap(HEADER_BUCKETS, sizeof(header_var)) },
-                                   .source=source                                                                 };
+                                   .headmap={ .stmts=new_stack(sizeof(ln_info), LINE_INIT),
+                                              .smap=new_stackmap(HEADER_BUCKETS, sizeof(header_var)) } };
 
     // call arg setup
     hseg_args   hseg    =   { .source=source, .hmap=&segmap.headmap };
@@ -152,8 +153,7 @@ void print_segmap(const segmaps *const segmap) {                                
  */
 void print_segmap_info(const segmaps *const segmap) {                           // print segmap struct info
     cit10a_asrt(segmap != nullptr);
-    cit10a_msg( &(msg_info){ .type=msg_vrbse_t, .header="lookup tables created",
-                             .report_f=&(rprt_f){ .file=segmap->source, .len=0 } },
+    cit10a_msg( &(msg_info){ .type=msg_vrbse_t, .header="lookup tables created" },
                              "%zu constant(s), %zu variable(s), %zu header(s)",
                              segmap->constmap.elements, segmap->datamap.elements, segmap->headmap.smap.elements );
 }
@@ -169,8 +169,5 @@ void free_segmap(segmaps *const segmap) {                                       
     free_stackmap(&segmap->constmap);
     free_stackmap(&segmap->datamap);
     free_stackmap(&segmap->headmap.smap);
-#ifndef NDEBUG
-    // struct zero
-    segmap->headmap.stmts   =   0;
-#endif  /* NDEBUG */
+    free_stack(&segmap->headmap.stmts);
 }

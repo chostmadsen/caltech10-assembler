@@ -34,6 +34,30 @@
     return  false;
 }
 
+
+/**
+ * Gets the alphanumeric identifier (first character must be alphanumeric). Consumes it with the given strptr.
+ *
+ * @param       sptr            string pointer
+ * @param       err_f           error report file
+ * @return                      stackmap head item
+ */
+[[nodiscard]] src_slice get_ident(strptr *const sptr, rprt_f *const err_f) {    // identifier parser
+    src_slice           slc         =   { .str=sptr->str, .len=0 };
+    if (!is_alpha(*sptr->str)) {
+        // invalid identifier
+        err_f->col  =   sptr->col;
+        err_f->len  =   1;
+        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid identifier", .report_f=err_f },
+                    "invalid identifier"                                                           );
+        return  slc;
+    }
+
+    // get and return identifier
+    for (; is_alphanum(*sptr->str); inc_strptr(sptr), ++slc.len);
+    return  slc;
+}
+
 /*-NUMBER-PARSERS-----------------------------------------------------------------------------------------------------*/
 
 /**
@@ -56,7 +80,7 @@
     for (; is_alphanum(*sptr->str); inc_strptr(sptr), ++slice.len);
 
     // single number
-    if (slice.len == 1)         return  (int)strtol(sptr->str, nullptr, 10);
+    if (slice.len == 1)         return  (int)strtol(slice.str, nullptr, 10);
 
     // get parse start
     const   char   *str     =   slice.str;
@@ -95,17 +119,17 @@
     }
 
     // parse number
-    char    n_str[MAX_NUM_PARSE + 1]    =   { '\0' };
+    char    n_str[MAX_PARSE + 1]        =   { '\0' };
     size_t  s_idx                       =   0;
     for (size_t i = 0; str[i] == NUM_SEP || is_alphanum(str[i]); ++i) {
         // skip number seperators
         if (str[i] != NUM_SEP)  n_str[s_idx++]  =   str[i];
-        if (s_idx > MAX_NUM_PARSE) {
+        if (s_idx > MAX_PARSE) {
             err_f->ln   =   sptr->ln;
             err_f->col  =   start + offs;
             err_f->len  =   i;
             cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid number", .report_f=err_f },
-                        "number too large to parse (maximally %d-bit)", MAX_NUM_PARSE              );
+                        "number too large to parse (maximally %d-bit)", MAX_PARSE                  );
             return  -1;
         }
     }
@@ -170,4 +194,42 @@
         return  -1;
     }
     return  (neg) ? (const_v ^ MAX_NUM) + 1 : const_v;
+}
+
+/**
+ * Find the maximum address number.
+ *
+ * @param       sptr            sptr
+ * @param       err_f           error report file
+ * @return                      number
+ */
+[[nodiscard]] int parse_num_adrs(strptr *const sptr, rprt_f *const err_f) {     // address number parser
+    cit10a_asrt(sptr != nullptr && sptr->str != nullptr);
+    cit10a_asrt(err_f != nullptr);
+
+    for (; is_whitespace(*sptr->str); inc_strptr(sptr));
+
+    // get value
+    if (!('0' <= *sptr->str && *sptr->str <= '9') && *sptr->str != HEX_CHR_ALT) {
+        err_f->col  =   sptr->col;
+        err_f->len  =   1;
+        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="expected number", .report_f=err_f },
+                    "invalid number start"                                                      );
+        return  -1;
+    }
+
+    // parse number
+    const   int p_strt      =   sptr->col;
+    const   int const_v     =   parse_num(sptr, err_f);
+    if (const_v == -1)          return  -1;
+
+    if (const_v > (int)MAX_ADRS) {
+        err_f->ln                   =   sptr->ln;
+        err_f->col                  =   p_strt;
+        err_f->len                  =   sptr->col - p_strt;
+        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="number overflow", .report_f=err_f },
+                    "maximum address range excession"                                           );
+        return  -1;
+    }
+    return  const_v;
 }

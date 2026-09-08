@@ -22,6 +22,7 @@
 #include    "reader/reader_out.h"
 #include    "preprocessor/preprocessor.h"
 #include    "segmenter/seg_orch.h"
+#include    "assemble/assemble.h"
 
 /*-MAIN---------------------------------------------------------------------------------------------------------------*/
 
@@ -51,6 +52,7 @@ int main(const int argc, const char *const *const argv) {                       
     if (c_args.verbosity >= 4 || c_args.emit.table)     print_segmap(&smaps);
 
     // assembly
+    assemble(&source_f, &smaps);
 
     // end free
     free_src_f(&source_f);
