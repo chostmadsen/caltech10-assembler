@@ -1,19 +1,19 @@
 /*
  * src/segmenter/segment.c
- * Segmenter orchestrator.
+ * Segmenter common items.
  */
 
 #include    <stddef.h>
 #include    <string.h>
 #include    <inttypes.h>
 
-#include "common/hash_tables/pseudo.h"
 #include    "helpers/general.h"
 #include    "output/errors.h"
 #include    "output/messages.h"
 #include    "argparse/argparse.h"
 #include    "datastructures/hash.h"
 #include    "datastructures/stackmap.h"
+#include    "common/hash_tables/pseudo.h"
 #include    "common/gen_parse.h"
 #include    "segmenter/segment.h"
 

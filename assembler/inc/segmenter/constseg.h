@@ -23,4 +23,4 @@ typedef struct {                                                                
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
 
 void print_const_map(const stackmap *smap);                                     // constant stackmap printer
-[[nodiscard]] stackmap constseg(const src_f *source, bool *err);                // constant stackmap creation
+[[nodiscard]] bool constseg(const src_f *source, stackmap *smap);               // constant stackmap creation

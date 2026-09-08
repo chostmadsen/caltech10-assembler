@@ -7,6 +7,7 @@
 #include    <stdio.h>
 
 #include    "helpers/general.h"
+#include    "output/external.h"
 #include    "output/errors.h"
 #include    "datastructures/stackmap.h"
 #include    "common/kwrds.h"
@@ -34,8 +35,9 @@ static void print_header_var_(const void *const h_var_v) {                      
  *
  * @param       smap            header stackmap
  */
-void print_header_map(const stackmap *const smap) {                             // header stackmap printer
-    print_stackmap(smap, "headermap", print_header_var_);
+void print_header_map(const headermap *const hmap) {                            // header stackmap printer
+    print_stackmap(&hmap->smap, print_header_var_);
+    printf(CLR_DIM "    ( %d stmts )\x1b[0m\n", hmap->stmts);
 }
 
 /*-CODESEG-PARSER-(HEADERS-ONLY)--------------------------------------------------------------------------------------*/
@@ -52,8 +54,9 @@ void print_header_map(const stackmap *const smap) {                             
  */
 [[nodiscard]] static bool header_chck_add_( strptr   *const sptr,
                                             int      *const loc,
+                                            int      *const stmts,
                                             stackmap *const smap,
-                                            rprt_f   *const err_f ) {           // header add
+                                            rprt_f   *const err_f  ) {          // header add
     cit10a_asrt(sptr != nullptr && smap != nullptr);
     cit10a_asrt(*loc >= 0);
     cit10a_asrt(err_f != nullptr);
@@ -65,6 +68,7 @@ void print_header_map(const stackmap *const smap) {                             
     if (*sptr->str != HEADER_CHR) {
         // code line - skip
         ++(*loc);
+        ++(*stmts);
         return  false;
     }
 
@@ -74,7 +78,10 @@ void print_header_map(const stackmap *const smap) {                             
 
     // check for additional code
     for (inc_strptr(sptr); is_whitespace(*sptr->str); inc_strptr(sptr));
-    if (*sptr->str != CMMT_CHR && *sptr->str != '\0')       ++(*loc);
+    if (*sptr->str != CMMT_CHR && *sptr->str != '\0') {
+        ++(*loc);
+        ++(*stmts);
+    }
     return  ret;
 }
 
@@ -89,8 +96,9 @@ void print_header_map(const stackmap *const smap) {                             
  */
 [[nodiscard]] static bool codeseg_parse_( strptr   *const sptr,
                                           int      *const org,
+                                          int      *const stmts,
                                           stackmap *const smap,
-                                          rprt_f   *const err_f ) {             // code segment parse
+                                          rprt_f   *const err_f  ) {            // code segment parse
     cit10a_asrt(sptr != nullptr && smap != nullptr);
     cit10a_asrt(org != nullptr && *org >= 0);
     cit10a_asrt(err_f != nullptr);
@@ -109,8 +117,8 @@ void print_header_map(const stackmap *const smap) {                             
             switch (pseudo_hash_lu_adj(sptr)) {
                 case tok_code:
                     // verify && skip
-                    if      (verify_sctn_strt(sptr, err_f))     ret =   true;
-                    else if (sptr->str == nullptr)              return  ret;
+                    if      (verify_sctn_strt(sptr, err_f))         ret =   true;
+                    else if (sptr->str == nullptr)                  return  ret;
                     break;
                 case tok_data:
                     // break out of this (incremented in returned loop)
@@ -126,7 +134,7 @@ void print_header_map(const stackmap *const smap) {                             
             }
         } else if (*sptr->str != CMMT_CHR && *sptr->str != '\0') {
             // skip blank lines
-            if (header_chck_add_(sptr, org, smap, err_f))       ret =   true;
+            if (header_chck_add_(sptr, org, stmts, smap, err_f))    ret =   true;
         }
     } while (!newln_strptr(sptr, err_f->file));
 
@@ -134,24 +142,25 @@ void print_header_map(const stackmap *const smap) {                             
 }
 
 /**
- * Creates the lookup table of headers.
+ * Creates the lookup table of headers, and finds the total number of statements.
  *
  * @param       source          source file
  * @param       err             error flag
  * @return                      header stackmap
  */
-[[nodiscard]] stackmap headerseg(const src_f *const source, bool *const err) {  // header stackmap creation
-    cit10a_asrt(err != nullptr && *err == false);
+[[nodiscard]] bool headerseg(const src_f *const source, headermap *const hmap) {// header stackmap creation
     cit10a_asrt(source != nullptr);
+    cit10a_asrt(hmap != nullptr);
 
-    // initialize header table
-    stackmap    smap    =   new_stackmap(HEADER_BUCKETS, sizeof(header_var));
+    // initialize header items
+    int         stmts   =   0;
     int         org     =   0;
+    bool        err     =   false;
 
     // start in a .code section
     strptr  sptr_i  =   { .str=src_f_getline(source, 0), .ln=0, .col=0 };
     rprt_f  err_f_i =   (rprt_f){ .file=source, .ln=sptr_i.ln, .col=sptr_i.col};
-    *err            =   codeseg_parse_(&sptr_i, &org, &smap, &err_f_i);
+    if (codeseg_parse_(&sptr_i, &org, &stmts, &hmap->smap, &err_f_i))     err =   true;
 
     for (size_t i = sptr_i.ln; i < source->ln_num; ++i) {
         // skip over non pseudo-op items
@@ -160,18 +169,19 @@ void print_header_map(const stackmap *const smap) {                             
         if (*sptr.str != PSEUDO_STRT)   continue;
 
         // check for .code start
-        if (pseudo_hash_lu_adj(&sptr) != tok_code)          continue;
+        if (pseudo_hash_lu_adj(&sptr) != tok_code)                  continue;
 
         // check .code line
         rprt_f  err_f   =   (rprt_f){ .file=source, .ln=sptr.ln, .col=sptr.col};
-        *err            =   verify_sctn_strt(&sptr, &err_f);
+        if (verify_sctn_strt(&sptr, &err_f))                        err =   true;
         if (sptr.str == nullptr)    break;
 
         // parse .code
-        *err            =   codeseg_parse_(&sptr, &org, &smap, &err_f);
+        if (codeseg_parse_(&sptr, &org, &stmts, &hmap->smap, &err_f))     err =   true;
         i               =   sptr.ln;
     }
 
     // return populated constants
-    return  smap;
+    hmap->stmts         =   stmts;
+    return  err;
 }

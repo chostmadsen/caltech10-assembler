@@ -36,7 +36,7 @@ static void print_const_var_(const void *const c_var_v) {                       
  * @param       smap            constant stackmap
  */
 void print_const_map(const stackmap *const smap) {                              // constant stackmap printer
-    print_stackmap(smap, "constmap", print_const_var_);
+    print_stackmap(smap, print_const_var_);
 }
 
 /*-CONSTSEG-PARSER----------------------------------------------------------------------------------------------------*/
@@ -83,12 +83,12 @@ void print_const_map(const stackmap *const smap) {                              
  * @param       err             error flag
  * @return                      constant stackmap
  */
-[[nodiscard]] stackmap constseg(const src_f *const source, bool *const err) {   // constant stackmap creation
-    cit10a_asrt(err != nullptr && *err == false);
+[[nodiscard]] bool constseg(const src_f *const source, stackmap *const smap) {  // constant stackmap creation
     cit10a_asrt(source != nullptr);
+    cit10a_asrt(smap != nullptr);
 
-    // initialize constant table
-    stackmap    smap    =   new_stackmap(CONST_BUCKETS, sizeof(const_var));
+    // initialize constant items
+    bool        err     =   false;
 
     for (size_t i = 0; i < source->ln_num; ++i) {
         // skip over non pseudo-op items
@@ -100,9 +100,10 @@ void print_const_map(const stackmap *const smap) {                              
         if (pseudo_hash_lu_adj(&sptr) != tok_const)         continue;
 
         // add const value
-        *err    =   const_chck_add_(&sptr, &smap, &(rprt_f){ .file=source, .ln=i, .col=sptr.col });
+        //
+        if (const_chck_add_(&sptr, smap, &(rprt_f){ .file=source, .ln=i, .col=sptr.col }))      err =   true;
     }
 
     // return populated constants
-    return  smap;
+    return  err;
 }

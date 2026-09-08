@@ -17,14 +17,11 @@
 
 #include    "output/errors.h"
 #include    "output/external.h"
-#include    "datastructures/stackmap.h"
 #include    "argparse/argparse.h"
 #include    "reader/reader.h"
 #include    "reader/reader_out.h"
 #include    "preprocessor/preprocessor.h"
-#include    "segmenter/constseg.h"
-#include    "segmenter/dataseg.h"
-#include    "segmenter/headerseg.h"
+#include    "segmenter/seg_orch.h"
 
 /*-MAIN---------------------------------------------------------------------------------------------------------------*/
 
@@ -48,17 +45,16 @@ int main(const int argc, const char *const *const argv) {                       
     if (preprocess(&source_f))      cit10a_exit(PREPROCESS_ERRNO);
 
     // segment processor
-    bool        seg_err         =   false;
-    stackmap    const_smap      =   constseg(&source_f, &seg_err);
-    print_const_map(&const_smap);
-    seg_err                     =   false;
-    stackmap    data_smap       =   dataseg(&source_f, &seg_err);
-    print_data_map(&data_smap);
-    seg_err                     =   false;
-    stackmap    header_smap     =   headerseg(&source_f, &seg_err);
-    print_data_map(&header_smap);
+    segmaps     smaps           =   segment(&source_f);
+    // segmenter output
+    if (c_args.verbosity >= 2)                          print_segmap_info(&smaps);
+    if (c_args.verbosity >= 4 || c_args.emit.table)     print_segmap(&smaps);
 
     // assembly
+
+    // end free
+    free_src_f(&source_f);
+    free_segmap(&smaps);
 
 comp_exit:
     // assembler exit

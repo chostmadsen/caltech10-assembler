@@ -36,7 +36,7 @@ static void print_data_var_(const void *const d_var_v) {                        
  * @param       smap            data stackmap
  */
 void print_data_map(const stackmap *const smap) {                               // data stackmap printer
-    print_stackmap(smap, "datamap", print_data_var_);
+    print_stackmap(smap, print_data_var_);
 }
 
 /*-DATASEG-PARSER-----------------------------------------------------------------------------------------------------*/
@@ -171,12 +171,12 @@ void print_data_map(const stackmap *const smap) {                               
  * @param       err             error flag
  * @return                      variable stackmap
  */
-[[nodiscard]] stackmap dataseg(const src_f *const source, bool *const err) {    // data stackmap creation
-    cit10a_asrt(err != nullptr && *err == false);
+[[nodiscard]] bool dataseg(const src_f *const source, stackmap *const smap) {   // data stackmap creation
     cit10a_asrt(source != nullptr);
+    cit10a_asrt(smap != nullptr);
 
-    // initialize data table
-    stackmap    smap    =   new_stackmap(DATA_BUCKETS, sizeof(data_var));
+    // initialize data items
+    bool        err     =   false;
     int         org     =   0;
 
     for (size_t i = 0; i < source->ln_num; ++i) {
@@ -190,14 +190,14 @@ void print_data_map(const stackmap *const smap) {                               
 
         // check .data line
         rprt_f  err_f   =   (rprt_f){ .file=source, .ln=sptr.ln, .col=sptr.col};
-        *err            =   verify_sctn_strt(&sptr, &err_f);
+        if (verify_sctn_strt(&sptr, &err_f))                err =   true;
         if (sptr.str == nullptr)    break;
 
         // parse .data
-        *err            =   dataseg_parse_(&sptr, &org, &smap, &err_f);
+        if (dataseg_parse_(&sptr, &org, smap, &err_f))      err =   true;
         i               =   sptr.ln;
     }
 
     // return populated constants
-    return  smap;
+    return  err;
 }

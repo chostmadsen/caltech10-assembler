@@ -274,17 +274,15 @@ void free_stackmap(stackmap *const smap) {                                      
  * Stackmap printer.
  *
  * @param       smap            stackmap
- * @param       name            stackmap name
  * @param       prnt_fn         stackmap data printer
  */
 void print_stackmap( const stackmap *const                        smap,
-                     const char     *const                        name,
                            void     (*const prnt_fn)(const void*)       ) {     // stackmap printer
     cit10a_asrt(smap != nullptr);
     cit10a_asrt(prnt_fn != nullptr);
 
-    // info
-    printf(DEBUG_DELIM CLR_DIM " [[ %s %zuitm(s)::%zubckts ]]\x1b[0m\n", name, smap->elements, smap->buckets);
+    // header
+    printf(CLR_DIM "[[ %zuitm(s)::%zubckts ]]\x1b[0m\n", smap->elements, smap->buckets);
 
     // alignment get
     const   int     prnt_pad    =   snprintf(nullptr, 0, "%x", (int)smap->buckets - 1);
@@ -315,5 +313,4 @@ void print_stackmap( const stackmap *const                        smap,
         fputc('\n', stdout);
     }
     if (empty_prnt)     printf("0x%0*x ] - " NULL_CHR "\n", prnt_pad, (int)smap->buckets - 1);
-    fputs(DEBUG_DELIM "\n", stdout);
 }

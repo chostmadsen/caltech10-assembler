@@ -20,7 +20,12 @@ typedef struct {                                                                
             int         loc;
 } header_var;
 
+typedef struct {                                                                // header stackmap
+            int         stmts;
+            stackmap    smap;
+} headermap;
+
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
 
-void print_header_map(const stackmap *smap);                                    // header stackmap printer
-[[nodiscard]] stackmap headerseg(const src_f *source, bool *err);               // header stackmap creation
+void print_header_map(const headermap *hmap);                                   // header stackmap printer
+[[nodiscard]] bool headerseg(const src_f *source, headermap *hmap);             // header stackmap creation

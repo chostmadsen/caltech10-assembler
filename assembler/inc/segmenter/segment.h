@@ -5,11 +5,13 @@
 
 #pragma     once
 
+#include    <stddef.h>
+
 #include    "helpers/general.h"
 #include    "output/messages.h"
 #include    "datastructures/stackmap.h"
 
-/*-VAR-TOKEN----------------------------------------------------------------------------------------------------------*/
+/*-STRUCTS-/-ENUMS----------------------------------------------------------------------------------------------------*/
 
 typedef struct {                                                                // var token stackmap head
             smap_head   head;
