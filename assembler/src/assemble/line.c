@@ -182,6 +182,94 @@
     return  ret + offs;
 }
 
+[[nodiscard]] static int rjmp_(strptr *const sptr, const stackmap *const headermap, rprt_f *const err_f, const int loc) {
+    // skip whitespace
+    for (; is_whitespace(*sptr->str); inc_strptr(sptr));
+    int             ret     =   0;
+    const   size_t  p_strt  =   sptr->col;
+
+    // check for relative
+    if (*sptr->str == PC_CHR) {
+        ret             =   loc;
+        for (; is_whitespace(*sptr->str); inc_strptr(sptr));
+        if (*sptr->str == '\0' || *sptr->str == CMMT_CHR)   return  ret;
+
+        if (*sptr->str != NEG_SYMB && *sptr->str != POS_SYMB) {
+            // invalid modification
+            err_f->col  =   sptr->col;
+            err_f->len  =   1;
+            cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid pc modification operation", err_f }, 
+                        "pc modification must be an arithmetic operation"                                   );
+            return  -1;
+        }
+
+        // check bound
+        bool        neg =   (*sptr->str == NEG_SYMB) ? true : false;
+        inc_strptr(sptr);
+        err_f->col      =   sptr->col;
+        const   int adj =   parse_num(sptr, err_f);
+        ret             =   (neg) ? -adj : adj;
+        if (ret < 0 || ret > (int)MAX_ADRS) {
+            err_f->len  =   sptr->col - err_f->col;
+            cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid jump", err_f }, 
+                        "relative jump to outside of program memory"                   );
+            return  -1;
+        }
+
+        // check line end
+        if (check_ln_end(sptr, err_f))      return  -1;
+    } else if (('0' <= *sptr->str && *sptr->str <= '9') || *sptr->str == HEX_CHR_ALT) {
+        // raw number parse
+        err_f->len  =   (*sptr->str == HEX_CHR_ALT) ? 1 : 0;
+        for (; is_alphanum(sptr->str[err_f->len]); ++err_f->len);
+        cit10a_msg( &(msg_info){ .type=msg_warn_t, .header="raw program access", .report_f=err_f },
+                    "raw program access; define headers or set up a relative jump with `.`"         );
+        ret         =   parse_num_repr(sptr, err_f);
+    } else {
+        // header lookup
+        src_slice   slc =   { .str=sptr->str, .len=0 };
+        const   int col =   sptr->col;
+        for (; is_alphanum(*sptr->str); inc_strptr(sptr), ++slc.len);
+        if (slc.len == 0) {
+            err_f->col  =   col;
+            err_f->len  =   1;
+            cit10a_msg( &(msg_info){ .type=msg_err_t, .header="missing identifier", .report_f=err_f },
+                        "missing identifier"                                                           );
+            return  -1;
+        }
+
+        const   header_var *hvar;
+        if    (c_args.case_sens)    hvar    =   stackmap_get_k_lwr(headermap, &slc);
+        else                        hvar    =   stackmap_get_k_lwr_lwr(headermap, &slc);
+        if (hvar == nullptr) {
+            err_f->col  =   col;
+            err_f->len  =   slc.len;
+            cit10a_msg( &(msg_info){ .type=msg_err_t, .header="unknown header", .report_f=err_f },
+                        "undefined program location"                                               );
+            return  -1;
+        }
+        ret             =   hvar->loc - loc;
+    }
+
+    // check jump range
+    bool    neg         =   false;
+    int     max_num     =   MAX_NUM_POS;
+    if (ret < 0) {
+        neg             =   true;
+        max_num         =   MAX_NUM_NEG;
+        ret             =   -ret;
+    }
+    if (ret > max_num) {
+        err_f->col      =   p_strt;
+        err_f->len      =   sptr->col - p_strt;
+        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="relative jump range", .report_f=err_f },
+                    "relative jump out of range (maximially %d-bit, signed 2's compliment)", MAX_NUM_PARSE );
+        return  -1;
+    }
+
+    return  (neg) ? (ret ^ MAX_NUM) + 1 : ret;
+}
+
 [[nodiscard]] ln_asm line_assemble(const src_f *const source, const segmaps *const segmap, const ln_info *const ln_inf) {
 
     strptr  sptr    =   { .ln=ln_inf->ln, .col=0, .str=src_f_getline(source, ln_inf->ln) };
@@ -245,7 +333,11 @@
             ret.instr               +=  ldst_v;
             break;
 
-        case jmp_relative_t:    // TODO
+        case jmp_relative_t:
+            const   int     rjmp_v  =   rjmp_(&sptr, &segmap->headmap.smap, &err_f, ln_inf->loc);
+            if (rjmp_v == -1)           return  (ln_asm){ .ln=-1, .instr=-1 };
+            ret.instr               +=  rjmp_v;
+            break;
 
         case jmp_absolute_t:    [[fallthrough]];
         case subrout_st_adrs_t: break;  // TODO
