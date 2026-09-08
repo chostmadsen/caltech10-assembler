@@ -21,6 +21,7 @@
 #include    "argparse/argparse.h"
 #include    "reader/reader.h"
 #include    "reader/reader_out.h"
+#include    "preprocessor/preprocessor.h"
 #include    "segmenter/constseg.h"
 #include    "segmenter/dataseg.h"
 #include    "segmenter/headerseg.h"
@@ -43,7 +44,8 @@ int main(const int argc, const char *const *const argv) {                       
     if (c_args.verbosity >= 2)                          print_src_f_info(&source_f);
     if (c_args.verbosity >= 4 || c_args.emit.file)      print_src_f(&source_f);
 
-    // TODO : preprocessor
+    // preprocessor
+    if (preprocess(&source_f))      cit10a_exit(PREPROCESS_ERRNO);
 
     // segment processor
     bool        seg_err         =   false;

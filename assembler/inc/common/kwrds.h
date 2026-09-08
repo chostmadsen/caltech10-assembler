@@ -30,8 +30,8 @@ constexpr   char        PSEUDO_STRT         =   '.';                            
 
 #define PSEUDO_PSEUDOA_T    /* str, tok, grp, _instr */                                                                \
     X( "org",       tok_org,    pseudo_pseudoa_t,  0 )                                                                 \
-    X( "include",   tok_incl,   pseudo_pseudoa_t,  0 )                                                                 \
-    X( "const",     tok_const,  pseudo_pseudoa_t,  0 )
+    X( "const",     tok_const,  pseudo_pseudoa_t,  0 )                                                                 \
+    X( "include",   tok_incl,   pseudo_pseudoa_t,  0 )
 
 #define PSEUDO_T            /* macro, enum_t */                                                                        \
     Y( PSEUDO_SEGSPEC_T,    pseudo_segspec_t )                                                                         \

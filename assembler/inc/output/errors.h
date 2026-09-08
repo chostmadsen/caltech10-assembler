@@ -12,6 +12,7 @@ constexpr   unsigned    EXCESS_ERRNO        =   1;                              
 constexpr   unsigned    WARN_ERRNO          =   2;                              // -Werror exit
 constexpr   unsigned    ARGPARSE_ERRNO      =   3;                              // argument parser failure exit
 constexpr   unsigned    READER_ERRNO        =   4;                              // reader failure exit
+constexpr   unsigned    PREPROCESS_ERRNO    =   5;                              // preprocessor failure exit
 
 constexpr   unsigned    EX_EXT_THRS         =   100;                            // internal exit threshold
 // internal error codes
