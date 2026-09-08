@@ -182,16 +182,13 @@
     return  ret + offs;
 }
 
-[[nodiscard]] static int rjmp_(strptr *const sptr, const stackmap *const headermap, rprt_f *const err_f, const int loc) {
-    // skip whitespace
-    for (; is_whitespace(*sptr->str); inc_strptr(sptr));
+[[nodiscard]] static int jmp_parse_(strptr *const sptr, const stackmap *const headermap, rprt_f *const err_f, const int loc) {
+    // return setup
     int             ret     =   0;
-    const   size_t  p_strt  =   sptr->col;
 
     // check for relative
     if (*sptr->str == PC_CHR) {
-        ret             =   loc;
-        for (; is_whitespace(*sptr->str); inc_strptr(sptr));
+        for (inc_strptr(sptr); is_whitespace(*sptr->str); inc_strptr(sptr));
         if (*sptr->str == '\0' || *sptr->str == CMMT_CHR)   return  ret;
 
         if (*sptr->str != NEG_SYMB && *sptr->str != POS_SYMB) {
@@ -203,29 +200,24 @@
             return  -1;
         }
 
-        // check bound
+        // get jump
         bool        neg =   (*sptr->str == NEG_SYMB) ? true : false;
         inc_strptr(sptr);
         err_f->col      =   sptr->col;
         const   int adj =   parse_num(sptr, err_f);
-        ret             =   (neg) ? -adj : adj;
-        if (ret < 0 || ret > (int)MAX_ADRS) {
-            err_f->len  =   sptr->col - err_f->col;
-            cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid jump", err_f }, 
-                        "relative jump to outside of program memory"                   );
-            return  -1;
-        }
+        ret             =   (neg) ? loc - adj : loc + adj;
 
-        // check line end
-        if (check_ln_end(sptr, err_f))      return  -1;
     } else if (('0' <= *sptr->str && *sptr->str <= '9') || *sptr->str == HEX_CHR_ALT) {
+
         // raw number parse
         err_f->len  =   (*sptr->str == HEX_CHR_ALT) ? 1 : 0;
         for (; is_alphanum(sptr->str[err_f->len]); ++err_f->len);
         cit10a_msg( &(msg_info){ .type=msg_warn_t, .header="raw program access", .report_f=err_f },
                     "raw program access; define headers or set up a relative jump with `.`"         );
         ret         =   parse_num_repr(sptr, err_f);
+
     } else {
+
         // header lookup
         src_slice   slc =   { .str=sptr->str, .len=0 };
         const   int col =   sptr->col;
@@ -248,8 +240,30 @@
                         "undefined program location"                                               );
             return  -1;
         }
-        ret             =   hvar->loc - loc;
+        ret             =   hvar->loc;
+
     }
+
+    // check line end
+    if (check_ln_end(sptr, err_f))      return  -1;
+    if (ret < 0 || ret > (int)MAX_ADRS) {
+        err_f->len  =   sptr->col - err_f->col;
+        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid jump", err_f }, 
+                "jump to outside of program memory"                                );
+        return  -1;
+    }
+    return  ret;
+}
+
+[[nodiscard]] static int rjmp_(strptr *const sptr, const stackmap *const headermap, rprt_f *const err_f, const int loc) {
+    // skip whitespace
+    for (; is_whitespace(*sptr->str); inc_strptr(sptr));
+    size_t  p_strt      =   sptr->col;
+
+    // get jump location
+    const   int jloc    =   jmp_parse_(sptr, headermap, err_f, loc);
+    if (jloc == -1)         return  -1;
+    int         ret     =   jloc - loc;
 
     // check jump range
     bool    neg         =   false;
@@ -268,6 +282,12 @@
     }
 
     return  (neg) ? (ret ^ MAX_NUM) + 1 : ret;
+}
+
+[[nodiscard]] static int ajmp_(strptr *const sptr, const stackmap *const headermap, rprt_f *const err_f, const int loc) {
+    // skip whitespace
+    for (; is_whitespace(*sptr->str); inc_strptr(sptr));
+    return  jmp_parse_(sptr, headermap, err_f, loc);
 }
 
 [[nodiscard]] ln_asm line_assemble(const src_f *const source, const segmaps *const segmap, const ln_info *const ln_inf) {
@@ -340,7 +360,11 @@
             break;
 
         case jmp_absolute_t:    [[fallthrough]];
-        case subrout_st_adrs_t: break;  // TODO
+        case subrout_st_adrs_t:
+            const   int     ajmp_v  =   ajmp_(&sptr, &segmap->headmap.smap, &err_f, ln_inf->loc);
+            if (ajmp_v == -1)           return  (ln_asm){ .ln=-1, .instr=-1 };
+            ret.instr               +=  ajmp_v;
+            break;
 
         default:
             cit10a_asrt(!"opcode token oob");
