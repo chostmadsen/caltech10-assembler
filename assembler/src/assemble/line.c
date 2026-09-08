@@ -356,14 +356,14 @@
         case jmp_relative_t:
             const   int     rjmp_v  =   rjmp_(&sptr, &segmap->headmap.smap, &err_f, ln_inf->loc);
             if (rjmp_v == -1)           return  (ln_asm){ .ln=-1, .instr=-1 };
-            ret.instr               +=  rjmp_v;
+            ret.instr               +=  rjmp_v - 1;
             break;
 
         case jmp_absolute_t:    [[fallthrough]];
         case subrout_st_adrs_t:
             const   int     ajmp_v  =   ajmp_(&sptr, &segmap->headmap.smap, &err_f, ln_inf->loc);
             if (ajmp_v == -1)           return  (ln_asm){ .ln=-1, .instr=-1 };
-            ret.instr               +=  ajmp_v;
+            ret.instr               +=  ajmp_v - 1;
             break;
 
         default:
