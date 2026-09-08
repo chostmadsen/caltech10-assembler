@@ -3,6 +3,10 @@
  * Main assembler call.
  */
 
+#if     defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
+#error  "cit10a does not support windows"
+#endif
+
 #include    <unistd.h>
 #ifdef  __STDC_NO_ATOMICS__
 #error  "cit10a requires atomics"
