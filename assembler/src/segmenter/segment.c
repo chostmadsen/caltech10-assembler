@@ -42,7 +42,7 @@
     return  (smap_head){ .hash=hash_fnv1a_slc_lwr(&slc), .key=slc };
 }
 
-/*-.ORG-PARSER--------------------------------------------------------------------------------------------------------*/
+/*-.PSEUDO-OP-PARSERS-------------------------------------------------------------------------------------------------*/
 
 /**
  * Try to return item after a .org specification.
@@ -72,6 +72,24 @@
     cit10a_msg( &(msg_info){ .type=msg_err_t, .header="expected number", .report_f=err_f},
                 "expected a number after `.org`"                                           );
     return  -1;
+}
+
+/**
+ * Verifies a .section start line (checks for trailing characters), then hands off if the next line exists.
+ *
+ * @param       sptr            string pointer
+ * @param       err_f           error report file
+ * @return                      whether an error occurred
+ */
+[[nodiscard]] bool verify_sctn_strt(strptr *const sptr, rprt_f *const err_f) {  // .section start verification
+    cit10a_asrt(sptr != nullptr);
+    cit10a_asrt(err_f != nullptr);
+
+    // check trailing characters
+    if (check_ln_end(sptr, err_f))          return  true;
+
+    if (newln_strptr(sptr, err_f->file))    sptr->str   =   nullptr;
+    return  false;
 }
 
 /*-STACKMAP-REPEAT-OUTPUT-VERIFIER------------------------------------------------------------------------------------*/

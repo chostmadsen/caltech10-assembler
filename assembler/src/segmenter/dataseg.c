@@ -34,38 +34,17 @@ static void print_data_var_(const void *const d_var_v) {                        
 /**
  * Data var stackmap printer.
  *
- * @param       smap            dat stackmap
+ * @param       smap            data stackmap
  */
 void print_data_map(const stackmap *const smap) {                               // data stackmap printer
     print_stackmap(smap, "datamap", print_data_var_);
 }
 
-/*-DATASEG-VERIFIERS--------------------------------------------------------------------------------------------------*/
-
-/**
- * Verifies the .data start line (checks for trailing characters), then hands off if the next line exists.
- *
- * @param       sptr            string pointer
- * @param       err_f           error report file
- * @return                      whether an error occurred
- */
-[[nodiscard]] static bool verify_data_strt_( strptr *const sptr,
-                                             rprt_f *const err_f  ) {           // data start verification
-    cit10a_asrt(sptr != nullptr);
-    cit10a_asrt(err_f != nullptr);
-
-    // check trailing characters
-    if (check_ln_end(sptr, err_f))          return  true;
-
-    if (newln_strptr(sptr, err_f->file))    sptr->str   =   nullptr;
-    return  false;
-}
-
 /*-DATASEG-PARSER-----------------------------------------------------------------------------------------------------*/
 
 /**
- * Adds a data variable to the existing map of data variables, returning false if an error occurred adding the
- * value (either invalid number or existing item). Sets the existing location
+ * Adds a data variable to the existing map of data variables, returning false if an error occurred adding the value
+ * (either invalid number or existing item). Sets the existing location.
  *
  * @param       sptr            string pointer
  * @param       loc             data location
@@ -74,18 +53,18 @@ void print_data_map(const stackmap *const smap) {                               
  * @return                      whether an error occurred
  */
 [[nodiscard]] static bool data_chck_add_( strptr   *const sptr,
-                                          int             loc,
+                                          int      *const loc,
                                           stackmap *const smap,
                                           rprt_f   *const err_f ) {             // data add
     cit10a_asrt(sptr != nullptr && smap != nullptr);
-    cit10a_asrt(loc >= 0);
+    cit10a_asrt(*loc >= 0);
     cit10a_asrt(err_f != nullptr);
 
     // get identifier (assume at first char)
     const       size_t  slc_strt    =   sptr->col;
     const   smap_head   s_head      =   get_identifier(sptr, err_f);
     if (s_head.key.str == nullptr)      return  true;
-    data_var            smap_itm    =   { .var={ .head=s_head, .ln=sptr->ln + 1, .col=slc_strt }, .loc=loc };
+    data_var            smap_itm    =   { .var={ .head=s_head, .ln=sptr->ln + 1, .col=slc_strt }, .loc=*loc };
 
     // data verify
     err_f->ln   =   sptr->ln;
@@ -126,7 +105,9 @@ void print_data_map(const stackmap *const smap) {                               
     inc_strptr(sptr);
     if (check_ln_end(sptr, err_f))  return  true;
 
-    return  identifier_verify(smap, &smap_itm, err_f);
+    const   bool    ret =   identifier_verify(smap, &smap_itm, err_f);
+    if (!ret)               ++(*loc);
+    return  ret;
 }
 
 /**
@@ -164,7 +145,7 @@ void print_data_map(const stackmap *const smap) {                               
                 case tok_data:
                     // verify && skip
                     adj_strptr(sptr, n);
-                    if      (verify_data_strt_(sptr, err_f))    ret =   true;
+                    if      (verify_sctn_strt(sptr, err_f))     ret =   true;
                     else if (sptr->str == nullptr)              return  ret;
                     break;
                 case tok_code:
@@ -181,11 +162,11 @@ void print_data_map(const stackmap *const smap) {                               
                     break;
             }
         } else if (*sptr->str != CMMT_CHR && *sptr->str != '\0') {
-            // not line
-            if (data_chck_add_(sptr, *org, smap, err_f))    ret =   true;
-            ++(*org);
+            // skip blank lines
+            if (data_chck_add_(sptr, org, smap, err_f))         ret =   true;
         }
     } while (!newln_strptr(sptr, err_f->file));
+
     return  ret;
 }
 
@@ -219,7 +200,7 @@ void print_data_map(const stackmap *const smap) {                               
 
         // check .data line
         rprt_f  err_f   =   (rprt_f){ .file=source, .ln=sptr.ln, .col=sptr.col};
-        *err            =   verify_data_strt_(&sptr, &err_f);
+        *err            =   verify_sctn_strt(&sptr, &err_f);
         if (sptr.str == nullptr)    break;
 
         // parse .data

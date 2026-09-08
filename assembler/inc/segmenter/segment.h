@@ -21,6 +21,7 @@ typedef struct {                                                                
 [[nodiscard]] smap_head get_identifier(strptr *sptr, rprt_f *err_f);            // identifier getter
 
 [[nodiscard]] int parse_org(strptr *sptr, rprt_f *err_f);                       // .org parser
+[[nodiscard]] bool verify_sctn_strt(strptr *sptr, rprt_f *err_f);               // .section start verification
 
 [[nodiscard]] bool identifier_verify(       stackmap *smap,
                                       const void     *smap_itm, 
