@@ -186,7 +186,7 @@ constexpr   char        STORAGE_INIT        =   '?';                            
     X( "jl",        tok_jl,     jmp_relative_t,     0xb800 )                                                           \
     X( "jle",       tok_jle,    jmp_relative_t,     0xac00 )                                                           \
     X( "jne",       tok_jne,    jmp_relative_t,     0x9c00 )                                                           \
-    X( "jnz",       tok_jnz,    jmp_relative_t,     0x9c00 )  /* aka jnz */                                            \
+    X( "jnz",       tok_jnz,    jmp_relative_t,     0x9c00 )  /* aka jne */                                            \
     X( "jns",       tok_jns,    jmp_relative_t,     0x9800 )                                                           \
     X( "jnu",       tok_jnu,    jmp_relative_t,     0xbc00 )                                                           \
     X( "jnv",       tok_jnv,    jmp_relative_t,     0xa800 )                                                           \
