@@ -4,12 +4,12 @@
  */
 
 #include    <stddef.h>
+#include    <stdio.h>
 
 #include    "helpers/general.h"
-#include    "common/kwrds.h"
-#include    "common/hash_tables/pseudo.h"
-#include    "output/messages.h"
 #include    "output/errors.h"
+#include    "datastructures/stackmap.h"
+#include    "common/kwrds.h"
 #include    "reader/reader.h"
 #include    "segmenter/segment.h"
 #include    "segmenter/headerseg.h"
@@ -106,13 +106,9 @@ void print_header_map(const stackmap *const smap) {                             
         // check psuedo-ops
         if (*sptr->str == PSEUDO_STRT) {
             // check pseudo-op
-            inc_strptr(sptr);
-            size_t  n       =   0;
-            for (; is_alphanum(sptr->str[n]); ++n);
-            switch (pseudo_hash_lu(sptr->str, n).tok) {
+            switch (pseudo_hash_lu_adj(sptr)) {
                 case tok_code:
                     // verify && skip
-                    adj_strptr(sptr, n);
                     if      (verify_sctn_strt(sptr, err_f))     ret =   true;
                     else if (sptr->str == nullptr)              return  ret;
                     break;
@@ -121,7 +117,6 @@ void print_header_map(const stackmap *const smap) {                             
                     return  false;
                 case tok_org:
                     // new org
-                    adj_strptr(sptr, n);
                     const   int n_org   =   parse_org(sptr, err_f);
                     if (n_org == -1)        return  true;
                     *org                =   n_org;
@@ -165,11 +160,7 @@ void print_header_map(const stackmap *const smap) {                             
         if (*sptr.str != PSEUDO_STRT)   continue;
 
         // check for .code start
-        inc_strptr(&sptr);
-        size_t  n                   =   0;
-        for (; is_alphanum(sptr.str[n]); ++n);
-        if (pseudo_hash_lu(sptr.str, n).tok != tok_code)    continue;
-        adj_strptr(&sptr, n);
+        if (pseudo_hash_lu_adj(&sptr) != tok_code)          continue;
 
         // check .code line
         rprt_f  err_f   =   (rprt_f){ .file=source, .ln=sptr.ln, .col=sptr.col};

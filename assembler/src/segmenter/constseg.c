@@ -7,11 +7,9 @@
 #include    <stdio.h>
 
 #include    "helpers/general.h"
-#include    "output/messages.h"
 #include    "output/errors.h"
 #include    "datastructures/stackmap.h"
 #include    "common/kwrds.h"
-#include    "common/hash_tables/pseudo.h"
 #include    "common/gen_parse.h"
 #include    "reader/reader.h"
 #include    "segmenter/segment.h"
@@ -99,13 +97,9 @@ void print_const_map(const stackmap *const smap) {                              
         if (*sptr.str != PSEUDO_STRT)   continue;
 
         // check for .const
-        inc_strptr(&sptr);
-        size_t  n                   =   0;
-        for (; is_alphanum(sptr.str[n]); ++n);
-        if (pseudo_hash_lu(sptr.str, n).tok != tok_const)   continue;
+        if (pseudo_hash_lu_adj(&sptr) != tok_const)         continue;
 
         // add const value
-        adj_strptr(&sptr, n);
         *err    =   const_chck_add_(&sptr, &smap, &(rprt_f){ .file=source, .ln=i, .col=sptr.col });
     }
 

@@ -7,6 +7,7 @@
 #include    <string.h>
 #include    <inttypes.h>
 
+#include "common/hash_tables/pseudo.h"
 #include    "helpers/general.h"
 #include    "output/errors.h"
 #include    "output/messages.h"
@@ -90,6 +91,21 @@
 
     if (newln_strptr(sptr, err_f->file))    sptr->str   =   nullptr;
     return  false;
+}
+
+/**
+ * Lookup a .pseudo directive, and adjust the string pointer.
+ *
+ * @param       sptr            string pointer
+ * @return                      .pseudo directive
+ */
+[[nodiscard]] int pseudo_hash_lu_adj(strptr *const sptr) {                      // .psuedo lookup w/ strptr adj
+    inc_strptr(sptr);
+    size_t          n       =   0;
+    for (; is_alphanum(sptr->str[n]); ++n);
+    const   int     tok     =   pseudo_hash_lu(sptr->str, n).tok;
+    adj_strptr(sptr, n);
+    return  tok;
 }
 
 /*-STACKMAP-REPEAT-OUTPUT-VERIFIER------------------------------------------------------------------------------------*/
