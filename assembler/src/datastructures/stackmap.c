@@ -23,14 +23,20 @@
  * Allocates stackmap stacks.
  *
  * @param       buckets         number of stackmap buckets
+ * @param       elm_s           element item size
+ * @param       aln             align allocation
  * @return                      pointer to stackmap heads
  */
-[[nodiscard]] static stack *stackmap_alloc_heads_( const size_t buckets, 
-                                                   const size_t elm_s    ) {    // stackmap bucket allocator
+[[nodiscard]] static stack *stackmap_alloc_heads_( const size_t buckets,
+                                                   const size_t elm_s,
+                                                   const bool   aln      ) {    // stackmap bucket allocator
     // bucket creation
     cit10a_asrt(!(buckets & (buckets - 1)));
-    stack   *const  smap_heads          =   chckd_malloc(buckets * sizeof(stack), "stackmap stack*");
-    for (size_t i = 0; i < buckets; ++i)    smap_heads[i]   =   new_stack(elm_s, STACKMAP_ST_S);
+    stack   *const  smap_heads          =   (aln) ? chckd_aln_alloc(buckets * sizeof(stack), "aligned stackmap stack*")
+                                                  : chckd_malloc(buckets * sizeof(stack), "stackmap stack*");
+    for (size_t i = 0; i < buckets; ++i) {
+        smap_heads[i]   =   (aln) ? new_stack_aln(elm_s, STACKMAP_ST_S) : new_stack(elm_s, STACKMAP_ST_S);
+    }
     return  smap_heads;
 }
 
@@ -44,7 +50,7 @@ static void smap_realloc_buckets_(stackmap *const smap) {                       
     smap->buckets   <<= 1;
 
     // new bucket creation
-    stack   *const  new_heads   =   stackmap_alloc_heads_(smap->buckets, smap->elm_s);
+    stack   *const  new_heads   =   stackmap_alloc_heads_(smap->buckets, smap->elm_s, smap->aligned);
 
     // stack movement
     for (size_t i = 0; i < smap->buckets >> 1; ++i) {
@@ -75,7 +81,22 @@ static void smap_realloc_buckets_(stackmap *const smap) {                       
  */
 [[nodiscard]] stackmap new_stackmap(const size_t buckets, const size_t elm_s) { // stackmap creation
     cit10a_asrt(buckets != 0);
-    return  (stackmap){ .buckets=buckets, .elements=0, .elm_s=elm_s, .heads=stackmap_alloc_heads_(buckets, elm_s) };
+    return  (stackmap){ .buckets=buckets,                                    .elements=0,   .elm_s=elm_s,
+                        .heads=stackmap_alloc_heads_(buckets, elm_s, false), .aligned=false               };
+}
+
+/**
+ * Creates a new aligned stackmap with the header on the stack. Freeing should be done by the `free_stackmap` function.
+ *
+ * @param       buckets         initial stackmap buckets
+ * @param       elm_s           element item size
+ * @return                      new stackmap
+ */
+[[nodiscard]] stackmap new_stackmap_aln( const size_t buckets,
+                                         const size_t elm_s    ) {              // stackmap creation
+    cit10a_asrt(buckets != 0);
+    return  (stackmap){ .buckets=buckets,                                   .elements=0,   .elm_s=elm_s,
+                        .heads=stackmap_alloc_heads_(buckets, elm_s, true), .aligned=true                };
 }
 
 /*-STACKMAP-DATA-MODIFIER-/-VIEWER-FUNCTIONS--------------------------------------------------------------------------*/

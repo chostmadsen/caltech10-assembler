@@ -12,6 +12,7 @@
 [[nodiscard]] void *chckd_malloc(size_t size, const char *itm);                 // checked malloc
 [[nodiscard]] void *chckd_calloc(size_t n, size_t size, const char *itm);       // checked calloc
 [[nodiscard]] void *chckd_realloc(void *ptr, size_t size, const char *itm);     // checked realloc
+[[nodiscard]] void *chckd_aln_alloc(const size_t size, const char *itm);        // checked aligned alloc
 
 /*-MACROS-------------------------------------------------------------------------------------------------------------*/
 

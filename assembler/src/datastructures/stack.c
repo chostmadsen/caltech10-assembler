@@ -18,14 +18,17 @@
  *
  * @param       data_s          data size
  * @param       size            initial stack size
+ * @param       aln             align allocation
  * @return                      void* to stack data
  */
 [[nodiscard]] static void *alloc_st_data_( const size_t   data_s,
-                                           const unsigned size    ) {           // stack data allocation
+                                           const unsigned size,
+                                           const bool     aln     ) {           // stack data allocation
     cit10a_asrt(data_s > 0 && size > 0);
 
     // data allocation
-    void   *st_data     =   chckd_malloc(data_s * (int)size, "stack array void*");
+    void   *st_data     =   (aln) ? chckd_aln_alloc(data_s * (int)size, "algined stack array void*")
+                                  : chckd_malloc(data_s * (int)size, "stack array void*");
     return  st_data;
 }
 
@@ -43,7 +46,8 @@
 [[nodiscard]] stack new_stack_(const size_t data_s, const unsigned size) {      // stack creation on the stack
     // stack data allocation
     cit10a_asrt(size != 0);
-    return  (stack){ .data=alloc_st_data_(data_s, size), .len=0, .size=(int)size, .data_s=data_s };
+    return  (stack){ .data=alloc_st_data_(data_s, size, false), .len=0, .size=(int)size, .data_s=data_s,
+                     .aligned=false                                                                      };
 }
 
 /**
@@ -62,6 +66,20 @@
     return  st;
 }
 
+/**
+ * Creates a new aligned stack with the header on the stack. Freeing should be done by the `free_stack` function.
+ *
+ * @param       data_s          data size
+ * @param       size            initial stack size
+ * @return                      new stack
+ */
+[[nodiscard]] stack new_stack_aln(const size_t data_s, const unsigned size) {   // aligned stack creation on the stack
+    // stack data allocation
+    cit10a_asrt(size != 0);
+    return  (stack){ .data=alloc_st_data_(data_s, size, true), .len=0, .size=(int)size, .data_s=data_s,
+                     .aligned=true                                                                      };
+}
+
 /*-STACK-DATA-MODIFIER-/-VIEWER-FUNCTIONS-----------------------------------------------------------------------------*/
 
 /**
@@ -78,8 +96,13 @@ void push_stack(stack *const st, const void *const itm) {                       
         st->size    *=  2;
 
         // realloc stack data
-        void    *const  new_data    =   chckd_realloc(st->data, st->data_s * st->size, "stack push void*");
-        st->data    =   new_data;
+        if (!st->aligned)       st->data    =   chckd_realloc(st->data, st->data_s * st->size, "stack push void*");
+        else {
+            void    *const  new_data        =   chckd_aln_alloc(st->data_s * st->size, "aligned stack push void*");
+            memcpy(new_data, st->data, st->data_s * (size_t)(st->len - 1));
+            free(st->data);
+            st->data                        =   new_data;
+        }
     }
 
     // push item

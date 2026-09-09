@@ -26,6 +26,7 @@ typedef struct {                                                                
 typedef struct {                                                                // stackmap struct
             size_t      buckets,    elements,   elm_s;
             stack      *heads;
+            bool        aligned;
 } stackmap;
 
 typedef enum {                                                                  // stackmap collision type
@@ -35,6 +36,7 @@ typedef enum {                                                                  
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
 
 [[nodiscard]] stackmap new_stackmap(size_t buckets, size_t elm_s);              // stackmap creation
+[[nodiscard]] stackmap new_stackmap_aln(size_t buckets, size_t elm_s);          // aligned stackmap creation
 
 [[nodiscard]] bool stackmap_add(stackmap *smap, const void *data);              // stackmap kv add
 [[nodiscard]] smap_clsn_t stackmap_add_lwr(stackmap *smap, const void *data);   // stackmap kv add (lower)

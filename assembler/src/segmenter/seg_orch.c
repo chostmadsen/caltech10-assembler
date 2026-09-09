@@ -6,8 +6,7 @@
 #include    <pthread.h>
 #include    <stdatomic.h>
 
-#include "datastructures/stack.h"
-#include    "helpers/general.h"
+#include    "datastructures/stack.h"
 #include    "datastructures/stackmap.h"
 #include    "output/external.h"
 #include    "output/errors.h"
@@ -20,7 +19,7 @@
 
 /*-STORAGE-ITEMS------------------------------------------------------------------------------------------------------*/
 
-alignas(CACHE_LN_S) atomic_bool         seg_end_flg     =   false;              // segmenter end assembly flag
+static      atomic_bool     seg_end_flg;                                        // segmenter end assembly flag
 
 /*-SEGMENTER-THREAD-CALLS---------------------------------------------------------------------------------------------*/
 
@@ -36,7 +35,9 @@ typedef struct {                                                                
  */
 static void *constseg_call(void *const cseg_v) {                                // constseg call
     const   cseg_args   *const  cseg        =   (cseg_args*)cseg_v;
-    if (constseg(cseg->source, cseg->smap))     atomic_store_explicit(&seg_end_flg, true, memory_order_relaxed);
+    if (constseg(cseg->source, cseg->smap) && !atomic_load_explicit(&seg_end_flg, memory_order_relaxed)) {
+        atomic_store_explicit(&seg_end_flg, true, memory_order_relaxed);
+    }
     return  nullptr;
 }
 
@@ -52,7 +53,9 @@ typedef struct {                                                                
  */
 static void *dataseg_call(void *const dseg_v) {                                 // dataseg call
     const   dseg_args   *const  dseg        =   (dseg_args*)dseg_v;
-    if (dataseg(dseg->source, dseg->smap))      atomic_store_explicit(&seg_end_flg, true, memory_order_relaxed);
+    if (dataseg(dseg->source, dseg->smap) && !atomic_load_explicit(&seg_end_flg, memory_order_relaxed)) {
+        atomic_store_explicit(&seg_end_flg, true, memory_order_relaxed);
+    }
     return  nullptr;
 }
 
@@ -68,7 +71,9 @@ typedef struct {                                                                
  */
 static void *headerseg_call(void *const hseg_v) {                               // headerseg call
     const   hseg_args   *const  hseg        =   (hseg_args*)hseg_v;
-    if (headerseg(hseg->source, hseg->hmap))    atomic_store_explicit(&seg_end_flg, true, memory_order_relaxed);
+    if (headerseg(hseg->source, hseg->hmap) && !atomic_load_explicit(&seg_end_flg, memory_order_relaxed)) {
+        atomic_store_explicit(&seg_end_flg, true, memory_order_relaxed);
+    }
     return  nullptr;
 }
 
@@ -81,13 +86,13 @@ static void *headerseg_call(void *const hseg_v) {                               
  * @return                      segmaps
  */
 [[nodiscard]] segmaps segment(const src_f *const source) {                      // segment orchestrator
-    atomic_init(&seg_end_flg, false);
+    atomic_store_explicit(&seg_end_flg, false, memory_order_relaxed);
 
     // setup segmap
-    segmaps segmap  =   (segmaps){ .constmap=new_stackmap(CONST_BUCKETS, sizeof(const_var)),
-                                   .datamap=new_stackmap(DATA_BUCKETS, sizeof(data_var)),
-                                   .headmap={ .stmts=new_stack(sizeof(ln_info), LINE_INIT),
-                                              .smap=new_stackmap(HEADER_BUCKETS, sizeof(header_var)) } };
+    segmaps segmap  =   (segmaps){ .constmap=new_stackmap_aln(CONST_BUCKETS, sizeof(const_var)),
+                                   .datamap=new_stackmap_aln(DATA_BUCKETS, sizeof(data_var)),
+                                   .headmap={ .stmts=new_stack_aln(sizeof(ln_info), LINE_INIT),
+                                              .smap=new_stackmap_aln(HEADER_BUCKETS, sizeof(header_var)) } };
 
     // call arg setup
     hseg_args   hseg    =   { .source=source, .hmap=&segmap.headmap };
@@ -95,10 +100,10 @@ static void *headerseg_call(void *const hseg_v) {                               
 
     // setup thread items
     pthread_t   threads[SEGMENT_NUM - 1];
-    void       *(*thrd_fns[])(void*)        =   { headerseg_call, dataseg_call };
-    void       *thrd_data[SEGMENT_NUM - 1]  =   { &hseg, &dseg };
-    char       *thrd_name[SEGMENT_NUM - 1]  =   { "headerseg", "dataseg" };
-    bool        live[SEGMENT_NUM - 1]       =   { false };
+    void       *(*thrd_fns[SEGMENT_NUM - 1])(void*)     =   { headerseg_call, dataseg_call };
+    void       *thrd_data[SEGMENT_NUM - 1]              =   { &hseg, &dseg };
+    char       *thrd_name[SEGMENT_NUM - 1]              =   { "headerseg", "dataseg" };
+    bool        live[SEGMENT_NUM - 1]                   =   { 0 };
 
     // thread spawn
     for (int thrd_num = 0; thrd_num < (int)SEGMENT_NUM - 1; ++thrd_num) {

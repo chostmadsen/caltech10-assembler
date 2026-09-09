@@ -17,6 +17,7 @@ typedef struct {                                                                
             void       *data;
             int         len,    size;
   /*const*/ size_t      data_s;
+            bool        aligned;
 } stack;
 
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
@@ -30,6 +31,10 @@ typedef struct {                                                                
 #define malloc_stack_dflt_(data_s)              malloc_stack_(data_s, DFLT_STACK_S)
 #define ms_pick_(data_s, _1, _fn, ...)          _fn
 #define malloc_stack(...)                       ms_pick_(__VA_ARGS__, malloc_stack_, malloc_stack_dflt_)(__VA_ARGS__)
+
+[[nodiscard]] stack new_stack_aln(size_t data_s, unsigned size);                // aligned stack creation on the stack
+
+void set_st_aln(stack *st);                                                     // flag stack to align
 
 void push_stack(stack *st, const void *itm);                                    // push to stack
 void *pop_stack(stack *st);                                                     // pop from stack
