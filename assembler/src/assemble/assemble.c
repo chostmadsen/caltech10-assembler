@@ -10,9 +10,9 @@
 #include    "assemble/line.h"
 #include    "assemble/assemble.h"
 
-void assemble(const src_f *const source, const segmaps *const segmap) {
+void assemble(const segmaps *const segmap) {
     for (int i = 0; i < segmap->headmap.stmts.len; ++i) {
         const   ln_info *const  ln_inf  =   (ln_info*)peek_stack(&segmap->headmap.stmts, i);
-        line_assemble(source, segmap, ln_inf);
+        line_assemble(segmap, ln_inf);
     }
 }

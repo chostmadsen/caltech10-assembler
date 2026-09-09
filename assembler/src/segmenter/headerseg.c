@@ -67,18 +67,20 @@ void print_header_map(const headermap *const hmap) {                            
     if (s_head.key.str == nullptr)      return  true;
     if (*sptr->str != HEADER_CHR) {
         // code line - skip
-        push_stack(&hmap->stmts, &(ln_info){ .ln=sptr->ln, .loc=(*loc)++ });
+        push_stack(&hmap->stmts, &(ln_info){ .source=err_f->file, .ln=sptr->ln, .loc=(*loc)++ });
         return  false;
     }
 
     // add header
-    header_var          smap_itm    =   { .var={ .head=s_head, .ln=sptr->ln + 1, .col=slc_strt }, .loc=*loc };
+    header_var          smap_itm    =   { .var={ .head=s_head,     .source=err_f->file,
+                                                 .ln=sptr->ln + 1, .col=slc_strt        },
+                                          .loc=*loc                                        };
     const       bool    ret         =   identifier_verify(&hmap->smap, &smap_itm, err_f);
 
     // check for additional code
     for (inc_strptr(sptr); is_whitespace(*sptr->str); inc_strptr(sptr));
     if (*sptr->str != CMMT_CHR && *sptr->str != '\0') {
-        push_stack(&hmap->stmts, &(ln_info){ .ln=sptr->ln, .loc=(*loc)++ });
+        push_stack(&hmap->stmts, &(ln_info){ .source=err_f->file, .ln=sptr->ln, .loc=(*loc)++ });
     }
     return  ret;
 }

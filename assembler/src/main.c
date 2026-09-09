@@ -52,7 +52,7 @@ int main(const int argc, const char *const *const argv) {                       
     if (c_args.verbosity >= 4 || c_args.emit.table)     print_segmap(&smaps);
 
     // assembly
-    assemble(&source_f, &smaps);
+    assemble(&smaps);
 
     // end free
     free_src_f(&source_f);

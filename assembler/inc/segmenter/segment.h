@@ -9,12 +9,14 @@
 
 #include    "helpers/general.h"
 #include    "output/messages.h"
+#include    "reader/reader.h"
 #include    "datastructures/stackmap.h"
 
 /*-STRUCTS-/-ENUMS----------------------------------------------------------------------------------------------------*/
 
 typedef struct {                                                                // var token stackmap head
             smap_head   head;
+    const   src_f      *source;
             size_t      ln,     col;
 } var_tok;
 

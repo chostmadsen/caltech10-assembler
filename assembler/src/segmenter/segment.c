@@ -136,6 +136,7 @@
     const   size_t              ln      =   redef->ln;
     const   size_t              col     =   redef->col + 1;
     const   size_t              col_e   =   redef->col + redef->head.key.len;
+    const   char    *const      file    =   redef->source->f_name;
 
     if (clsn_t == smap_lwr_clsn_t && !c_args.case_sens) {
         // get old def
@@ -145,12 +146,12 @@
 
         // case collision
         cit10a_msg( &(msg_info){ .type=msg_err_t, .header="case-variant redefinition", .report_f=err_f },
-                    "case-variant redefinition of identifier [ %s @ %d::%d-%d ]", key, ln, col, col_e     );
+                    "case-variant redefinition of identifier [ %s @ %s::%d::%d-%d ]", key, file, ln, col, col_e );
         return  true;
     } else if (clsn_t == smap_full_clsn_t){
         // full collision
         cit10a_msg( &(msg_info){ .type=msg_err_t, .header="redefinition", .report_f=err_f },
-                "redefinition of identifier [ @ %d::%d-%d ]", ln, col, col_e             );
+                "redefinition of identifier [ @ %s::%d::%d-%d ]", ln, file, col, col_e       );
         return  true;
     }
     return  false;
@@ -168,5 +169,5 @@ void print_var_tok(const var_tok *const var) {                                  
 
     printf("0x%016" PRIx64 " : ", var->head.hash);
     print_src_slice(&var->head.key, stdout);
-    printf("[%zu::%zu]", var->ln, var->col);
+    printf("[%s::%zu::%zu]", var->source->f_name, var->ln, var->col);
 }

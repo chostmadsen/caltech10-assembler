@@ -63,7 +63,9 @@ void print_data_map(const stackmap *const smap) {                               
     const       size_t  slc_strt    =   sptr->col;
     const   smap_head   s_head      =   get_identifier(sptr, err_f);
     if (s_head.key.str == nullptr)      return  true;
-    data_var            smap_itm    =   { .var={ .head=s_head, .ln=sptr->ln + 1, .col=slc_strt }, .loc=*loc };
+    data_var            smap_itm    =   { .var={ .head=s_head,     .source=err_f->file,
+                                                 .ln=sptr->ln + 1, .col=slc_strt        },
+                                          .loc=*loc                                        };
 
     // data verify
     err_f->ln   =   sptr->ln;

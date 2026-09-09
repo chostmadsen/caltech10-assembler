@@ -400,16 +400,14 @@
 /**
  * Assembles a singular line, returning the full instruction as well as the line.
  *
- * @param       source          source file
  * @param       segmap          segmaps
  * @param       ln_inf          line information
  * @return                      line assembly instruction
  */
-[[nodiscard]] ln_asm line_assemble( const src_f   *const source,
-                                    const segmaps *const segmap, 
+[[nodiscard]] ln_asm line_assemble( const segmaps *const segmap, 
                                     const ln_info *const ln_inf  ) {            // line assembler
-
-    strptr  sptr    =   { .ln=ln_inf->ln, .col=0, .str=src_f_getline(source, ln_inf->ln) };
+    const   src_f   *const  source  =   ln_inf->source;
+    strptr                  sptr    =   { .ln=ln_inf->ln, .col=0, .str=src_f_getline(source, ln_inf->ln) };
     for (; is_whitespace(*sptr.str); inc_strptr(&sptr));
     const   char    *const  str_out_tst =   sptr.str;
 
@@ -425,7 +423,7 @@
     }
 
     tok_itm     op_tok  =   opcode_hash_lu(sptr.str, n);
-    ln_asm      ret     =   { .instr=op_tok.instr, .loc=ln_inf->loc, .ln=ln_inf->ln };
+    ln_asm      ret     =   { .instr=op_tok.instr, .source=source, .loc=ln_inf->loc, .ln=ln_inf->ln };
     rprt_f      err_f   =   { .file=source, .ln=ln_inf->ln, .col=sptr.col };
     adj_strptr(&sptr, n);
 

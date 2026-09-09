@@ -63,7 +63,7 @@ void print_const_map(const stackmap *const smap) {                              
     const   size_t      slc_strt    =   sptr->col;
     const   smap_head   s_head      =   get_identifier(sptr, err_f);
     if (s_head.key.str == nullptr)      return  true;
-    const_var           smap_itm    =   { .var={ .head=s_head, .ln=sptr->ln + 1, .col=slc_strt } };
+    const_var           smap_itm    =   { .var={ .head=s_head, .source=err_f->file, .ln=sptr->ln + 1, .col=slc_strt } };
 
     // get number value
     const   int         ret         =   parse_num_repr(sptr, err_f);
@@ -100,7 +100,6 @@ void print_const_map(const stackmap *const smap) {                              
         if (pseudo_hash_lu_adj(&sptr) != tok_const)         continue;
 
         // add const value
-        //
         if (const_chck_add_(&sptr, smap, &(rprt_f){ .file=source, .ln=i, .col=sptr.col }))      err =   true;
     }
 
