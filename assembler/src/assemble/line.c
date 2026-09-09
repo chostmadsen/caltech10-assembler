@@ -20,7 +20,19 @@
 #include    "segmenter/seg_orch.h"
 #include    "assemble/line.h"
 
-[[nodiscard]] static int asm_get_val(strptr *const sptr, const stackmap *const constmap, rprt_f *const err_f) {
+/*-LINE-ASSEMBLY-VALUE-GETTERS----------------------------------------------------------------------------------------*/
+
+/**
+ * Get assembly value, either from a raw value or the constant map.
+ *
+ * @param       sptr            string pointer
+ * @param       constmap        constants
+ * @param       err_f           error file
+ * @return                      value (-1 for error)
+ */
+[[nodiscard]] static int asm_get_val_(        strptr   *const sptr,
+                                       const  stackmap *const constmap,
+                                       rprt_f          *const err_f     ) {     // assembler value
     if (('0' <= *sptr->str && *sptr->str <= '9') || *sptr->str == HEX_CHR_ALT) {
         // raw number parse
         return  parse_num_repr(sptr, err_f);
@@ -50,18 +62,40 @@
     return  cvar->val;
 }
 
-[[nodiscard]] static int get_immediate_(strptr *const sptr, const stackmap *const constmap, rprt_f *const err_f) {
+/**
+ * Get an immediate value, for instructions that require an immediate value.
+ *
+ * @param       sptr            string pointer
+ * @param       constmap        constants
+ * @param       err_f           error file
+ * @return                      value (-1 for error)
+ */
+[[nodiscard]] static int get_immediate_(        strptr   *const sptr,
+                                         const  stackmap *const constmap,
+                                         rprt_f          *const err_f     ) {     // assembler immediate
     // skip whitespace
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
 
     // get immediate value
-    const   int     imd_v       =   asm_get_val(sptr, constmap, err_f);
+    const   int     imd_v       =   asm_get_val_(sptr, constmap, err_f);
     if (imd_v == -1)                return  -1;
     if (check_ln_end(sptr, err_f))  return  -1;
     return  imd_v;
 }
 
-[[nodiscard]] static int get_mem_(strptr *const sptr, const stackmap *const datamap, rprt_f *const err_f) {
+/*-LINE-ASSEMBLY-MEMORY-GETTERS---------------------------------------------------------------------------------------*/
+
+/**
+ * Get a value from the defined program memory.
+ *
+ * @param       sptr            string pointer
+ * @param       datamap         memory
+ * @param       err_f           error file
+ * @return                      value (-1 for error)
+ */
+[[nodiscard]] static int get_mem_(        strptr   *const sptr,
+                                   const  stackmap *const datamap, 
+                                   rprt_f          *const err_f    ) {          // assembler memory
     // skip whitespace
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
 
@@ -86,6 +120,7 @@
             return  -1;
         }
 
+        // table lookup
         const   data_var   *dvar;
         if    (c_args.case_sens)    dvar    =   stackmap_get_k_lwr(datamap, &slc);
         else                        dvar    =   stackmap_get_k_lwr_lwr(datamap, &slc);
@@ -103,7 +138,19 @@
     return  ret;
 }
 
-[[nodiscard]] static int get_offset_(strptr *const sptr, const stackmap *const constmap, rprt_f *const err_f) {
+/*-LINE-ASSEMBLY-OFFSET-GETTERS---------------------------------------------------------------------------------------*/
+
+/**
+ * Get an offset from some addressing modes.
+ *
+ * @param       sptr            string pointer
+ * @param       constmap        constants
+ * @param       err_f           error file
+ * @return                      value (-1 for error)
+ */
+[[nodiscard]] static int get_offset_(        strptr   *const sptr,
+                                      const  stackmap *const constmap,
+                                      rprt_f          *const err_f     ) {      // offset
     // check for offset
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
     if (*sptr->str != CMMA_CHR) {
@@ -119,13 +166,23 @@
 
     // get offset
     for (inc_strptr(sptr); is_whitespace(*sptr->str); inc_strptr(sptr));
-    const   int     ret         =   asm_get_val(sptr, constmap, err_f);
+    const   int     ret         =   asm_get_val_(sptr, constmap, err_f);
     if (ret == -1)                  return  -1;
     if (check_ln_end(sptr, err_f))  return  -1;
     return  ret;
 }
 
-[[nodiscard]] static int alu_offs_(strptr *const sptr, const segmaps *const segmap, rprt_f *const err_f) {
+/**
+ * Get the full addressing mode adjustment from an ALU instruction.
+ *
+ * @param       sptr            string pointer
+ * @param       segmap          segmaps
+ * @param       err_f           error file
+ * @return                      value (-1 for error)
+ */
+[[nodiscard]] static int alu_offs_(        strptr  *const sptr,
+                                    const  segmaps *const segmap, 
+                                    rprt_f         *const err_f   ) {           // alu addressing mode select
     // skip whitespace
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
     int         ret     =   0;
@@ -142,7 +199,17 @@
     return  ret + offs;
 }
 
-[[nodiscard]] static int ldst_offs_(strptr *const sptr, const segmaps *const segmap, rprt_f *const err_f) {
+/**
+ * Get the full addressing mode adjustment from a load / store instruction.
+ *
+ * @param       sptr            string pointer
+ * @param       segmap          segmaps
+ * @param       err_f           error file
+ * @return                      value (-1 for error)
+ */
+[[nodiscard]] static int ldst_offs_(        strptr  *const sptr,
+                                     const  segmaps *const segmap, 
+                                     rprt_f         *const err_f   ) {          // load store addressing mode select
     // skip whitespace
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
     int         ret     =   0;
@@ -182,7 +249,21 @@
     return  ret + offs;
 }
 
-[[nodiscard]] static int jmp_parse_(strptr *const sptr, const stackmap *const headermap, rprt_f *const err_f, const int loc) {
+/*-LINE-ASSEMBLY-JUMP-PARSERS-----------------------------------------------------------------------------------------*/
+
+/**
+ * Jump parser; returns the absolute location of a jump, even for relative jumps from the program counter.
+ *
+ * @param       sptr            string pointer
+ * @param       headermap       headers
+ * @param       loc             current location
+ * @param       err_f           error file
+ * @return                      value (-1 for error)
+ */
+[[nodiscard]] static int jmp_parse_(       strptr   *const sptr,
+                                     const stackmap *const headermap, 
+                                     const int             loc, 
+                                           rprt_f   *const err_f) {             // jump parser
     // return setup
     int             ret     =   0;
 
@@ -255,13 +336,25 @@
     return  ret;
 }
 
-[[nodiscard]] static int rjmp_(strptr *const sptr, const stackmap *const headermap, rprt_f *const err_f, const int loc) {
+/**
+ * Relative jump parser; relative from current offset, minus 1 (in accordance with how the CPU works).
+ *
+ * @param       sptr            string pointer
+ * @param       headermap       headers
+ * @param       loc             current location
+ * @param       err_f           error file
+ * @return                      value (-1 for error)
+ */
+[[nodiscard]] static int rjmp_(       strptr   *const sptr,
+                                const stackmap *const headermap, 
+                                const int             loc, 
+                                      rprt_f   *const err_f) {                  // relative jump
     // skip whitespace
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
     size_t  p_strt      =   sptr->col;
 
     // get jump location
-    const   int jloc    =   jmp_parse_(sptr, headermap, err_f, loc);
+    const   int jloc    =   jmp_parse_(sptr, headermap, loc, err_f);
     if (jloc == -1)         return  -1;
     int         ret     =   jloc - loc;
 
@@ -284,13 +377,37 @@
     return  (neg) ? (ret ^ MAX_NUM) + 1 : ret;
 }
 
-[[nodiscard]] static int ajmp_(strptr *const sptr, const stackmap *const headermap, rprt_f *const err_f, const int loc) {
+/**
+ * Absolute jump parser; absolute program address.
+ *
+ * @param       sptr            string pointer
+ * @param       headermap       headers
+ * @param       loc             current location
+ * @param       err_f           error file
+ * @return                      value (-1 for error)
+ */
+[[nodiscard]] static int ajmp_(       strptr   *const sptr,
+                                const stackmap *const headermap, 
+                                const int             loc, 
+                                      rprt_f   *const err_f) {                  // absolute jump
     // skip whitespace
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
-    return  jmp_parse_(sptr, headermap, err_f, loc);
+    return  jmp_parse_(sptr, headermap, loc, err_f);
 }
 
-[[nodiscard]] ln_asm line_assemble(const src_f *const source, const segmaps *const segmap, const ln_info *const ln_inf) {
+/*-LINE-ASSEMBLER-----------------------------------------------------------------------------------------------------*/
+
+/**
+ * Assembles a singular line, returning the full instruction as well as the line.
+ *
+ * @param       source          source file
+ * @param       segmap          segmaps
+ * @param       ln_inf          line information
+ * @return                      line assembly instruction
+ */
+[[nodiscard]] ln_asm line_assemble( const src_f   *const source,
+                                    const segmaps *const segmap, 
+                                    const ln_info *const ln_inf  ) {            // line assembler
 
     strptr  sptr    =   { .ln=ln_inf->ln, .col=0, .str=src_f_getline(source, ln_inf->ln) };
     for (; is_whitespace(*sptr.str); inc_strptr(&sptr));
@@ -308,18 +425,20 @@
     }
 
     tok_itm     op_tok  =   opcode_hash_lu(sptr.str, n);
-    ln_asm      ret     =   { .instr=op_tok.instr, .ln=ln_inf->ln };
+    ln_asm      ret     =   { .instr=op_tok.instr, .loc=ln_inf->loc, .ln=ln_inf->ln };
     rprt_f      err_f   =   { .file=source, .ln=ln_inf->ln, .col=sptr.col };
     adj_strptr(&sptr, n);
 
     switch(op_tok.grp) {
 
         case opcode_no_grp:
+            // no opcode
             err_f.len   =   n;
             cit10a_msg(&(msg_info){ .type=msg_err_t, .header="unknown opcode", .report_f=&err_f}, "invalid opcode");
             return  (ln_asm){ .ln=-1, .instr=-1 };
 
         case alu_offset_t:
+            // alu offset
             const   int     alu_v   =   alu_offs_(&sptr, segmap, &err_f);
             if (alu_v == -1)            return  (ln_asm){ .ln=-1, .instr=-1 };
             ret.instr               +=  alu_v;
@@ -328,6 +447,7 @@
         case io_t:              [[fallthrough]];
         case ldst_immediate_t:  [[fallthrough]];
         case alu_immediate_t:
+            // any immediate
             const   int     imd_v   =   get_immediate_(&sptr, &segmap->constmap, &err_f);
             if (imd_v == -1)            return  (ln_asm){ .ln=-1, .instr=-1 };
             ret.instr               +=  imd_v;
@@ -338,30 +458,35 @@
         case subrout_st_lone_t: [[fallthrough]];
         case misc_t:            [[fallthrough]];
         case ind_reg_t:
+            // any lone operation
             if (check_ln_end(&sptr, &err_f))    return  (ln_asm){ .ln=-1, .instr=-1 };
             break;
 
         case ldst_direct_t:
+            // load store direct
             const   int     dir_v   =   get_mem_(&sptr, &segmap->datamap, &err_f);
             if (dir_v == -1)            return  (ln_asm){ .ln=-1, .instr=-1 };
             ret.instr               +=  dir_v;
             break;
 
         case ldst_indexed_t:
+            // load store indexed
             const   int     ldst_v  =   ldst_offs_(&sptr, segmap, &err_f);
             if (ldst_v == -1)           return  (ln_asm){ .ln=-1, .instr=-1 };
             ret.instr               +=  ldst_v;
             break;
 
         case jmp_relative_t:
-            const   int     rjmp_v  =   rjmp_(&sptr, &segmap->headmap.smap, &err_f, ln_inf->loc);
+            // relative jump
+            const   int     rjmp_v  =   rjmp_(&sptr, &segmap->headmap.smap, ln_inf->loc, &err_f);
             if (rjmp_v == -1)           return  (ln_asm){ .ln=-1, .instr=-1 };
             ret.instr               +=  rjmp_v - 1;
             break;
 
         case jmp_absolute_t:    [[fallthrough]];
         case subrout_st_adrs_t:
-            const   int     ajmp_v  =   ajmp_(&sptr, &segmap->headmap.smap, &err_f, ln_inf->loc);
+            // absolute pc adjustment
+            const   int     ajmp_v  =   ajmp_(&sptr, &segmap->headmap.smap, ln_inf->loc, &err_f);
             if (ajmp_v == -1)           return  (ln_asm){ .ln=-1, .instr=-1 };
             ret.instr               +=  ajmp_v - 1;
             break;
@@ -372,6 +497,6 @@
 
     }
 
-    printf("%04x %04x :: %s\n", ln_inf->loc, ret.instr, str_out_tst);
+    printf("%04x %04x :: %s\n", ret.loc, ret.instr, str_out_tst);
     return  ret;
 }

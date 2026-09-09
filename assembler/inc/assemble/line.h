@@ -13,9 +13,12 @@
 
 typedef struct {                                                                // line assembly instruction
             int         instr;
+            int         loc;
             int         ln;
 } ln_asm;
 
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
 
-[[nodiscard]] ln_asm line_assemble(const src_f *source, const segmaps *segmap, const ln_info *ln_inf); 
+[[nodiscard]] ln_asm line_assemble( const src_f   *source,
+                                    const segmaps *segmap,
+                                    const ln_info *ln_inf  );                   // singular line assembly
