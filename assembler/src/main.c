@@ -43,7 +43,7 @@ int main(const int argc, const char *const *const argv) {                       
     if (c_args.verbosity >= 4 || c_args.emit.file)      print_src_f(&source_f);
 
     // preprocessor
-    if (preprocess(&source_f))      cit10a_exit(PREPROCESS_ERRNO);
+    preprocess(&source_f);
 
     // segment processor
     segmaps     smaps           =   segment(&source_f);

@@ -15,7 +15,7 @@
 
 /*-PSEUDO-CONSTANTS---------------------------------------------------------------------------------------------------*/
 
-constexpr   uint64_t    PSEUDO_OFFSET       =   0xf893a2eefb32555e;             // pseudo hash offset
+constexpr   uint64_t    PSEUDO_OFFSET       =   0x7476cf8a4baa5dc0;             // pseudo hash offset
 constexpr   size_t      PSEUDO_TBL_S        =   8;                              // pseudo hash table size
 
 constexpr   size_t      PSEUDO_MAX_STR      =   7;                              // pseudo hash table max string length
@@ -23,11 +23,12 @@ constexpr   size_t      PSEUDO_MAX_STR      =   7;                              
 /*-PSEUDO-HASH-TABLE--------------------------------------------------------------------------------------------------*/
 
 static  const   hash_entry  pseudo_table[PSEUDO_TBL_S]  =   {                   // pseudo hash table
-    [2]     =   { 0x6fd6d7b4540bf04a, "data",    4, { .tok=tok_data,  .grp=pseudo_segspec_t, .instr=0 } },
-    [7]     =   { 0x2406a9cc2754cf2f, "code",    4, { .tok=tok_code,  .grp=pseudo_segspec_t, .instr=0 } },
-    [1]     =   { 0x3be2a69d65cafeb1, "org",     3, { .tok=tok_org,   .grp=pseudo_pseudoa_t, .instr=0 } },
-    [4]     =   { 0x56d726a9de56acdc, "const",   5, { .tok=tok_const, .grp=pseudo_pseudoa_t, .instr=0 } },
-    [5]     =   { 0x3d9618eb4724ec95, "include", 7, { .tok=tok_incl,  .grp=pseudo_pseudoa_t, .instr=0 } }
+    [1]     =   { 0xe44ee1c1f0c66509, "data",    4, { .tok=tok_data,  .grp=pseudo_segspec_t, .instr=0 } },
+    [3]     =   { 0xcc695fb6fa2982e3, "code",    4, { .tok=tok_code,  .grp=pseudo_segspec_t, .instr=0 } },
+    [6]     =   { 0xf10f2014a4f3c7e6, "none",    4, { .tok=tok_none,  .grp=pseudo_segspec_t, .instr=0 } },
+    [2]     =   { 0x472e66a49f0a4faa, "org",     3, { .tok=tok_org,   .grp=pseudo_pseudoa_t, .instr=0 } },
+    [5]     =   { 0xca60b99e863fd1cd, "const",   5, { .tok=tok_const, .grp=pseudo_pseudoa_t, .instr=0 } },
+    [0]     =   { 0xbec34c9ca458a4c8, "include", 7, { .tok=tok_incl,  .grp=pseudo_pseudoa_t, .instr=0 } }
 };
 
 /*-PSEUDO-HASH-FUNCTION-----------------------------------------------------------------------------------------------*/

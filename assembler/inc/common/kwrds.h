@@ -26,7 +26,8 @@ constexpr   char        PSEUDO_STRT         =   '.';                            
 
 #define PSEUDO_SEGSPEC_T    /* str, tok, grp, _instr */                                                                \
     X( "data",      tok_data,   pseudo_segspec_t,  0 )                                                                 \
-    X( "code",      tok_code,   pseudo_segspec_t,  0 )
+    X( "code",      tok_code,   pseudo_segspec_t,  0 )                                                                 \
+    X( "none",      tok_none,   pseudo_segspec_t,  0 )
 
 #define PSEUDO_PSEUDOA_T    /* str, tok, grp, _instr */                                                                \
     X( "org",       tok_org,    pseudo_pseudoa_t,  0 )                                                                 \

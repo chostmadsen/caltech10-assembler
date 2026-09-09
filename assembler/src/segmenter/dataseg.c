@@ -143,6 +143,7 @@ void print_data_map(const stackmap *const smap) {                               
                     if      (verify_sctn_strt(sptr, err_f))     ret =   true;
                     else if (sptr->str == nullptr)              return  ret;
                     break;
+                case tok_none:  [[fallthrough]];
                 case tok_code:
                     // break out of this (incremented in returned loop)
                     return  false;

@@ -9,4 +9,4 @@
 
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
 
-[[nodiscard]] bool preprocess(const src_f *const source);                       // preprocessor
+void preprocess(const src_f *const source);                                     // preprocessor

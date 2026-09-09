@@ -3,13 +3,80 @@
  * Assembler preprocessor.
  */
 
+#include    "helpers/general.h"
 #include    "output/errors.h"
 #include    "output/messages.h"
 #include    "common/kwrds.h"
 #include    "common/hash_tables/pseudo.h"
+#include    "common/gen_parse.h"
 #include    "reader/reader.h"
+#include    "preprocessor/preprocessor.h"
 
 /*-PSEUDO-OP-VERIFIER-------------------------------------------------------------------------------------------------*/
+
+/**
+ * Verify all .none sections (for constants, helps w/ output alignment).
+ *
+ * @param       source          source file
+ * @return                      whether there was an invalid none section
+ */
+[[nodiscard]] static bool verify_none_sctn_( rprt_f *const err_f,
+                                             strptr *const sptr   ) {           // .none verifier
+    cit10a_asrt(err_f != nullptr);
+    cit10a_asrt(sptr != nullptr);
+
+    // check section end
+    bool    ret     =   check_ln_end(sptr, err_f);
+
+    while (!newln_strptr(sptr, err_f->file)) {
+        // skip whitespace
+        for(; is_whitespace(*sptr->str); inc_strptr(sptr));
+
+        // check item
+        if (*sptr->str == CMMT_CHR || *sptr->str == '\0')       continue;
+
+        // non-pseudo
+        err_f->ln   =   sptr->ln;
+        err_f->col  =   sptr->col;
+        if (*sptr->str != PSEUDO_STRT) {
+            // set up error file
+            err_f->len  =   1;
+            // error
+            cit10a_msg( &(msg_info){ .type=msg_warn_t, .header="ignored text", .report_f=err_f },
+                        "non pseudo-op directives found in `.none`; prepend source with a directive." );
+            ret =   true;
+            continue;
+        }
+
+        // check pseudo-ops
+        size_t  n   =   0;
+        for (inc_strptr(sptr); is_alphanum(sptr->str[n]); ++n);
+        err_f->len  =   n;
+
+        // switch on pseudo-op
+        switch (pseudo_hash_lu(sptr->str, n).tok) {
+            case tok_data:  return  ret;
+            case tok_code:  return  ret;
+            case tok_org:
+                cit10a_msg( &(msg_info){ .type=msg_warn_t, .header="invalid .org", .report_f=err_f}, 
+                            "ignored .org directive"                                                 );
+                continue;
+            case tok_none:  [[fallthrough]];
+            case tok_const: [[fallthrough]];
+            case tok_incl:  break;
+            case pseudo_no_tok:
+                cit10a_msg( &(msg_info){ .type=msg_err_t, .header="unknown directive", .report_f=err_f },
+                            "unknown pseudo-op directive"                                                 );
+                ret =   true;
+                break;
+            default:
+                cit10a_asrt(!"invalid pseudo-op state");
+                cit10a_exit(INTRNL_ERRNO);
+        }
+    }
+
+    return  ret;
+}
 
 /**
  * Verify all directives (pseudo-ops).
@@ -23,18 +90,18 @@
     // item setup
     bool    ret     =   false;
     rprt_f  err_f   =   { .file=source };
+    strptr  sptr    =   { .str=src_f_getline(source, 0), .ln=0, .col=0 };
+    if (verify_none_sctn_(&err_f, &sptr))   ret =   true;
 
-    // verify pseudo-ops
-    for (size_t i = 0; i < source->ln_num; ++i) {
-        // skip over non pseudo-op items
-        strptr  sptr                =   { .str=src_f_getline(source, i), .ln=i, .col=0 };
+    while (!newln_strptr(&sptr, source)) {
         for (; is_whitespace(*sptr.str); inc_strptr(&sptr));
+
+        // skip over non-pseudo-op items
         if (*sptr.str != PSEUDO_STRT)   continue;
 
         // check pseudo-op
-        inc_strptr(&sptr);
         size_t  n   =   0;
-        for (; is_alphanum(sptr.str[n]); ++n);
+        for (inc_strptr(&sptr); is_alphanum(sptr.str[n]); ++n);
 
         // set up error file
         err_f.ln    =   sptr.ln;
@@ -46,11 +113,11 @@
             case tok_data:  [[fallthrough]];
             case tok_code:  [[fallthrough]];
             case tok_org:   [[fallthrough]];
-            case tok_const: break;
-            case tok_incl:
-                cit10a_msg( &(msg_info){ .type=msg_err_t, .header=".include", .report_f=&err_f },
-                            ".include not yet supported"                                          );
-                ret =   true;
+            case tok_const: [[fallthrough]];
+            case tok_incl:  break;
+            case tok_none:
+                adj_strptr(&sptr, n);
+                if (verify_none_sctn_(&err_f, &sptr))   ret =   true;
                 break;
             case pseudo_no_tok:
                 cit10a_msg( &(msg_info){ .type=msg_err_t, .header="unknown directive", .report_f=&err_f },
@@ -73,8 +140,7 @@
  * Preprocessor; currently doesn't do anything, just verifies all pseudo-ops.
  *
  * @param       source          source file
- * @return                      whether preprocessing was successful
  */
-[[nodiscard]] bool preprocess(const src_f *const source) {                      // preprocessor
-    return  pseudoop_chck_(source);
+void preprocess(const src_f *const source) {                                    // preprocessor
+    if (pseudoop_chck_(source))     cit10a_exit(PREPROCESS_ERRNO);
 }

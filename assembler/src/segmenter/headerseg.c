@@ -117,6 +117,7 @@ void print_header_map(const headermap *const hmap) {                            
                     if      (verify_sctn_strt(sptr, err_f))         ret =   true;
                     else if (sptr->str == nullptr)                  return  ret;
                     break;
+                case tok_none:  [[fallthrough]];
                 case tok_data:
                     // break out of this (incremented in returned loop)
                     return  false;
