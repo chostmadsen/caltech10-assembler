@@ -60,5 +60,6 @@ extern      pthread_mutex_t     io_mutex;                                       
 
 void print_raw_str(const char *str, int n, FILE *stream);                       // raw string print
 
+void cit10a_version_f(FILE *fp, bool ansi);                                     // assembler version dump
 void cit10a_info(void);                                                         // assembler info message
 void cit10a_startup(void);                                                      // assembler start message

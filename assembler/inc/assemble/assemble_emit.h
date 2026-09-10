@@ -38,6 +38,8 @@ _Static_assert(2 * B_PER_HEX == BIT_OUT, "output alignment requires this (adjust
 
 #define                 FULL_OUT                "                    "          // unaltered items
 
+#define                 VERS_STRT               "; [*] "                        // version start
+
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
 
 void emit_asm( const char    *f_name, const src_f   *source,

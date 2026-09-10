@@ -40,29 +40,35 @@ void print_raw_str(const char *str, int n, FILE *const stream) {
 /*-ASSEMBLER-GENERAL-EXTERNAL-OUTPUTS---------------------------------------------------------------------------------*/
 
 /**
- * Prints the assembler version.
+ * Prints assembler version to an output.
+ *
+ * @param       fp              output
+ * @param       ansi            ansi formatting
  */
-static void cit10a_version(void) {                                              // assembler version dump
-    fputs(CLR_UNDRLN ASSEMBLER_NAME "v" ASSEMBLER_VERSION, stdout);
-    fprintf(stdout, CLR_UNDRLN_OFF "*");
+void cit10a_version_f(FILE *const fp, const bool ansi) {                        // assembler version dump
+    if (ansi)   fputs(CLR_UNDRLN, fp);
+    fputs(ASSEMBLER_NAME "v" ASSEMBLER_VERSION, fp);
+
+    if (ansi)   fputs(CLR_UNDRLN_OFF, fp);
+    fputc('*', fp);
 #ifndef NDEBUG
-    fputc('d', stdout);
+    fputc('d', fp);
 #else
-    fputc('-', stdout);
+    fputc('-', fp);
 #endif  /* NDEBUG */
 #ifndef NSANITIZE
-    fputc('s', stdout);
+    fputc('s', fp);
 #else
-    fputc('-', stdout);
+    fputc('-', fp);
 #endif  /* NDEBUG */
-    fprintf(stdout, "%uB@" ASSEMBLER_DATE, CACHE_LN_S);
+    fprintf(fp, "%uB@" ASSEMBLER_DATE, CACHE_LN_S);
 }
 
 /**
  * Prints the assembler info.
  */
 void cit10a_info(void) {                                                        // assembler info message
-    cit10a_version();
+    cit10a_version_f(stdout, true);
     fprintf(stdout, CLR_DIM " [ %uB cache alignment ]" "\x1b[0m", CACHE_LN_S);
 #ifndef NDEBUG
     fputs(" " CLR_INTRNL "DEBUG BUILD\x1b[0m", stdout);
@@ -78,6 +84,6 @@ void cit10a_info(void) {                                                        
  */
 void cit10a_startup(void) {                                                     // assembler start message
     fputs(CLR_DIM, stdout);
-    cit10a_version();
+    cit10a_version_f(stdout, true);
     fprintf(stdout, " | utilizing up to %d threads\x1b[0m\n", c_args.n_thrds);
 }

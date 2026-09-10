@@ -6,6 +6,7 @@
 #include    <stdio.h>
 
 #include    "helpers/general.h"
+#include    "output/external.h"
 #include    "output/errors.h"
 #include    "datastructures/stackmap.h"
 #include    "common/hash_tables/pseudo.h"
@@ -265,16 +266,23 @@ void emit_asm( const char    *const f_name, const src_f   *const source,
                 break;
             case tok_code:
                 const size_t    c_ret   =   emit_asm_code_(fp, i, source, &segmap->headmap.smap, asm_r);
-                if (c_ret == (size_t)-1)    return;
+                if (c_ret == (size_t)-1)    goto    debug_emit;
                 i                       =   c_ret - 1;
                 break;
             case tok_data:
                 const size_t    d_ret   =   emit_asm_data_(fp, i, source, &segmap->datamap);
-                if (d_ret == (size_t)-1)    return;
+                if (d_ret == (size_t)-1)    goto    debug_emit;
                 i                       =   d_ret - 1;
                 break;
             case tok_incl:  cit10a_asrt(!"invalid for now");
             default:        cit10a_asrt(!"invalid pseudo-op state");
         } continue; }
     }
+
+debug_emit:
+    // debug information
+    fputs("\n\n", fp);
+    fprintf(fp, VERS_STRT "%d words | ", asm_r->num_segs);
+    cit10a_version_f(fp, false);
+    fputc('\n', fp);
 }
