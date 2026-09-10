@@ -454,10 +454,10 @@ void reset_args(void) {                                                         
 /*-ARGUMENT-PARSER-FREE-----------------------------------------------------------------------------------------------*/
 
 /**
- * Frees stuff from c_args
+ * Frees stuff from `c_args`.
  */
 void free_c_args(void) {                                                        // c_args free
-    safe_free(c_args.output);
+    free(c_args.output);
     free(c_args.inc.vals);
     free(c_args.src.vals);
 }

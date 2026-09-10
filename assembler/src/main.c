@@ -67,13 +67,13 @@ int main(const int argc, const char *const *const argv) {                       
     emit_asm(c_args.output, &source_f, &smaps, &asm_r);
 
     // end free
-    free_c_args();
     free_src_f(&source_f);
     free_segmap(&smaps);
     free_asm_ret(&asm_r);
 
 comp_exit:
     // assembler exit
+    free_c_args();
     if (c_args.verbosity >= 1)      cit10a_exit_msg(0);
     return  0;
 }
