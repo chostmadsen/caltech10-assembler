@@ -19,6 +19,8 @@ constexpr   size_t      DATA_BUCKETS        =   32;                             
 constexpr   int         N_D_FIELDS          =   (MAX_NUM + FLD_SHFT - 1)
                                                 / FLD_SHFT;                     // bitfield number
 
+constexpr   char        RSRVD_IDENT[]       =   { 'x',  's' };                  // reserved identifiers
+
 /*-STRUCTS-/-ENUMS----------------------------------------------------------------------------------------------------*/
 
 typedef struct {                                                                // data stackmap head

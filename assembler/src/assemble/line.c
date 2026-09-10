@@ -474,7 +474,7 @@ ret_chck:
 
         case opcode_no_grp:
             // no opcode
-            err_f.len   =   n;
+            err_f.len   =   (n > 0) ? n : 1;
             cit10a_msg(&(msg_info){ .type=msg_err_t, .header="unknown opcode", .report_f=&err_f}, "invalid opcode");
             return  (ln_asm){ .ln=-1, .instr=-1 };
 

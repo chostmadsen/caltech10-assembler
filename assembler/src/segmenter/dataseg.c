@@ -68,6 +68,31 @@ void print_data_map(const stackmap *const smap) {                               
 }
 
 /**
+ * Check for data reserved identifiers.
+ *
+ * @param       d_var           data var
+ * @param       err_f           error report file
+ * @return                      whether the identifier is reserved
+ */
+[[nodiscard]] static bool data_chck_rsrv( const data_var *const d_var,
+                                                rprt_f   *const err_f) {        // reserved identifier check
+    if (d_var->var.head.key.len != 1)       return  false;
+
+    // check identifier match
+    for (size_t i = 0; i < arr_s(RSRVD_IDENT); ++i) {
+        if (to_lwr_chr(*d_var->var.head.key.str) != RSRVD_IDENT[i])     continue;
+
+        // report error
+        err_f->len      =   d_var->var.head.key.len;
+        err_f->col      =   d_var->var.col;
+        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="reserved identifier", .report_f=err_f },
+                    "identifier `%c` is reserved", *d_var->var.head.key.str                         );
+        return  true;
+    }
+    return  false;
+}
+
+/**
  * Check for overlapping data definitions.
  *
  * @param       d_var           data var
@@ -168,6 +193,7 @@ static void data_chck_dup_( const data_var *const d_var,
     // check trailing characters
     inc_strptr(sptr);
     if (check_ln_end(sptr, err_f))              return  true;
+    if (data_chck_rsrv(&smap_itm, err_f))       return  true;
 
     if (data_rnge_chck_(&smap_itm, err_f))      return  true;
     data_chck_dup_(&smap_itm, smap, err_f);

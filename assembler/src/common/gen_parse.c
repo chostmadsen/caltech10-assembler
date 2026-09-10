@@ -4,6 +4,7 @@
  */
 
 #include    <stddef.h>
+#include    <stdlib.h>
 
 #include    "helpers/general.h"
 #include    "output/errors.h"
@@ -158,10 +159,7 @@
         return  parse_char(sptr, err_f);
     }
 
-    if (*sptr->str == HEX_CHR_ALT) {
-        inc_strptr(sptr);
-        ++slice.len;
-    }
+    if (*sptr->str == HEX_CHR_ALT)  inc_strptr(sptr);
     for (; is_alphanum(*sptr->str); inc_strptr(sptr), ++slice.len);
 
     // single number
@@ -217,6 +215,14 @@
                         "number too large to parse (maximally %d-bit)", MAX_PARSE                  );
             return  -1;
         }
+    }
+    if (s_idx == 0) {
+        err_f->ln   =   sptr->ln;
+        err_f->col  =   start + offs;
+        err_f->len  =   1;
+        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid number", .report_f=err_f },
+                    "missing number", MAX_PARSE                                                );
+        return  -1;
     }
 
     // convert number
