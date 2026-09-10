@@ -163,7 +163,13 @@
     for (; is_alphanum(*sptr->str); inc_strptr(sptr), ++slice.len);
 
     // single number
-    if (slice.len == 1)         return  (int)strtol(slice.str, nullptr, 10);
+    if (slice.len == 1) {
+        if ('0' <= *slice.str && *slice.str <= '9')     return  (int)strtol(slice.str, nullptr, 10);
+        err_f->ln   =   sptr->ln;
+        err_f->col  =   start + 1;
+        err_f->len  =   1;
+        cit10a_msg(&(msg_info){ .type=msg_err_t, .header="invalid number", .report_f=err_f}, "invalid lone number");
+    }
 
     // get parse start
     const   char   *str     =   slice.str;
