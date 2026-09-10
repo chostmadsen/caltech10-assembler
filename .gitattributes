@@ -2,3 +2,5 @@
 *.h     linguist-language=C
 # .obj files as text
 *.obj   linguist-language=Text
+# .inc files as assembly
+*.inc   linguist-language=asm

@@ -8,7 +8,7 @@
 constexpr   char        FILE_EXTNS_CHR      =   '.';                            // file extension character
 
 constexpr   char        ALLOWED_EXTNS[][4]  =   { "a",  "asm" };                // allowed file extensions
-constexpr   char        ALLOWED_INC[][4]    =   { "h",  "inc" };                // allowed .inc file extensions
+constexpr   char        ALLOWED_INC[][4]    =   { "inc" };                      // allowed .inc file extensions
  
 #define                 OBJ_EXTENSION           ".obj"                          // obj file extension (default out)
 
