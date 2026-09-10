@@ -80,7 +80,7 @@ static void code_chck_dup_( const ln_info *const ln_inf,
         const   ln_info     st_inf  =   *(ln_info*)peek_stack(st, i);
         if (st_inf.loc != ln_inf->loc)  continue;
         cit10a_msg( &(msg_info){ .type=msg_warn_t, .header="overlapping code", .report_f=err_f },
-                    "overlap with code declared at 0x%04x [[ @ %s::%d ]]",
+                    "overlap with code declared at 0x%04x [ @ %s::%d ]",
                     ln_inf->loc, st_inf.source->f_name, st_inf.ln + 1                             );
         found_overlap   =   true;
     }

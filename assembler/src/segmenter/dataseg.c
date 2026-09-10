@@ -117,7 +117,7 @@ static void data_chck_dup_( const data_var *const d_var,
             const   data_var    s_var   =   *(data_var*)peek_stack(&smap->heads[i], j);
             if (s_var.loc != d_var->loc)    continue;
             cit10a_msg(&(msg_info){ .type=msg_warn_t, .header="overlapping data", .report_f=err_f},
-                        "overlap with data declared at 0x%02x [[ @ %s::%d::%d ]]",
+                        "overlap with data declared at 0x%02x [ @ %s::%d::%d ]",
                         d_var->loc, s_var.var.source->f_name, s_var.var.ln, s_var.var.col           );
             found_overlap   =   true;
         }
