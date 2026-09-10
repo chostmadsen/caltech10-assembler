@@ -34,7 +34,6 @@
     return  false;
 }
 
-
 /**
  * Gets the alphanumeric identifier (first character must be alphanumeric). Consumes it with the given strptr.
  *
@@ -63,6 +62,83 @@
 /*-NUMBER-PARSERS-----------------------------------------------------------------------------------------------------*/
 
 /**
+ * Check of a character is a number start.
+ *
+ * @param       chr             character
+ * @return                      whether the number starts
+ */
+[[nodiscard]] bool is_num_strt(const char chr) {                                // number start checker
+    return  (chr == NEG_SYMB || chr == POS_SYMB || ('0' <= chr && chr <= '9') || chr == HEX_CHR_ALT || chr == CHR_CHR);
+}
+
+/**
+ * Check of a character is a number start (non-signed)
+ *
+ * @param       chr             character
+ * @return                      whether the number starts
+ */
+[[nodiscard]] bool is_num_strt_ns(const char chr) {                             // number start checker (non-signed)
+    return  (('0' <= chr && chr <= '9') || chr == HEX_CHR_ALT || chr == CHR_CHR);
+}
+
+/**
+ * Escape character ascii value. -1 if escape character is invalid
+ *
+ * @param       chr                 character
+ * @return                          ascii value
+ */
+[[nodiscard]] static int esc_chr_val_(const char chr) {                         // escape character value
+    switch (chr) {
+#define X( chr, val )   case chr:   return  (int)val;
+        ESC_CHRS
+#undef  X
+        default:    return  -1;
+    }
+}
+
+/**
+ * Parses a character as a value. -1 if the character is improper.
+ *
+ * @param       sptr                string pointer
+ * @param       err_f               error file
+ * @return                          parsed character value
+ */
+[[nodiscard]] int parse_char(strptr *const sptr, rprt_f *const err_f) {         // character to value parser
+    const       msg_info    chr_err =   { .type=msg_err_t,  .header="character error",  .report_f=err_f };
+    const       msg_info    chr_wrn =   { .type=msg_warn_t, .header="escape character", .report_f=err_f };
+
+    int     ret;
+    // escape character check
+    if (*sptr->str == ESC_CHR) {
+        inc_strptr(sptr);
+        ret         =   esc_chr_val_(*sptr->str);
+        if (ret == -1) {
+            // report error
+            err_f->col  =   sptr->col;
+            err_f->len  =   1;
+            cit10a_msg(&chr_wrn, "invalid escape character; parsing as a normal character");
+            ret         =   (int)*sptr->str;
+        }
+    } else {
+        // find char value
+        ret         =   (int)*sptr->str;
+    }
+
+    // get ending character
+    inc_strptr(sptr);
+    if (*sptr->str != CHR_CHR) {
+        // invalid end
+        err_f->col  =   sptr->col;
+        err_f->len  =   1;
+        cit10a_msg(&chr_err, "invalid character end");
+        return  -1;
+    }
+
+    inc_strptr(sptr);
+    return  ret;
+}
+
+/**
  * Find a number (positive representation), and store the representation and value.
  *
  * @param       sptr            sptr
@@ -70,11 +146,16 @@
  * @return                      number
  */
 [[nodiscard]] int parse_num(strptr *const sptr, rprt_f *const err_f) {          // number parser
-    cit10a_asrt(('0' <= *sptr->str && *sptr->str <= '9') || *sptr->str == HEX_CHR_ALT);
+    cit10a_asrt(is_num_strt_ns(*sptr->str));
 
     // get numeric slice
     const   size_t  start   =   sptr->col;
     src_slice       slice   =   { .str=sptr->str, .len=0 };
+    if (*sptr->str == CHR_CHR) {
+        inc_strptr(sptr);
+        return  parse_char(sptr, err_f);
+    }
+
     if (*sptr->str == HEX_CHR_ALT) {
         inc_strptr(sptr);
         ++slice.len;
@@ -168,7 +249,7 @@
     if (neg || pos)                 inc_strptr(sptr);
 
     // get value
-    if (!('0' <= *sptr->str && *sptr->str <= '9') && *sptr->str != HEX_CHR_ALT) {
+    if (!is_num_strt_ns(*sptr->str)) {
         err_f->col  =   sptr->col;
         err_f->len  =   1;
         cit10a_msg( &(msg_info){ .type=msg_err_t, .header="expected number", .report_f=err_f },
@@ -212,7 +293,7 @@
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
 
     // get value
-    if (!('0' <= *sptr->str && *sptr->str <= '9') && *sptr->str != HEX_CHR_ALT) {
+    if (!is_num_strt_ns(*sptr->str)) {
         err_f->col  =   sptr->col;
         err_f->len  =   1;
         cit10a_msg( &(msg_info){ .type=msg_err_t, .header="expected number", .report_f=err_f },

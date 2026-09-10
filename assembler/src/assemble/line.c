@@ -36,7 +36,7 @@
     cit10a_asrt(sptr != nullptr);
     cit10a_asrt(constmap != nullptr);
 
-    if (('0' <= *sptr->str && *sptr->str <= '9') || *sptr->str == HEX_CHR_ALT) {
+    if (is_num_strt(*sptr->str)) {
         // raw number parse
         return  parse_num_repr(sptr, err_f);
     }
@@ -109,7 +109,7 @@
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
 
     int     ret;
-    if (('0' <= *sptr->str && *sptr->str <= '9') || *sptr->str == HEX_CHR_ALT) {
+    if (is_num_strt_ns(*sptr->str)) {
         // raw number parse
         err_f->len  =   (*sptr->str == HEX_CHR_ALT) ? 1 : 0;
         for (; is_alphanum(sptr->str[err_f->len]); ++err_f->len);
@@ -314,7 +314,7 @@
         const   int adj =   parse_num(sptr, err_f);
         ret             =   (neg) ? loc - adj : loc + adj;
 
-    } else if (('0' <= *sptr->str && *sptr->str <= '9') || *sptr->str == HEX_CHR_ALT) {
+    } else if (is_num_strt_ns(*sptr->str)) {
 
         err_f->col  =   sptr->col;
         // raw number parse
