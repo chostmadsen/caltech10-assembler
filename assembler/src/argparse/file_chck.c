@@ -60,6 +60,8 @@
  */
 [[nodiscard]] char *get_output( const char *const target,
                                 const char *const output  ) {                   // get output
+    cit10a_asrt(target != nullptr);
+
     if (output != nullptr) {
         // keep output formatting consistant
         const   size_t  n_itms  =   strlen(output) + 1;

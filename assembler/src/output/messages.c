@@ -37,9 +37,11 @@ static void cit10a_msg_start_(FILE *const stream, const size_t indents) {       
 static  char            msg_buf[MAX_MSG_S];                                     // output message buffer
 
 /**
- * -Werror exit flag.
+ * -Werror exit flag and warning counter.
  */
+int                     warn_num            =   0;                              // warning number
 bool                    werror_exit         =   false;                          // -Werror exit
+bool                    warn_num_msg        =   false;                          // warning number supression msg
 
 /**
  * Emits a log message to stdout (if info.type is normal) or stderr (if info.type is non-normal).
@@ -58,6 +60,14 @@ void cit10a_msg_v( const msg_info *const info,
 
     // warning message suppression
     if (c_args.warnings.off && info->type == msg_warn_t)            return;
+    if (warn_num >= c_args.max_warns && info->type == msg_warn_t) {
+        if (warn_num_msg)       return;
+        fprintf( stderr, MSG_WARN_CLR "\x1b[0m : too many warnings; " "omitting further warnings [ -w%d ]\n",
+                 c_args.max_warns                                                                             );
+        warn_num_msg    =   true;
+
+        return;
+    }
 
     // mutex lock
     pthread_mutex_lock(&io_mutex);
@@ -78,13 +88,14 @@ void cit10a_msg_v( const msg_info *const info,
             break;
         case msg_warn_t:
             // warning to error
-            if   (c_args.warnings.err) {
+            if (c_args.warnings.err) {
                 fputs(MSG_ERR_CLR "\x1b[0m", stream);
                 werror_exit     =   true;
                 ++err_num;
             }
             else {
                 fputs(MSG_WARN_CLR "\x1b[0m", stream);
+                ++warn_num;
             }
             break;
         case msg_err_t:
@@ -182,6 +193,7 @@ msg_end:
         cit10a_exit_msg(EXCESS_ERRNO);
         exit((int)EXCESS_ERRNO);
     }
+
     // mutex unlock
     pthread_mutex_unlock(&io_mutex);
 }

@@ -67,6 +67,7 @@ typedef struct {                                                                
     struct  wrn_t_      warnings;
     struct  emit_t_     emit;
             int         max_errs;
+            int         max_warns;
             int         n_thrds;
             bool        case_sens;
             bool        bin;
@@ -122,6 +123,13 @@ static  const   flag_itm        max_errs_f  =   { .flag='e',            .desc="m
                                                   .min=1,               .max=0x7fff,
                                                   .dflt=20                                                            };
 
+static  const   flag_itm        max_warns_f =   { .flag='w',            .desc="maximum allowed warnings before "
+                                                                              "warning message omission",
+                                                  .type=flag_val_t,     .offset=offsetof(assemble_args, max_warns),
+                                                  .exit=false,          .arg_itm="number",
+                                                  .min=0,               .max=0x7fff,
+                                                  .dflt=20                                                            };
+
 static  const   flag_itm        bin_f       =   { .flag='b',            .desc="emit binary only",
                                                   .type=flag_bool_t,    .offset=offsetof(assemble_args, bin),
                                                   .exit=false,          .arg_itm=nullptr                              };
@@ -154,14 +162,16 @@ static  const   flag_itm        sourc_f     =   { .flag='S',            .desc="a
                                                   .exit=false,          .arg_itm="source"                             };
 
 
-static  const   flag_itm        output_f    =   { .flag='o',            .desc="assembly output target",
+static  const   flag_itm        output_f    =   { .flag='o',            .desc="assembly output target; "
+                                                                              "defaults to `<filename>.obj`",
                                                   .type=flag_stra_t,    .offset=offsetof(assemble_args, output),
                                                   .exit=false,          .arg_itm="output"                             };
 
 // flag item arrays
-static  const   flag_itm    *const  a_flg[] =   { &verbosity_f, &warnings_f,    &emit_f,    &max_errs_f,    &bin_f,
-                                                  &case_sens_f, &n_thrds_f,     &help_f,    &version_f,     
-                                                  &inc_f,       &sourc_f,       &output_f                           };
+static  const   flag_itm    *const  a_flg[] =   { &verbosity_f, &warnings_f,    &emit_f,        &max_errs_f,
+                                                  &max_warns_f, &bin_f,         &case_sens_f,   &n_thrds_f,
+                                                  &help_f,      &version_f,
+                                                  &inc_f,       &sourc_f,       &output_f                    };
 
 /*-GLOBAL-ASSEMBLE-ARGS-STRUCT----------------------------------------------------------------------------------------*/
 

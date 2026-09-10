@@ -14,7 +14,11 @@
 
 #define                 MSG_DELIM               "\x1b[2m| "                     // message delimiter string
 constexpr   unsigned    MAX_MSG_S           =   2048;                           // maximum error message size
-                                                                                // truncation is better than oom here
+
+/*-GLOBAL-WARNING-COUNTER---------------------------------------------------------------------------------------------*/
+
+extern      int         warn_num;                                               // warning number
+
 /*-STRUCTS-/-ENUMS----------------------------------------------------------------------------------------------------*/
 
 typedef struct {                                                                // file error reporter struct
