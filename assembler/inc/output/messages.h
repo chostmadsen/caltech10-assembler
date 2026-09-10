@@ -5,7 +5,7 @@
 
 #pragma     once
 
-#include    <stdlib.h>
+#include    <stddef.h>
 #include    <stdarg.h>
 
 #include    "reader/reader.h"

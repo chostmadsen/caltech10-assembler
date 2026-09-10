@@ -3,6 +3,8 @@
  * Assembler preprocessor.
  */
 
+#include    <stddef.h>
+
 #include    "helpers/general.h"
 #include    "output/errors.h"
 #include    "output/messages.h"

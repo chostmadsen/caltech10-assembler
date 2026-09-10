@@ -3,6 +3,7 @@
  * Single line assembly.
  */
 
+#include    <stddef.h>
 #include    <stdio.h>
 
 #include    "helpers/general.h"

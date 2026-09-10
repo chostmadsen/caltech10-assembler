@@ -3,18 +3,18 @@
  * .data segment analyzer.
  */
 
-#include    <string.h>
 #include    <stddef.h>
 #include    <stdio.h>
+#include    <string.h>
 
-#include "argparse/argparse.h"
-#include "datastructures/stack.h"
 #include    "helpers/general.h"
 #include    "output/errors.h"
 #include    "output/messages.h"
+#include    "datastructures/stack.h"
 #include    "datastructures/stackmap.h"
 #include    "common/kwrds.h"
 #include    "common/gen_parse.h"
+#include    "argparse/argparse.h"
 #include    "reader/reader.h"
 #include    "segmenter/segment.h"
 #include    "segmenter/dataseg.h"

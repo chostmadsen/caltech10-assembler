@@ -3,8 +3,8 @@
  * Hashing implementation functions.
  */
 
+#include    <stddef.h>
 #include    <stdint.h>
-#include    <ctype.h>
 
 #include    "helpers/general.h"
 #include    "output/errors.h"

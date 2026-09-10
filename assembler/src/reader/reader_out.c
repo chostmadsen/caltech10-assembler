@@ -3,6 +3,7 @@
  * File struct printer functions.
  */
 
+#include    <stddef.h>
 #include    <stdio.h>
 
 #include    "output/external.h"

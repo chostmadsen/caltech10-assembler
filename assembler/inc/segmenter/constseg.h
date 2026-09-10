@@ -5,6 +5,8 @@
 
 #pragma     once
 
+#include    <stddef.h>
+
 #include    "datastructures/stackmap.h"
 #include    "reader/reader.h"
 #include    "segmenter/segment.h"

@@ -5,6 +5,8 @@
 
 #pragma     once
 
+/*-CONSTANTS----------------------------------------------------------------------------------------------------------*/
+
 constexpr   char        FILE_EXTNS_CHR      =   '.';                            // file extension character
 
 constexpr   char        ALLOWED_EXTNS[][4]  =   { "a",  "asm" };                // allowed file extensions
