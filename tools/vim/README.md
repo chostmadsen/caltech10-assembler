@@ -6,8 +6,7 @@ Additional Caltech10 tools for Vim / Neovim.
 
 ## **Syntax Highlighting**
 
-Syntax highlighting for `.obj` files, in accordance with the `.obj` formatting to run the `.obj` files.
-
+Syntax highlighting for `.obj` files, in accordance with how `.obj` files should be formatted for the Caltech10 CPU sim.
 #### **Installation**
 
 Clone the repository if you haven't.
