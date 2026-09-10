@@ -81,12 +81,13 @@ static void *asm_thread_(void *const asm_thrd_args_v) {                         
     // calculate required threads
     const   int     n_segs  =   ret.num_segs / (int)ASMS_PER_LN;
     const   int     n_thrds =   (n_segs >= c_args.n_thrds) ? c_args.n_thrds : n_segs;
-    const   int     n_lns   =   ret.num_segs / n_thrds;
-    const   int     slack   =   ret.num_segs % n_thrds;
+    int             n_lns   =   ret.num_segs / n_thrds;
+    n_lns                   =   (n_lns + (int)ASMS_PER_LN - 1) & ~((int)ASMS_PER_LN - 1);
+    if (n_lns == 0)             n_lns = (int)ASMS_PER_LN;
+
     if (c_args.verbosity >= 3) {
         // thread output
-        printf( CLR_DIM "%d new thread(s) (1 inline) | %d lines / thread | %d line slack\x1b[0m\n",
-                n_thrds - 1, n_lns, slack                                                           );
+        printf(CLR_DIM "%d new thread(s) (1 inline) | %d lines / thread\x1b[0m\n", n_thrds - 1, n_lns);
     }
 
     // inline call
@@ -109,13 +110,12 @@ static void *asm_thread_(void *const asm_thrd_args_v) {                         
         // arg setup
         args[i].segmap      =   segmap;
         args[i].target      =   ret.ln_asms;
-        args[i].start       =   seg;
+        args[i].start       =   seg > ret.num_segs ? ret.num_segs : seg;
         // offset calculation
-        args[i].end         =   (seg += n_lns);
+        seg                 +=  n_lns;
+        args[i].end         =   ((i == n_thrds - 1) || (seg > ret.num_segs)) ? ret.num_segs : seg;
     }
-    args[n_thrds - 1].end   +=  slack;
-
-    cit10a_asrt(args[n_thrds - 1].end == ret.num_segs);
+    args[n_thrds - 1].end   =   ret.num_segs;
 
     // thread call
     for (int thrd = 0; thrd < n_thrds - 1; ++thrd) {
