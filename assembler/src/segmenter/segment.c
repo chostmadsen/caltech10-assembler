@@ -53,9 +53,9 @@
  * @param       fld             field
  * @return                      whether the field was set
  */
-[[nodiscard]] bool set_bitmap(       size_t *const bmap,
-                               const int           n_flds, 
-                               const int           fld     ) {                  // bitset set
+[[nodiscard]] bool set_bitmap(                        size_t *const bmap,
+                               [[maybe_unused]] const int           n_flds, 
+                                                const int           fld     ) { // bitset set
     cit10a_asrt(bmap != nullptr);
     cit10a_asrt(n_flds > 0);
 
@@ -66,7 +66,6 @@
     const   bool        is_set      =   bmap[shft_idx] & shft;
     bmap[shft_idx]                  |=  shft;
     return  is_set;
-
 }
 
 /*-.PSEUDO-OP-PARSERS-------------------------------------------------------------------------------------------------*/

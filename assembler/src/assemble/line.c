@@ -411,7 +411,7 @@ ret_chck:
         return  -1;
     }
 
-    return  (neg) ? (ret ^ MAX_NUM) + 1 : ret;
+    return  (neg) ? (int)(ret ^ MAX_NUM) + 1 : ret;
 }
 
 /**

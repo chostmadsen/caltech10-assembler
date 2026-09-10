@@ -276,7 +276,7 @@
                     "maximum %snumber range excession", range_err                               );
         return  -1;
     }
-    return  (neg) ? (const_v ^ MAX_NUM) + 1 : const_v;
+    return  (neg) ? (const_v ^ (int)MAX_NUM) + 1 : const_v;
 }
 
 /**

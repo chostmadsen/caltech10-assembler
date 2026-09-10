@@ -87,7 +87,8 @@ static void *asm_thread_(void *const asm_thrd_args_v) {                         
 
     if (c_args.verbosity >= 3) {
         // thread output
-        printf(CLR_DIM "%d new thread(s) (1 inline) | %d lines / thread\x1b[0m\n", n_thrds - 1, n_lns);
+        printf( CLR_DIM "%d new thread(s) (1 inline) | %d lines / thread | %d inline adjusted\x1b[0m\n",
+                n_thrds - 1, n_lns, ret.num_segs - n_thrds * n_lns                                       );
     }
 
     // inline call

@@ -52,7 +52,7 @@ void cit10a_version_f(FILE *const fp, const bool ansi) {                        
     if (ansi)   fputs(CLR_UNDRLN_OFF, fp);
     fputc('*', fp);
 #ifndef NDEBUG
-    fputc('d', fp);
+    fputc('a', fp);
 #else
     fputc('-', fp);
 #endif  /* NDEBUG */
