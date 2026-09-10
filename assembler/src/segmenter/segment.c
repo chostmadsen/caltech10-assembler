@@ -56,7 +56,7 @@
  */
 [[nodiscard]] bool set_bitmap(       uint64_t *const bmap,
               [[maybe_unused]] const int             n_flds,
-                               const int             fld     ) { // bitset set
+                               const int             fld     ) {                // bitset set
     cit10a_asrt(bmap != nullptr);
     cit10a_asrt(n_flds > 0);
 
