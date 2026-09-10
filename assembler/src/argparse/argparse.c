@@ -20,7 +20,7 @@
 /*-GLOBAL-COMPILE-ARGS-STRUCT-----------------------------------------------------------------------------------------*/
 
 /**
- * Global compilation arguments; every stage references this, so global is preffered.
+ * Global compilation arguments; every stage references this, so global is preferred.
  */
 assemble_args   c_args      =   { 0 };
 
