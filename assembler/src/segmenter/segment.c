@@ -5,6 +5,7 @@
 
 #include    <stddef.h>
 #include    <string.h>
+#include    <stdint.h>
 #include    <inttypes.h>
 
 #include    "helpers/general.h"
