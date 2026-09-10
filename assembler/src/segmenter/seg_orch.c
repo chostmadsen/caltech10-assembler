@@ -12,10 +12,10 @@
 #include    "output/errors.h"
 #include    "argparse/argparse.h"
 #include    "reader/reader.h"
-#include    "segmenter/seg_orch.h"
 #include    "segmenter/constseg.h"
 #include    "segmenter/dataseg.h"
 #include    "segmenter/headerseg.h"
+#include    "segmenter/seg_orch.h"
 
 /*-STORAGE-ITEMS------------------------------------------------------------------------------------------------------*/
 
@@ -34,6 +34,8 @@ typedef struct {                                                                
  * @return                      nullptr
  */
 static void *constseg_call(void *const cseg_v) {                                // constseg call
+    cit10a_asrt(cseg_v != nullptr);
+
     const   cseg_args   *const  cseg        =   (cseg_args*)cseg_v;
     if (constseg(cseg->source, cseg->smap) && !atomic_load_explicit(&seg_end_flg, memory_order_relaxed)) {
         atomic_store_explicit(&seg_end_flg, true, memory_order_relaxed);
@@ -52,6 +54,8 @@ typedef struct {                                                                
  * @return                      nullptr
  */
 static void *dataseg_call(void *const dseg_v) {                                 // dataseg call
+    cit10a_asrt(dseg_v != nullptr);
+
     const   dseg_args   *const  dseg        =   (dseg_args*)dseg_v;
     if (dataseg(dseg->source, dseg->smap) && !atomic_load_explicit(&seg_end_flg, memory_order_relaxed)) {
         atomic_store_explicit(&seg_end_flg, true, memory_order_relaxed);
@@ -70,6 +74,8 @@ typedef struct {                                                                
  * @return                      nullptr
  */
 static void *headerseg_call(void *const hseg_v) {                               // headerseg call
+    cit10a_asrt(hseg_v != nullptr);
+
     const   hseg_args   *const  hseg        =   (hseg_args*)hseg_v;
     if (headerseg(hseg->source, hseg->hmap) && !atomic_load_explicit(&seg_end_flg, memory_order_relaxed)) {
         atomic_store_explicit(&seg_end_flg, true, memory_order_relaxed);
@@ -86,6 +92,8 @@ static void *headerseg_call(void *const hseg_v) {                               
  * @return                      segmaps
  */
 [[nodiscard]] segmaps segment(const src_f *const source) {                      // segment orchestrator
+    cit10a_asrt(source != nullptr);
+
     atomic_store_explicit(&seg_end_flg, false, memory_order_relaxed);
 
     // setup segmap
@@ -138,7 +146,9 @@ static void *headerseg_call(void *const hseg_v) {                               
  * @param       segmap          segmap
  */
 void print_segmap(const segmaps *const segmap) {                                // print segmap struct
-    printf( DEBUG_DELIM CLR_DIM "[[ segmaps %zucnst::%zuvar::%zuhead ]]\x1b[0m\n",
+    cit10a_asrt(segmap != nullptr);
+
+    printf( DEBUG_DELIM CLR_DIM " [[ segmaps %zucnst::%zuvar::%zuhead ]]\x1b[0m\n",
             segmap->constmap.elements, segmap->datamap.elements, segmap->headmap.smap.elements );
 
     printf(CLR_DIM "constant map ");
@@ -171,6 +181,8 @@ void print_segmap_info(const segmaps *const segmap) {                           
  * @param       segmap          segmap
  */
 void free_segmap(segmaps *const segmap) {                                       // segmap free
+    cit10a_asrt(segmap != nullptr);
+
     free_stackmap(&segmap->constmap);
     free_stackmap(&segmap->datamap);
     free_stackmap(&segmap->headmap.smap);

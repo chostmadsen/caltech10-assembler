@@ -52,11 +52,15 @@ int main(const int argc, const char *const *const argv) {                       
     if (c_args.verbosity >= 4 || c_args.emit.table)     print_segmap(&smaps);
 
     // assembly
-    assemble(&smaps);
+    asm_ret     asm_r           =   assemble(&smaps);
+    // assembly output
+    if (c_args.verbosity >= 2)                          print_asm_info(&asm_r);
+    if (c_args.verbosity >= 4 || c_args.emit.aasm)      print_asm(&asm_r);
 
     // end free
     free_src_f(&source_f);
     free_segmap(&smaps);
+    free_asm_ret(&asm_r);
 
 comp_exit:
     // assembler exit

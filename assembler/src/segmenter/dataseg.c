@@ -36,6 +36,8 @@ static void print_data_var_(const void *const d_var_v) {                        
  * @param       smap            data stackmap
  */
 void print_data_map(const stackmap *const smap) {                               // data stackmap printer
+    cit10a_asrt(smap != nullptr);
+
     print_stackmap(smap, print_data_var_);
 }
 

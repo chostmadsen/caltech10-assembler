@@ -52,4 +52,4 @@ void dec_strptr(strptr *ptr);                                                   
  *
  * @param       arr             array
  */
-#define arr_s(arr)          (sizeof(arr) / sizeof(arr[0]))
+#define arr_s(arr)      (sizeof(arr) / sizeof(arr[0]))

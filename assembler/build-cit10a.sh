@@ -138,7 +138,7 @@ if [[ -z src_fs ]]; then
 fi
 
 # compile compiler
-$compiler ${flags[@]} $inc_dirs $src_fs -o bin/cit10a || {
+$compiler "${flags[@]}" $inc_dirs $src_fs -o bin/cit10a || {
     printf "%b\n" "$build_n$err_msg $compiler compiler failure";
     printf "%b\n" "$build_n$err_exit";
     exit 1;

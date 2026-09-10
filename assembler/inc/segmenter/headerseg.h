@@ -23,9 +23,9 @@ typedef struct {                                                                
 } header_var;
 
 typedef struct {                                                                // line information
+            int         loc;
     const   src_f      *source;
             int         ln;
-            int         loc;
 } ln_info;
 
 typedef struct {                                                                // header stackmap

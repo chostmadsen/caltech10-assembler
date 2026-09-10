@@ -28,7 +28,7 @@ static void print_header_var_(const void *const h_var_v) {                      
 
     const   header_var  *const  h_var   =   (header_var*)h_var_v;
     print_var_tok(&h_var->var);
-    printf(" { loc=0x%x }", h_var->loc);
+    printf(" { loc=0x%04x }", h_var->loc);
 }
 
 /**
@@ -37,6 +37,8 @@ static void print_header_var_(const void *const h_var_v) {                      
  * @param       smap            header stackmap
  */
 void print_header_map(const headermap *const hmap) {                            // header stackmap printer
+    cit10a_asrt(hmap != nullptr);
+
     print_stackmap(&hmap->smap, print_header_var_);
     printf(CLR_DIM "    ( %d stmts )\x1b[0m\n", hmap->stmts.len);
 }
@@ -67,7 +69,7 @@ void print_header_map(const headermap *const hmap) {                            
     if (s_head.key.str == nullptr)      return  true;
     if (*sptr->str != HEADER_CHR) {
         // code line - skip
-        push_stack(&hmap->stmts, &(ln_info){ .source=err_f->file, .ln=sptr->ln, .loc=(*loc)++ });
+        push_stack(&hmap->stmts, &(ln_info){ .loc=(*loc)++, .source=err_f->file, .ln=sptr->ln });
         return  false;
     }
 
@@ -80,7 +82,7 @@ void print_header_map(const headermap *const hmap) {                            
     // check for additional code
     for (inc_strptr(sptr); is_whitespace(*sptr->str); inc_strptr(sptr));
     if (*sptr->str != CMMT_CHR && *sptr->str != '\0') {
-        push_stack(&hmap->stmts, &(ln_info){ .source=err_f->file, .ln=sptr->ln, .loc=(*loc)++ });
+        push_stack(&hmap->stmts, &(ln_info){ .loc=(*loc)++, .source=err_f->file, .ln=sptr->ln });
     }
     return  ret;
 }

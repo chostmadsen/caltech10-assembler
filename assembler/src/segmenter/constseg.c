@@ -36,6 +36,8 @@ static void print_const_var_(const void *const c_var_v) {                       
  * @param       smap            constant stackmap
  */
 void print_const_map(const stackmap *const smap) {                              // constant stackmap printer
+    cit10a_asrt(smap != nullptr);
+
     print_stackmap(smap, print_const_var_);
 }
 

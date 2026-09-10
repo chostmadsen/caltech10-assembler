@@ -14,6 +14,7 @@ constexpr   unsigned    ARGPARSE_ERRNO      =   3;                              
 constexpr   unsigned    READER_ERRNO        =   4;                              // reader failure exit
 constexpr   unsigned    PREPROCESS_ERRNO    =   5;                              // preprocessor failure exit
 constexpr   unsigned    SEGMENT_ERRNO       =   6;                              // segmenter failure exit
+constexpr   unsigned    ASSEMBLE_ERRNO      =   7;                              // full output assembler failure exit
 
 constexpr   unsigned    EX_EXT_THRS         =   100;                            // internal exit threshold
 // internal error codes
