@@ -1,5 +1,5 @@
 ;-gcd_stein.asm--------------------------------------------------------------------------------------------------------;
-;~  description         ACAMA GCD algorithm assembler testing.
+;~  description         Caltech10 assembler GCD algorithm assembler testing.
 
 ;~  history             Christian Host-Madsen       2026.09.06      creation
 
