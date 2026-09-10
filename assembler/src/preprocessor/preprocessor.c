@@ -44,7 +44,6 @@
             // error
             cit10a_msg( &(msg_info){ .type=msg_warn_t, .header="ignored text", .report_f=err_f },
                         "non pseudo-op directives found in `.none`; prepend source with a directive." );
-            ret =   true;
             continue;
         }
 

@@ -16,6 +16,8 @@
 #error  "cit10a requires posix threads"
 #endif
 
+#include    <stdio.h>
+
 #include    "output/errors.h"
 #include    "output/external.h"
 #include    "argparse/argparse.h"
@@ -60,7 +62,7 @@ int main(const int argc, const char *const *const argv) {                       
 
 
     // emit assembly
-    emit_asm(stdout, &source_f, &smaps, &asm_r);
+    emit_asm(c_args.output, &source_f, &smaps, &asm_r);
 
     // end free
     free_src_f(&source_f);

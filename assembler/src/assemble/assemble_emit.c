@@ -216,21 +216,32 @@ static void asm_emit_instr_(       FILE *const fp,
 /*-FULL-ASSEMBLY-EMITTER----------------------------------------------------------------------------------------------*/
 
 /**
- * Assembly emitter to a file pointer fp.
+ * Assembly emitter to a file.
  *
- * @param       fp              output file
+ * @param       f_name          output file name
  * @param       source          source file
  * @param       segmap          lookup maps
  * @param       asm_r           assembly
  */
-void emit_asm(       FILE    *const fp,     const src_f   *const source,
+void emit_asm( const char    *const f_name, const src_f   *const source,
                const segmaps *const segmap, const asm_ret *const asm_r   ) {    // assembly emitter
-    cit10a_asrt(fp != nullptr);
+    cit10a_asrt(f_name != nullptr);
     cit10a_asrt(source != nullptr);
     cit10a_asrt(segmap != nullptr);
     cit10a_asrt(asm_r != nullptr);
 
+    // open file
+    FILE   *const           fp      =   fopen(f_name, "wb");
+    if (fp == nullptr) {
+        const   rprt_f      err_f   =   { .file=&(src_f){ .f_name=f_name } };
+        const   msg_info    f_err   =   { .type=msg_err_t, .header="file error", .report_f=&err_f };
+        // invalid file
+        cit10a_msg(&f_err, "couldn't open / read output file");
+        cit10a_exit(OUTPUT_ERRNO);
+    }
+
     if (c_args.bin) {
+        // only binary
         for (int i = 0; i < asm_r->num_segs; ++i) {
             asm_emit_instr_(fp, asm_r->ln_asms[i].loc, asm_r->ln_asms[i].instr, nullptr);
         }
@@ -238,10 +249,12 @@ void emit_asm(       FILE    *const fp,     const src_f   *const source,
     }
 
     for (size_t i = 0; i < source->ln_num; ++i) {
+        // iterate over .none
         const   char    *const  ln          =   src_f_getline(source, i);
         strptr                  sptr        =   { .str=ln, .ln=-1, .col=0 };
         const   char            frst_chr    =   first_chr_(&sptr);
 
+        // possible new section
         if      (frst_chr == '\0')              { fputc('\n', fp); continue; }
         else if (frst_chr == CMMT_CHR)          { fprintf(fp, "%s\n", ln); continue; }
         else if (frst_chr == PSEUDO_STRT)       { switch (get_pseudo_(ln)) {

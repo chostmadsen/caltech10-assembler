@@ -9,7 +9,9 @@
 #include    <string.h>
 #include    <unistd.h>
 
+#include "argparse/file_chck.h"
 #include    "helpers/general.h"
+#include "helpers/mem.h"
 #include    "output/external.h"
 #include    "output/errors.h"
 #include    "output/messages.h"
@@ -49,6 +51,7 @@ static void arg_help_msg_(void) {                                               
                 printf("[ %d, %d ]\x1b[0m%*s", flg.min, flg.max, tabs - strt - num_pad - 6, "- ");
                 break;
             case flag_str_t:    [[fallthrough]];
+            case flag_strm_t:   [[fallthrough]];
             case flag_stra_t:
                 printf("<%s>\x1b[0m%*s", flg.arg_itm, tabs - strt - 2 - (int)strlen(flg.arg_itm), "- ");
                 break;
@@ -229,19 +232,20 @@ static void process_str_f_( const flag_itm *const         flag,
 }
 
 /**
- * Proccesses string (any type) type flags. Modifies `c_args`.
+ * Proccesses string type flags. Returns the actual char* of the argument.
  *
  * @param       flag            string (any type) flag
  * @param       idx             current argv being processed
  * @param       argc            argument count
  * @param       argv            argument vector
  * @param       error           error flag
+ * @return                      char* argument
  */
-static void process_stra_f_( const flag_itm *const         flag,
-                                   int      *const         idx, 
-                             const int                     argc,
-                             const char     *const *const  argv,
-                                   bool     *const         error ) {            // string (any type) flag processor
+[[nodiscard]] static const char *str_p_( const flag_itm *const         flag,
+                                               int      *const         idx, 
+                                         const int                     argc,
+                                         const char     *const *const  argv,
+                                               bool     *const         error ) {// string argument parser
     // set up references
     const   msg_info    f_err   =   { .type=msg_err_t, .header="assembler flag error" };
     const   char       *str;
@@ -255,14 +259,63 @@ static void process_stra_f_( const flag_itm *const         flag,
         if (*idx >= argc || argv[*idx][0] == '-') {
             cit10a_msg(&f_err, "assembler flag `-%c` requires a string argument", flag->flag);
             *error  =   true;
-            return;
+            return  nullptr;
         }
         str     =   argv[*idx];
     }
 
     // set field
+    return  str;
+}
+
+/**
+ * Proccesses string (any type) type flags. Modifies `c_args`.
+ *
+ * @param       flag            string (any type) flag
+ * @param       idx             current argv being processed
+ * @param       argc            argument count
+ * @param       argv            argument vector
+ * @param       error           error flag
+ */
+static void process_stra_f_( const flag_itm *const         flag,
+                                   int      *const         idx, 
+                             const int                     argc,
+                             const char     *const *const  argv,
+                                   bool     *const         error ) {            // string (any type) flag processor
+    // get flag
     const   char  **const   field   =   (const char**const)((char*)&c_args + flag->offset);
-    *field                          =   str;
+    *field                          =   str_p_(flag, idx, argc, argv, error);
+}
+
+/**
+ * Proccesses string (multiple item) type flags. Modifies `c_args`.
+ *
+ * @param       flag            string (any type) flag
+ * @param       idx             current argv being processed
+ * @param       argc            argument count
+ * @param       argv            argument vector
+ * @param       error           error flag
+ */
+static void process_strm_f_( const flag_itm *const         flag,
+                                   int      *const         idx, 
+                             const int                     argc,
+                             const char     *const *const  argv,
+                                   bool     *const         error ) {            // string (multiple itms) flag processor
+    // get return
+    const   char    *const  strm_v  =   str_p_(flag, idx, argc, argv, error);
+    if (strm_v == nullptr)              return;
+
+    // add to array
+    strm_arr        *const  field   =   (strm_arr*const)((char*)&c_args + flag->offset);
+
+    if (field->size == 0) {
+        field->size     =   1;
+        field->vals     =   chckd_malloc(sizeof(char*) * field->size, "argparse field char**");
+    } else if (field->num + 1 > field->size) {
+        field->size     *=  2;
+        field->vals     =   chckd_realloc(field->vals, sizeof(char*) * field->size, "argparse field char**");
+    }
+    field->vals[field->num++]   =   strm_v;
 }
 
 /*-ARGUMENT-PARSER----------------------------------------------------------------------------------------------------*/
@@ -349,6 +402,9 @@ void reset_args(void) {                                                         
                 case flag_stra_t:
                     process_stra_f_(flag, &i, argc, argv, &error);
                     break;
+                case flag_strm_t:
+                    process_strm_f_(flag, &i, argc, argv, &error);
+                    break;
                 default:
                     cit10a_asrt(!"invalid flag type");
                     cit10a_exit(INTRNL_ERRNO);
@@ -369,9 +425,14 @@ void reset_args(void) {                                                         
     if (c_args.version)         cit10a_info();
 
     // assembly target check
-    if (!c_args.target && end_comp == false) {
+    if (!c_args.target && !end_comp) {
         // no build target
         cit10a_msg(&t_err, "no assembler targets given");
+        error   =   true;
+    }
+    if (!verify_target(c_args.target)) {
+        // wrong file extension
+        cit10a_msg(&t_err, "invalid source file extension");
         error   =   true;
     }
 
@@ -380,6 +441,9 @@ void reset_args(void) {                                                         
         cit10a_msg(&(msg_info){ .type=msg_norm_t, .header="use the -h flag for assembler flag usage" }, nullptr);
         cit10a_exit(ARGPARSE_ERRNO);
     }
+
+    // get output
+    c_args.output   =   get_output(c_args.target, c_args.output);
 
     // get processor number
     if (c_args.n_thrds == 0)    c_args.n_thrds  =   sysconf(_SC_NPROCESSORS_ONLN);

@@ -17,8 +17,14 @@ struct str_f_t {                                                                
     const   char       *const   desc;
 };
 
+typedef struct {                                                                // multiple string array
+    const   char              **vals;
+            int                 num;
+            int                 size;
+} strm_arr;
+
 typedef enum {                                                                  // flag types
-    flag_bool_t,    flag_val_t,     flag_str_t,     flag_stra_t
+    flag_bool_t,    flag_val_t,     flag_str_t,     flag_stra_t,    flag_strm_t
 } flag_type;
 typedef struct {                                                                // flag info struct
     const   char                flag;
@@ -69,9 +75,13 @@ typedef struct {                                                                
             bool        help;
             bool        version;
 
+    // assembler sources
+    const   char       *target;
+    strm_arr            inc;
+    strm_arr            src;
+
     // assembler target
     const   char       *output;
-    const   char       *target;
 } assemble_args;
 
 /*-FLAG-ITEMS---------------------------------------------------------------------------------------------------------*/
@@ -135,13 +145,23 @@ static  const   flag_itm        version_f   =   { .flag='V',            .desc="p
                                                   .type=flag_bool_t,    .offset=offsetof(assemble_args, version),
                                                   .exit=true,           .arg_itm=nullptr                              };
 
+static  const   flag_itm        inc_f       =   { .flag='I',            .desc="assembly inclusions directory",
+                                                  .type=flag_strm_t,    .offset=offsetof(assemble_args, inc),
+                                                  .exit=false,          .arg_itm="include"                            };
+
+static  const   flag_itm        sourc_f     =   { .flag='S',            .desc="assembly secondary sources directory",
+                                                  .type=flag_strm_t,    .offset=offsetof(assemble_args, src),
+                                                  .exit=false,          .arg_itm="source"                             };
+
+
 static  const   flag_itm        output_f    =   { .flag='o',            .desc="assembly output target",
                                                   .type=flag_stra_t,    .offset=offsetof(assemble_args, output),
                                                   .exit=false,          .arg_itm="output"                             };
 
 // flag item arrays
 static  const   flag_itm    *const  a_flg[] =   { &verbosity_f, &warnings_f,    &emit_f,    &max_errs_f,    &bin_f,
-                                                  &case_sens_f, &n_thrds_f,     &help_f,    &version_f,     &output_f };
+                                                  &case_sens_f, &n_thrds_f,     &help_f,    &version_f,     
+                                                  &inc_f,       &sourc_f,       &output_f                           };
 
 /*-GLOBAL-ASSEMBLE-ARGS-STRUCT----------------------------------------------------------------------------------------*/
 
