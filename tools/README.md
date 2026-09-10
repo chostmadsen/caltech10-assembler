@@ -4,14 +4,6 @@ Extra supporting tools for the Caltech10 Assembler.
 
 ------------------------------------------------------------------------------------------------------------------------
 
-## **Vim / Neovim Tools**
-
-Syntax highlighting for Vim and Neovim for `.obj` files, aligned with what the Caltech10 C.P.U. takes. For installation
-instructions, see
-[tools/vim/README.md](https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/vim/README.md).
-
-------------------------------------------------------------------------------------------------------------------------
-
 ## **Debugging Tools**
 
 If your compiler fails to compile the assembler, you should be directed to some file within this directory. Below are
@@ -22,3 +14,11 @@ what the files do.
 determine padding to align singular line assembly instructions across cache lines, so the threader can properly split
 items across threads without false sharing. It shouldn't need modification, but if it does, run the shell script and
 it will tell you what to set the padding to.
+
+------------------------------------------------------------------------------------------------------------------------
+
+## **Vim / Neovim Tools**
+
+Syntax highlighting for Vim and Neovim for `.obj` files, aligned with what the Caltech10 C.P.U. takes. For installation
+instructions, see
+[tools/vim/README.md](https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/vim/README.md).
