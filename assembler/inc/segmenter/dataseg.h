@@ -5,13 +5,21 @@
 
 #pragma     once
 
+#include    <stddef.h>
+#include    <limits.h>
+
 #include    "datastructures/stackmap.h"
+#include    "common/gen_parse.h"
 #include    "reader/reader.h"
 #include    "segmenter/segment.h"
 
 /*-CONSTANTS----------------------------------------------------------------------------------------------------------*/
 
 constexpr   size_t      DATA_BUCKETS        =   32;                             // initial data stackmap buckets
+
+constexpr   int         D_FLD_SHFT          =   sizeof(size_t) * CHAR_BIT;
+constexpr   int         N_D_FIELDS          =   (MAX_NUM + D_FLD_SHFT - 1)
+                                                / D_FLD_SHFT;                   // bitfield number
 
 /*-STRUCTS-/-ENUMS----------------------------------------------------------------------------------------------------*/
 

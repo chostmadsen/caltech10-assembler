@@ -9,9 +9,11 @@
 #include    "helpers/general.h"
 #include    "output/external.h"
 #include    "output/errors.h"
+#include    "output/messages.h"
 #include    "datastructures/stack.h"
 #include    "datastructures/stackmap.h"
 #include    "common/kwrds.h"
+#include    "common/gen_parse.h"
 #include    "reader/reader.h"
 #include    "segmenter/segment.h"
 #include    "segmenter/headerseg.h"
@@ -46,6 +48,26 @@ void print_header_map(const headermap *const hmap) {                            
 /*-CODESEG-PARSER-(HEADERS-ONLY)--------------------------------------------------------------------------------------*/
 
 /**
+ * Check the range the given code item.
+ *
+ * @param       ln              current line
+ * @param       err_f           error report file
+ */
+static void code_rnge_chck_( const int           ln,
+                             const int           loc,
+                                   rprt_f *const err_f ) {                      // code range check
+    if (loc <= (int)MAX_ADRS)       return;
+
+    // setup error information
+    strptr              sptr    =   { .str=src_f_getline(err_f->file, ln), .col=0 };
+    for (; is_whitespace(*sptr.str); inc_strptr(&sptr));
+    src_slice           slc     =   { .str=sptr.str, .len=0 };
+    for (; is_alphanum(*sptr.str); inc_strptr(&sptr), ++slc.len);
+    const   var_tok     ln_inf  =   { .ln=ln + 1, .col=sptr.col - slc.len, .head.key=slc };
+    range_msg(&ln_inf, err_f, loc, MAX_ADRS, msg_warn_t);
+}
+
+/**
  * Adds a header to the existing map of headers, returning false if an error occurred adding the value (either invalid
  * number or existing item). Sets the existing location.
  *
@@ -70,6 +92,7 @@ void print_header_map(const headermap *const hmap) {                            
     for(; is_whitespace(*sptr->str); inc_strptr(sptr));
     if (*sptr->str != HEADER_CHR) {
         // code line - skip
+        code_rnge_chck_(sptr->ln, *loc, err_f);
         push_stack(&hmap->stmts, &(ln_info){ .loc=(*loc)++, .source=err_f->file, .ln=sptr->ln });
         return  false;
     }
@@ -83,6 +106,7 @@ void print_header_map(const headermap *const hmap) {                            
     // check for additional code
     for (inc_strptr(sptr); is_whitespace(*sptr->str); inc_strptr(sptr));
     if (*sptr->str != CMMT_CHR && *sptr->str != '\0') {
+        code_rnge_chck_(sptr->ln, *loc, err_f);
         push_stack(&hmap->stmts, &(ln_info){ .loc=(*loc)++, .source=err_f->file, .ln=sptr->ln });
     }
     return  ret;
@@ -131,6 +155,7 @@ void print_header_map(const headermap *const hmap) {                            
                     const   int n_org   =   parse_org(sptr, err_f);
                     if (n_org == -1)        return  true;
                     *org                =   n_org;
+                    break;
                 default:
                     // handled elsewhere (hopefully)
                     break;

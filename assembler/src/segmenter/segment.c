@@ -106,6 +106,37 @@
     return  tok;
 }
 
+/*-RANGE-CHECKERS-----------------------------------------------------------------------------------------------------*/
+
+/**
+ * Out of range warning message.
+ *
+ * @param       var             variable
+ * @param       err_f           error report file
+ * @param       loc             current location
+ * @param       max             maximum range.
+ * @param       msg_t           message type
+ */
+void range_msg( const var_tok *const var,
+                      rprt_f  *const err_f,
+                const int            loc,
+                const int            max,
+                const msg_info_t     msg_t  ) {                                  // range check error message
+    // invalid data range
+    char    key[var->head.key.len + 1];
+    memcpy(key, var->head.key.str, var->head.key.len);
+    key[var->head.key.len]    =   '\0';
+
+    // arg setup
+    const   size_t              ln      =   var->ln;
+    const   size_t              col     =   var->col + 1;
+    err_f->ln   =   ln - 1;
+    err_f->col  =   col - 1;
+    err_f->len  =   var->head.key.len;
+    cit10a_msg( &(msg_info){ .type=msg_t, .header="oob data", .report_f=err_f },
+                "Outside of the maximum range 0x%x (now at 0x%x)", max, loc);
+}
+
 /*-STACKMAP-REPEAT-OUTPUT-VERIFIER------------------------------------------------------------------------------------*/
 
 /**

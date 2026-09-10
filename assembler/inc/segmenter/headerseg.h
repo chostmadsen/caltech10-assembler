@@ -5,8 +5,12 @@
 
 #pragma     once
 
+#include    <stddef.h>
+#include    <limits.h>
+
 #include    "datastructures/stack.h"
 #include    "datastructures/stackmap.h"
+#include    "common/gen_parse.h"
 #include    "reader/reader.h"
 #include    "segmenter/segment.h"
 
@@ -14,6 +18,10 @@
 
 constexpr   size_t      HEADER_BUCKETS      =   64;                             // initial header stackmap buckets
 constexpr   unsigned    LINE_INIT           =   256;                            // initial header stackmap buckets
+
+constexpr   int         H_FLD_SHFT          =   sizeof(size_t) * CHAR_BIT;
+constexpr   int         N_H_FIELDS          =   (MAX_ADRS + H_FLD_SHFT - 1)
+                                                / H_FLD_SHFT;                   // bitfield number
 
 /*-STRUCTS-/-ENUMS----------------------------------------------------------------------------------------------------*/
 

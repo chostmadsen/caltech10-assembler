@@ -270,7 +270,11 @@
     // check for relative
     if (*sptr->str == PC_CHR) {
         for (inc_strptr(sptr); is_whitespace(*sptr->str); inc_strptr(sptr));
-        if (*sptr->str == '\0' || *sptr->str == CMMT_CHR)   return  ret;
+        if (*sptr->str == '\0' || *sptr->str == CMMT_CHR) {
+            err_f->col  =   sptr->col - 1;
+            ret         =   loc;
+            goto    ret_chck;
+        }
 
         if (*sptr->str != NEG_SYMB && *sptr->str != POS_SYMB) {
             // invalid modification
@@ -325,12 +329,15 @@
 
     }
 
+ret_chck:
+    // offset to cpu's jump mode
+    ret     -=  1;
     // check line end
     if (check_ln_end(sptr, err_f))      return  -1;
     if (ret < 0 || ret > (int)MAX_ADRS) {
         err_f->len  =   sptr->col - err_f->col;
         cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid jump", err_f }, 
-                "jump to outside of program memory"                                );
+                "jump to outside of program memory (to 0x%x)", ret                 );
         return  -1;
     }
     return  ret;
@@ -477,7 +484,7 @@
             // relative jump
             const   int     rjmp_v  =   rjmp_(&sptr, &segmap->headmap.smap, ln_inf->loc, &err_f);
             if (rjmp_v == -1)           return  (ln_asm){ .ln=-1, .instr=-1 };
-            ret.instr               +=  rjmp_v - 1;
+            ret.instr               +=  rjmp_v;
             break;
 
         case jmp_absolute_t:    [[fallthrough]];
@@ -485,7 +492,7 @@
             // absolute pc adjustment
             const   int     ajmp_v  =   ajmp_(&sptr, &segmap->headmap.smap, ln_inf->loc, &err_f);
             if (ajmp_v == -1)           return  (ln_asm){ .ln=-1, .instr=-1 };
-            ret.instr               +=  ajmp_v - 1;
+            ret.instr               +=  ajmp_v;
             break;
 
         default:

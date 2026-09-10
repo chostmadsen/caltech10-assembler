@@ -8,6 +8,7 @@
 
 #include    "helpers/general.h"
 #include    "output/errors.h"
+#include    "output/messages.h"
 #include    "datastructures/stackmap.h"
 #include    "common/kwrds.h"
 #include    "common/gen_parse.h"

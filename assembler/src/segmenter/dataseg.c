@@ -3,17 +3,23 @@
  * .data segment analyzer.
  */
 
+#include    <string.h>
 #include    <stddef.h>
 #include    <stdio.h>
 
 #include    "helpers/general.h"
 #include    "output/errors.h"
+#include    "output/messages.h"
 #include    "datastructures/stackmap.h"
 #include    "common/kwrds.h"
 #include    "common/gen_parse.h"
 #include    "reader/reader.h"
 #include    "segmenter/segment.h"
 #include    "segmenter/dataseg.h"
+
+/*-DATASEG-OUTPUT-----------------------------------------------------------------------------------------------------*/
+
+alignas(CACHE_LN_S) static  size_t  d_locs[N_D_FIELDS]  =   { 0 };              // field bitfield
 
 /*-DATASEG-OUTPUT-----------------------------------------------------------------------------------------------------*/
 
@@ -44,6 +50,22 @@ void print_data_map(const stackmap *const smap) {                               
 /*-DATASEG-PARSER-----------------------------------------------------------------------------------------------------*/
 
 /**
+ * Check the range the given data item. Critical error, as instructions no longer work.
+ *
+ * @param       d_var           data var
+ * @param       err_f           error report file
+ * @return                      whether the data is out of range
+ */
+[[nodiscard]] static bool data_rnge_chck_( const data_var *const d_var,
+                                                 rprt_f   *const err_f  ) { // data range check
+    if (d_var->loc <= (int)MAX_NUM)         return  false;
+
+    // out of range
+    range_msg(&d_var->var, err_f, d_var->loc, MAX_NUM, msg_err_t);
+    return  true;
+}
+
+/**
  * Adds a data variable to the existing map of data variables, returning false if an error occurred adding the value
  * (either invalid number or existing item). Sets the existing location.
  *
@@ -62,7 +84,7 @@ void print_data_map(const stackmap *const smap) {                               
     cit10a_asrt(err_f != nullptr);
 
     // get identifier (assume at first char)
-    const       size_t  slc_strt    =   sptr->col;
+    const   size_t      slc_strt    =   sptr->col;
     const   smap_head   s_head      =   get_identifier(sptr, err_f);
     if (s_head.key.str == nullptr)      return  true;
     data_var            smap_itm    =   { .var={ .head=s_head,     .source=err_f->file,
@@ -106,8 +128,9 @@ void print_data_map(const stackmap *const smap) {                               
 
     // check trailing characters
     inc_strptr(sptr);
-    if (check_ln_end(sptr, err_f))  return  true;
+    if (check_ln_end(sptr, err_f))              return  true;
 
+    if (data_rnge_chck_(&smap_itm, err_f))      return  true;
     const   bool    ret =   identifier_verify(smap, &smap_itm, err_f);
     if (!ret)               ++(*loc);
     return  ret;
@@ -156,6 +179,7 @@ void print_data_map(const stackmap *const smap) {                               
                     const   int n_org   =   parse_org(sptr, err_f);
                     if (n_org == -1)        return  true;
                     *org                =   n_org;
+                    break;
                 default:
                     // handled elsewhere (hopefully)
                     break;

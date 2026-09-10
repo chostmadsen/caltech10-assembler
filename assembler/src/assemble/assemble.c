@@ -8,9 +8,9 @@
 
 #include    "helpers/mem.h"
 #include    "datastructures/stack.h"
+#include    "output/external.h"
 #include    "output/errors.h"
 #include    "argparse/argparse.h"
-#include "output/external.h"
 #include    "segmenter/headerseg.h"
 #include    "segmenter/seg_orch.h"
 #include    "assemble/line.h"
@@ -93,6 +93,8 @@ static void *asm_thread_(void *const asm_thrd_args_v) {                         
     if (n_thrds <= 1) {
         // singular call
         asm_thread_(&(asm_thrd_args){ .segmap=segmap, .target=ret.ln_asms, .start=0, .end=ret.num_segs });
+        // explicit end check
+        if (atomic_load_explicit(&asm_end_flg, memory_order_relaxed))   cit10a_exit(ASSEMBLE_ERRNO);
         return  ret;
     }
 

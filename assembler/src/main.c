@@ -3,7 +3,6 @@
  * Main assembler call.
  */
 
-#include "assemble/assemble_emit.h"
 #if     defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
 #error  "cit10a does not support windows"
 #endif
@@ -18,14 +17,16 @@
 
 #include    <stdio.h>
 
-#include    "output/errors.h"
 #include    "output/external.h"
+#include    "output/errors.h"
+#include    "output/messages.h"
 #include    "argparse/argparse.h"
 #include    "reader/reader.h"
 #include    "reader/reader_out.h"
 #include    "preprocessor/preprocessor.h"
 #include    "segmenter/seg_orch.h"
 #include    "assemble/assemble.h"
+#include    "assemble/assemble_emit.h"
 
 /*-MAIN---------------------------------------------------------------------------------------------------------------*/
 
@@ -61,6 +62,7 @@ int main(const int argc, const char *const *const argv) {                       
     if (c_args.verbosity >= 4 || c_args.emit.aasm)      print_asm(&asm_r);
 
 
+    if (werror_exit)                cit10a_exit(WARN_ERRNO);
     // emit assembly
     emit_asm(c_args.output, &source_f, &smaps, &asm_r);
 

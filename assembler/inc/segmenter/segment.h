@@ -28,6 +28,12 @@ typedef struct {                                                                
 [[nodiscard]] bool verify_sctn_strt(strptr *sptr, rprt_f *err_f);               // .section start verification
 [[nodiscard]] int pseudo_hash_lu_adj(strptr *sptr);                             // .psuedo lookup w/ strptr adj
 
+void range_msg( const var_tok   *var,
+                      rprt_f    *err_f,
+                      int        loc,
+                      int        max,
+                      msg_info_t msg_t );                                       // range check error message
+
 [[nodiscard]] bool identifier_verify(       stackmap *smap,
                                       const void     *smap_itm, 
                                             rprt_f   *err_f     );              // identifier verification
