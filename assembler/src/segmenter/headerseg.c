@@ -22,7 +22,7 @@
 
 /*-CODESEG-BIT-CHECKERS-----------------------------------------------------------------------------------------------*/
 
-alignas(CACHE_LN_S) static  size_t  c_locs[N_H_FIELDS]  =   { 0 };              // field bitfield
+alignas(CACHE_LN_S) static  uint64_t    c_locs[N_H_FIELDS]  =   { 0 };          // field bitfield
 
 /*-HEADER-OUTPUT------------------------------------------------------------------------------------------------------*/
 

@@ -6,6 +6,7 @@
 #include    <stddef.h>
 #include    <stdio.h>
 #include    <string.h>
+#include    <stdint.h>
 
 #include    "helpers/general.h"
 #include    "output/errors.h"
@@ -21,7 +22,7 @@
 
 /*-DATASEG-BIT-CHECKERS-----------------------------------------------------------------------------------------------*/
 
-alignas(CACHE_LN_S) static  size_t  d_locs[N_D_FIELDS]  =   { 0 };              // field bitfield
+alignas(CACHE_LN_S) static  uint64_t    d_locs[N_D_FIELDS]  =   { 0 };          // field bitfield
 
 /*-DATASEG-OUTPUT-----------------------------------------------------------------------------------------------------*/
 

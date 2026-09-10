@@ -6,7 +6,7 @@
 #pragma     once
 
 #include    <stddef.h>
-#include    <limits.h>
+#include    <stdint.h>
 
 #include    "helpers/general.h"
 #include    "output/messages.h"
@@ -15,9 +15,8 @@
 
 /*-CONSTANTS----------------------------------------------------------------------------------------------------------*/
 
-constexpr   int         FLD_SHFT            =   sizeof(size_t) * CHAR_BIT;      // field shift
-// NOTE : if this does not exist, change this to whatever power of 2 size_t is
-constexpr   int         FLDS_PER            =   __builtin_ctz(sizeof(size_t)) + 3;
+constexpr   int         FLD_SHFT            =   64;                             // 64-bit field shift
+constexpr   int         FLDS_PER            =   6;                              // 2^6 = 64
 
 /*-STRUCTS-/-ENUMS----------------------------------------------------------------------------------------------------*/
 
@@ -31,7 +30,7 @@ typedef struct {                                                                
 
 [[nodiscard]] smap_head get_identifier(strptr *sptr, rprt_f *err_f);            // identifier getter
 
-[[nodiscard]] bool set_bitmap(size_t *bmap, int n_flds, int fld);               // bitset set
+[[nodiscard]] bool set_bitmap(uint64_t *bmap, int n_flds, int fld);             // bitset set
 
 [[nodiscard]] int parse_org(strptr *sptr, rprt_f *err_f);                       // .org parser
 [[nodiscard]] bool verify_sctn_strt(strptr *sptr, rprt_f *err_f);               // .section start verification

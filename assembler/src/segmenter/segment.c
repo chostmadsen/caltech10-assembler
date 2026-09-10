@@ -53,16 +53,16 @@
  * @param       fld             field
  * @return                      whether the field was set
  */
-[[nodiscard]] bool set_bitmap(                        size_t *const bmap,
-                               [[maybe_unused]] const int           n_flds, 
-                                                const int           fld     ) { // bitset set
+[[nodiscard]] bool set_bitmap(       uint64_t *const bmap,
+              [[maybe_unused]] const int             n_flds,
+                               const int             fld     ) { // bitset set
     cit10a_asrt(bmap != nullptr);
     cit10a_asrt(n_flds > 0);
 
     // find mask and set
     const   int         shft_idx    =   fld >> FLDS_PER;
     cit10a_asrt(shft_idx < n_flds);
-    const   size_t      shft        =   (size_t)1 << (fld & (FLD_SHFT - 1));
+    const   uint64_t    shft        =   (uint64_t)1 << (fld & (FLD_SHFT - 1));
     const   bool        is_set      =   bmap[shft_idx] & shft;
     bmap[shft_idx]                  |=  shft;
     return  is_set;
