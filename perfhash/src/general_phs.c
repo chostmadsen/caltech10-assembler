@@ -61,3 +61,22 @@
     }
     return  ret;
 }
+
+/**
+ * aligned allocation wrapper to report OOM errors.
+ *
+ * @param       size            alloc size
+ * @param       itm             item description
+ * @return                      allocated memory pointer
+ */
+[[nodiscard]] void *s_aln_alloc(const size_t size) {                            // safe aligned alloc
+    const   size_t  pad     =   (size + CACHE_LN_S - 1) & ~((size_t)CACHE_LN_S - 1);
+    errno                   =   0;
+    void    *const  ret     =   aligned_alloc(CACHE_LN_S, pad);
+    if (ret == nullptr) {
+        // alloc failure
+        fprintf(stderr, "OOM [ errno %d ]\n", errno);
+        exit(1);
+    }
+    return  ret;
+}

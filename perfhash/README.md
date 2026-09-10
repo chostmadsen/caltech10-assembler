@@ -46,6 +46,9 @@ items will hash all case variants of the provided string, so this is only recomm
 (for this project specifically, lookup has been modified to be case insensitive anyways, so this setting will just
 decrease performance).
 
+Multithreading here is actually prevalent to performance, so make sure that your cache line size is set correctly. If
+it is not, you can see significant performance decreases.
+
 Look to the examples to see actual code examples and output.
 
 > #### **Requirements**
@@ -57,6 +60,7 @@ Look to the examples to see actual code examples and output.
 done in ~1 command if this is missing)
 
 ## **Caltech10 Assembler Usage**
+
 Run
 
 ```bash
@@ -67,4 +71,5 @@ To rehash the items. Add the call signatures if more hash items are needed. Refe
 [standalone repository](https://github.com/chostmadsen/perfhash-fnv1a) if wanted.
 
 To debug, provide the `-d` flag. To disable threading, provide the `-n` flag. To specify a c compiler, specify it with
-`-c [compiler]`. To view this in the command line, provide the `-h` flag.
+`-c [compiler]`. To specify the cache line size, specify it with `-l [line size`. To view this in the command line,
+provide the `-h` flag.

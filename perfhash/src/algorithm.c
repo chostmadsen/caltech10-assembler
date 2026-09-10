@@ -82,18 +82,6 @@ static void free_str_map_(str_map *const map) {                                 
 /*-BITSET-FUNCTIONS---------------------------------------------------------------------------------------------------*/
 
 /**
- * New bitset creation.
- *
- * @param       n               number of bits in the bitset
- * @return                      bitset
- */
-[[nodiscard]] static bitset new_bitset_(const size_t n) {                       // create bitset
-    size_t  masks   =   0;
-    for (int i = (int)n; i > 0; i -= 64, ++masks);
-    return  (bitset){ .mask=s_calloc(masks, sizeof(uint64_t)), .size=masks };
-}
-
-/**
  * Bitset bit set.
  *
  * @param       set             bitset
@@ -118,6 +106,20 @@ static void free_str_map_(str_map *const map) {                                 
 static void clear_bitset_(bitset *const restrict set) {                         // clear bitset
     // memset(set->mask, 0, sizeof(uint64_t) * set->size);
     for (size_t i = 0; i < set->size; ++i)      set->mask[i]  =   0;
+}
+
+/**
+ * New bitset creation (aligned).
+ *
+ * @param       n               number of bits in the bitset
+ * @return                      bitset
+ */
+[[nodiscard]] static bitset new_bitset_(const size_t n) {                       // create bitset
+    size_t  masks   =   0;
+    for (int i = (int)n; i > 0; i -= 64, ++masks);
+    bitset  bset    =   (bitset){ .mask=s_aln_alloc(masks * sizeof(uint64_t)), .size=masks };
+    clear_bitset_(&bset);
+    return  bset;
 }
 
 /*-PERFECT-HASHING-ALGORITHM------------------------------------------------------------------------------------------*/

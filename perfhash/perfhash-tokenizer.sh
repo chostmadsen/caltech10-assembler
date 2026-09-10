@@ -13,8 +13,10 @@ trap cleanup EXIT INT TERM;
 # argparse
 debug_build=0;
 nthread=0;
+cache_line=0;
+cache_line_def=0;
 compiler="cc";
-while getopts ":dnhc:" opt ; do
+while getopts ":dnhc:l:" opt ; do
     case $opt in
         d)
             debug_build=1;
@@ -25,9 +27,16 @@ while getopts ":dnhc:" opt ; do
         c)
             compiler="$OPTARG";
             ;;
+        l)
+            cache_line_def=1;
+            cache_line="$OPTARG";
+            ;;
         h)
-            printf "%b\n" "-d for debugging\n-n to disable multithreading\n-c [compiler] to specify a c compiler"
-            exit 0
+            printf "%b\n" "-d for debugging\n"
+                          "-n to disable multithreading\n"
+                          "-c [compiler] to specify a c compiler\n"
+                          "-l [line size] to specify cache line size";
+            exit 0;
             ;;
         \?)
             printf "%b\n" "perfhash unknown build flag";
@@ -64,6 +73,11 @@ if (( !nthread )) ; then
     flags+=( -pthread );
 else
     flags+=( -DNTHREAD );
+fi
+
+if (( cache_line_def )) ; then
+    # cache line size
+    flags+=( -DCACHE_LINE_SIZE=$cache_line );
 fi
 
 # check compiler
