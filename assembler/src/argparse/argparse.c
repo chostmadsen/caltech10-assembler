@@ -9,12 +9,12 @@
 #include    <string.h>
 #include    <unistd.h>
 
-#include "argparse/file_chck.h"
 #include    "helpers/general.h"
-#include "helpers/mem.h"
+#include    "helpers/mem.h"
 #include    "output/external.h"
 #include    "output/errors.h"
 #include    "output/messages.h"
+#include    "argparse/file_chck.h"
 #include    "argparse/argparse.h"
 
 /*-GLOBAL-COMPILE-ARGS-STRUCT-----------------------------------------------------------------------------------------*/
@@ -420,17 +420,18 @@ void reset_args(void) {                                                         
         error   =   true;
     }
 
+
     // process special flags
     if (c_args.help)            arg_help_msg_();
     if (c_args.version)         cit10a_info();
 
+
     // assembly target check
-    if (!c_args.target && !end_comp) {
+    if (c_args.target == nullptr && !end_comp) {
         // no build target
         cit10a_msg(&t_err, "no assembler targets given");
         error   =   true;
-    }
-    if (!verify_target(c_args.target)) {
+    } else if (!end_comp && !verify_target(c_args.target)) {
         // wrong file extension
         cit10a_msg(&t_err, "invalid source file extension");
         error   =   true;
@@ -443,9 +444,9 @@ void reset_args(void) {                                                         
     }
 
     // get output
-    c_args.output   =   get_output(c_args.target, c_args.output);
+    if (c_args.target != nullptr)   c_args.output   =   get_output(c_args.target, c_args.output);
 
     // get processor number
-    if (c_args.n_thrds == 0)    c_args.n_thrds  =   sysconf(_SC_NPROCESSORS_ONLN);
+    if (c_args.n_thrds == 0)        c_args.n_thrds  =   sysconf(_SC_NPROCESSORS_ONLN);
     return  end_comp;
 }

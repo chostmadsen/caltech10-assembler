@@ -8,6 +8,7 @@
 
 #include    "helpers/general.h"
 #include    "helpers/mem.h"
+#include    "output/errors.h"
 #include    "argparse/file_chck.h"
 
 /*-FILE-CHECKERS------------------------------------------------------------------------------------------------------*/
@@ -19,6 +20,7 @@
  * @return                      pointer to extension
  */
 [[nodiscard]] const char *file_extension(const char *const f_nm) {              // gets file extension
+    cit10a_asrt(f_nm != nullptr);
     const   int f_len   =   strlen(f_nm) - 1;
 
     for (int i = f_len - 1; i > 0; --i) {
