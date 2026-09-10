@@ -82,7 +82,7 @@ typedef struct {                                                                
     strm_arr            src;
 
     // assembler target
-    const   char       *output;
+            char       *output;
 } assemble_args;
 
 /*-FLAG-ITEMS---------------------------------------------------------------------------------------------------------*/
@@ -181,3 +181,4 @@ extern  assemble_args    c_args;                                                
 
 void reset_args(void);                                                          // reset assembler arguments
 [[nodiscard]] bool parse_args(int arc, const char *const *argv);                // assembler argument parser
+void free_c_args(void);                                                         // c_args free

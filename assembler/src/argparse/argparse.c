@@ -450,3 +450,14 @@ void reset_args(void) {                                                         
     if (c_args.n_thrds == 0)        c_args.n_thrds  =   sysconf(_SC_NPROCESSORS_ONLN);
     return  end_comp;
 }
+
+/*-ARGUMENT-PARSER-FREE-----------------------------------------------------------------------------------------------*/
+
+/**
+ * Frees stuff from c_args
+ */
+void free_c_args(void) {                                                        // c_args free
+    safe_free(c_args.output);
+    free(c_args.inc.vals);
+    free(c_args.src.vals);
+}
