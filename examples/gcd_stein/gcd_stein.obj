@@ -50,8 +50,7 @@
   0002  9c 05    ;;     jnz     a_nz
                       ; jz      ret_b
 
-; 0003           ;;     ret_b:      
-  0003  80 03    ;;                 ldd     b_h                                         ; a is zero, return b
+  0003  80 03    ;;     ret_b:      ldd     b_h                                         ; a is zero, return b
   0004  07 80    ;;                 tax
   0005  80 02    ;;                 ldd     b_l
   0006  1f 00    ;;                 rts
@@ -91,7 +90,7 @@
   0021  a0 02    ;;                 std     b_l
 
   0022  05 80    ;;                 inx                                                 ; increment X (k)
-  0023  c0 12    ;;                 jmp     pair_shft
+  0023  c0 13    ;;                 jmp     pair_shft
   0024  80 00    ;;                 ldd     a_l                                         ; [*] a_l preload
 
   0025  67 01    ;;     store_k:    txa                                                 ; store k as X
@@ -106,7 +105,7 @@
   002c  80 00    ;;                 ldd     a_l
   002d  71 03    ;;                 rrc
 
-  002e  c0 27    ;;                 jmp     find_gcd                                    ; [*] aka make_a_odd
+  002e  c0 28    ;;                 jmp     find_gcd                                    ; [*] aka make_a_odd
   002f  80 00    ;;                 ldd     a_l                                         ; [*] a_l preload
 
   0030  80 00    ;;     a_odd:      ldd     a_l                                         ; check if b > a
@@ -142,7 +141,7 @@
   0047  74 01    ;;                 or      a_h
   0048  9f 02    ;;                 jz      k_load
   0049  80 04    ;;                 ldd     k                                           ; [*] preload k && branch delay
-  004a  c0 27    ;;                 jmp     find_gcd
+  004a  c0 28    ;;                 jmp     find_gcd
 
   004b  80 04    ;;     k_load:     ldd     k                                           ; check if k is zero
   004c  4f 00    ;;                 tsti    0x00

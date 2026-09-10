@@ -29,6 +29,8 @@
  */
 [[nodiscard]] smap_head get_identifier( strptr *const sptr,
                                         rprt_f *const err_f ) {                 // identifier getter
+    cit10a_asrt(sptr != nullptr);
+
     src_slice       slc     =   get_ident(sptr, err_f);
     if (slc.len == 0) {
         // invalid identifier
@@ -41,6 +43,32 @@
     return  (smap_head){ .hash=hash_fnv1a_slc_lwr(&slc), .key=slc };
 }
 
+/*-BITMAP-SETTERS-/-OVERLAP-CHECKERS----------------------------------------------------------------------------------*/
+
+/**
+ * Sets a bitset, with the given number of fields. Always sets.
+ *
+ * @param       bmap            bitmap (bitset)
+ * @param       n_flds          number of fields
+ * @param       fld             field
+ * @return                      whether the field was set
+ */
+[[nodiscard]] bool set_bitmap(       size_t *const bmap,
+                               const int           n_flds, 
+                               const int           fld     ) {                  // bitset set
+    cit10a_asrt(bmap != nullptr);
+    cit10a_asrt(n_flds > 0);
+
+    // find mask and set
+    const   int         shft_idx    =   fld >> FLDS_PER;
+    cit10a_asrt(shft_idx < n_flds);
+    const   size_t      shft        =   (size_t)1 << (fld & (FLD_SHFT - 1));
+    const   bool        is_set      =   bmap[shft_idx] & shft;
+    bmap[shft_idx]                  |=  shft;
+    return  is_set;
+
+}
+
 /*-.PSEUDO-OP-PARSERS-------------------------------------------------------------------------------------------------*/
 
 /**
@@ -51,6 +79,8 @@
  * @return                      number
  */
 [[nodiscard]] int parse_org(strptr *const sptr, rprt_f *const err_f) {          // .org parser
+    cit10a_asrt(sptr != nullptr);
+
     // find consptr
     while (is_whitespace(*sptr->str))   inc_strptr(sptr);
 
@@ -98,6 +128,8 @@
  * @return                      .pseudo directive
  */
 [[nodiscard]] int pseudo_hash_lu_adj(strptr *const sptr) {                      // .psuedo lookup w/ strptr adj
+    cit10a_asrt(sptr != nullptr);
+
     inc_strptr(sptr);
     size_t          n       =   0;
     for (; is_alphanum(sptr->str[n]); ++n);
@@ -122,6 +154,9 @@ void range_msg( const var_tok *const var,
                 const int            loc,
                 const int            max,
                 const msg_info_t     msg_t  ) {                                  // range check error message
+    cit10a_asrt(var != nullptr);
+    cit10a_asrt(err_f != nullptr);
+
     // invalid data range
     char    key[var->head.key.len + 1];
     memcpy(key, var->head.key.str, var->head.key.len);
@@ -150,6 +185,10 @@ void range_msg( const var_tok *const var,
 [[nodiscard]] bool identifier_verify(       stackmap *const smap,
                                       const void     *const smap_itm, 
                                             rprt_f   *const err_f     ) {       // identifier verification
+    cit10a_asrt(smap != nullptr);
+    cit10a_asrt(smap_itm != nullptr);
+    cit10a_asrt(err_f != nullptr);
+
     // check collisions
     const   smap_clsn_t         clsn_t  =   stackmap_add_lwr(smap, smap_itm);
     const   var_tok     *const  head    =   (var_tok*)smap_itm;

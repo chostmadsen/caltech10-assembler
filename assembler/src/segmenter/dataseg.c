@@ -7,6 +7,8 @@
 #include    <stddef.h>
 #include    <stdio.h>
 
+#include "argparse/argparse.h"
+#include "datastructures/stack.h"
 #include    "helpers/general.h"
 #include    "output/errors.h"
 #include    "output/messages.h"
@@ -17,7 +19,7 @@
 #include    "segmenter/segment.h"
 #include    "segmenter/dataseg.h"
 
-/*-DATASEG-OUTPUT-----------------------------------------------------------------------------------------------------*/
+/*-DATASEG-BIT-CHECKERS-----------------------------------------------------------------------------------------------*/
 
 alignas(CACHE_LN_S) static  size_t  d_locs[N_D_FIELDS]  =   { 0 };              // field bitfield
 
@@ -57,12 +59,49 @@ void print_data_map(const stackmap *const smap) {                               
  * @return                      whether the data is out of range
  */
 [[nodiscard]] static bool data_rnge_chck_( const data_var *const d_var,
-                                                 rprt_f   *const err_f  ) { // data range check
+                                                 rprt_f   *const err_f  ) {     // data range check
     if (d_var->loc <= (int)MAX_NUM)         return  false;
 
     // out of range
     range_msg(&d_var->var, err_f, d_var->loc, MAX_NUM, msg_err_t);
     return  true;
+}
+
+/**
+ * Check for overlapping data definitions.
+ *
+ * @param       d_var           data var
+ * @param       smap            data stackmap
+ * @param       err_f           error report file
+ */
+static void data_chck_dup_( const data_var *const d_var,
+                            const stackmap *const smap,
+                                  rprt_f   *const err_f  ) {                    // data overlap checker
+    // check for no duplicate or supression
+    if (c_args.warnings.noverd)                         return;
+    if (!set_bitmap(d_locs, N_D_FIELDS, d_var->loc))    return;
+    bool    found_overlap   =   false;
+
+    // setup error
+    err_f->len      =   d_var->var.head.key.len;
+    err_f->col      =   d_var->var.col;
+    for (size_t i = 0; i < smap->buckets; ++i) {
+        // check stackmap
+        for (int j = 0; j < smap->heads[i].len; ++j) {
+            // check stack
+            const   data_var    s_var   =   *(data_var*)peek_stack(&smap->heads[i], j);
+            if (s_var.loc != d_var->loc)    continue;
+            cit10a_msg(&(msg_info){ .type=msg_warn_t, .header="overlapping data", .report_f=err_f},
+                        "overlap with data declared at 0x%02x [[ @ %s::%d::%d ]]",
+                        d_var->loc, s_var.var.source->f_name, s_var.var.ln, s_var.var.col           );
+            found_overlap   =   true;
+        }
+    }
+
+    if (found_overlap)      return;
+    cit10a_msg( &(msg_info){ .type=msg_intrnl_wrn_t, .header="overlap miss"}, 
+                "an overlapping data item is declared at %s::%d::%d, but it couldn't be found",
+                err_f->file->f_name, err_f->ln, err_f->col                                      );
 }
 
 /**
@@ -131,6 +170,7 @@ void print_data_map(const stackmap *const smap) {                               
     if (check_ln_end(sptr, err_f))              return  true;
 
     if (data_rnge_chck_(&smap_itm, err_f))      return  true;
+    data_chck_dup_(&smap_itm, smap, err_f);
     const   bool    ret =   identifier_verify(smap, &smap_itm, err_f);
     if (!ret)               ++(*loc);
     return  ret;

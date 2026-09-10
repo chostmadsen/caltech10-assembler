@@ -33,6 +33,9 @@
 [[nodiscard]] static int asm_get_val_(        strptr   *const sptr,
                                        const  stackmap *const constmap,
                                        rprt_f          *const err_f     ) {     // assembler value
+    cit10a_asrt(sptr != nullptr);
+    cit10a_asrt(constmap != nullptr);
+
     if (('0' <= *sptr->str && *sptr->str <= '9') || *sptr->str == HEX_CHR_ALT) {
         // raw number parse
         return  parse_num_repr(sptr, err_f);
@@ -73,6 +76,9 @@
 [[nodiscard]] static int get_immediate_(        strptr   *const sptr,
                                          const  stackmap *const constmap,
                                          rprt_f          *const err_f     ) {     // assembler immediate
+    cit10a_asrt(sptr != nullptr);
+    cit10a_asrt(constmap != nullptr);
+
     // skip whitespace
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
 
@@ -96,6 +102,9 @@
 [[nodiscard]] static int get_mem_(        strptr   *const sptr,
                                    const  stackmap *const datamap, 
                                    rprt_f          *const err_f    ) {          // assembler memory
+    cit10a_asrt(sptr != nullptr);
+    cit10a_asrt(datamap != nullptr);
+
     // skip whitespace
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
 
@@ -151,6 +160,9 @@
 [[nodiscard]] static int get_offset_(        strptr   *const sptr,
                                       const  stackmap *const constmap,
                                       rprt_f          *const err_f     ) {      // offset
+    cit10a_asrt(sptr != nullptr);
+    cit10a_asrt(constmap != nullptr);
+
     // check for offset
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
     if (*sptr->str != CMMA_CHR) {
@@ -183,6 +195,9 @@
 [[nodiscard]] static int alu_offs_(        strptr  *const sptr,
                                     const  segmaps *const segmap, 
                                     rprt_f         *const err_f   ) {           // alu addressing mode select
+    cit10a_asrt(sptr != nullptr);
+    cit10a_asrt(segmap != nullptr);
+
     // skip whitespace
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
     int         ret     =   0;
@@ -210,6 +225,9 @@
 [[nodiscard]] static int ldst_offs_(        strptr  *const sptr,
                                      const  segmaps *const segmap, 
                                      rprt_f         *const err_f   ) {          // load store addressing mode select
+    cit10a_asrt(sptr != nullptr);
+    cit10a_asrt(segmap != nullptr);
+
     // skip whitespace
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
     int         ret     =   0;
@@ -264,14 +282,19 @@
                                      const stackmap *const headermap, 
                                      const int             loc, 
                                            rprt_f   *const err_f) {             // jump parser
+    cit10a_asrt(sptr != nullptr);
+    cit10a_asrt(headermap != nullptr);
+
     // return setup
     int             ret     =   0;
 
     // check for relative
     if (*sptr->str == PC_CHR) {
+        err_f->col      =   sptr->col;
+
+        // check next character
         for (inc_strptr(sptr); is_whitespace(*sptr->str); inc_strptr(sptr));
         if (*sptr->str == '\0' || *sptr->str == CMMT_CHR) {
-            err_f->col  =   sptr->col - 1;
             ret         =   loc;
             goto    ret_chck;
         }
@@ -287,22 +310,24 @@
 
         // get jump
         bool        neg =   (*sptr->str == NEG_SYMB) ? true : false;
-        inc_strptr(sptr);
-        err_f->col      =   sptr->col;
+        for (inc_strptr(sptr); is_whitespace(*sptr->str); inc_strptr(sptr));
         const   int adj =   parse_num(sptr, err_f);
         ret             =   (neg) ? loc - adj : loc + adj;
 
     } else if (('0' <= *sptr->str && *sptr->str <= '9') || *sptr->str == HEX_CHR_ALT) {
 
+        err_f->col  =   sptr->col;
         // raw number parse
         err_f->len  =   (*sptr->str == HEX_CHR_ALT) ? 1 : 0;
         for (; is_alphanum(sptr->str[err_f->len]); ++err_f->len);
         cit10a_msg( &(msg_info){ .type=msg_warn_t, .header="raw program access", .report_f=err_f },
                     "raw program access; define headers or set up a relative jump with `.`"         );
-        ret         =   parse_num_repr(sptr, err_f);
+        ret         =   parse_num_adrs(sptr, err_f);
+        if (ret == -1)  return  -1;
 
     } else {
 
+        err_f->col  =   sptr->col;
         // header lookup
         src_slice   slc =   { .str=sptr->str, .len=0 };
         const   int col =   sptr->col;
@@ -326,12 +351,9 @@
             return  -1;
         }
         ret             =   hvar->loc;
-
     }
 
 ret_chck:
-    // offset to cpu's jump mode
-    ret     -=  1;
     // check line end
     if (check_ln_end(sptr, err_f))      return  -1;
     if (ret < 0 || ret > (int)MAX_ADRS) {
@@ -356,6 +378,9 @@ ret_chck:
                                 const stackmap *const headermap, 
                                 const int             loc, 
                                       rprt_f   *const err_f) {                  // relative jump
+    cit10a_asrt(sptr != nullptr);
+    cit10a_asrt(headermap != nullptr);
+
     // skip whitespace
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
     size_t  p_strt      =   sptr->col;
@@ -363,7 +388,7 @@ ret_chck:
     // get jump location
     const   int jloc    =   jmp_parse_(sptr, headermap, loc, err_f);
     if (jloc == -1)         return  -1;
-    int         ret     =   jloc - loc;
+    int         ret     =   jloc - loc - 1;
 
     // check jump range
     bool    neg         =   false;
@@ -373,11 +398,16 @@ ret_chck:
         max_num         =   MAX_NUM_NEG;
         ret             =   -ret;
     }
-    if (ret > max_num) {
+    if (ret > max_num || jloc - 1 < 0) {
         err_f->col      =   p_strt;
         err_f->len      =   sptr->col - p_strt;
-        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="relative jump range", .report_f=err_f },
-                    "relative jump out of range (maximially %d-bit, signed 2's compliment)", MAX_NUM_PARSE );
+        if (jloc - 1 < 0) {
+            cit10a_msg( &(msg_info){ .type=msg_err_t, .header="relative jump range", .report_f=err_f },
+                        "relative jump to address -0x%04x", 1                                           );
+        } else {
+            cit10a_msg( &(msg_info){ .type=msg_err_t, .header="relative jump range", .report_f=err_f },
+                        "relative jump out of range (%c0x%04x)", (neg) ? '-' : '+', ret                 );
+        }
         return  -1;
     }
 
@@ -397,6 +427,9 @@ ret_chck:
                                 const stackmap *const headermap, 
                                 const int             loc, 
                                       rprt_f   *const err_f) {                  // absolute jump
+    cit10a_asrt(sptr != nullptr);
+    cit10a_asrt(headermap != nullptr);
+
     // skip whitespace
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
     return  jmp_parse_(sptr, headermap, loc, err_f);
@@ -413,6 +446,9 @@ ret_chck:
  */
 [[nodiscard]] ln_asm line_assemble( const segmaps *const segmap, 
                                     const ln_info *const ln_inf  ) {            // line assembler
+    cit10a_asrt(segmap != nullptr);
+    cit10a_asrt(ln_inf != nullptr);
+
     const   src_f   *const  source  =   ln_inf->source;
     strptr                  sptr    =   { .ln=ln_inf->ln, .col=0, .str=src_f_getline(source, ln_inf->ln) };
     for (; is_whitespace(*sptr.str); inc_strptr(&sptr));

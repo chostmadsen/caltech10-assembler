@@ -50,8 +50,7 @@ gcd_stein:
     jnz     a_nz
   ; jz      ret_b
 
-    ret_b:      
-                ldd     b_h                                         ; a is zero, return b
+    ret_b:      ldd     b_h                                         ; a is zero, return b
                 tax
                 ldd     b_l
                 rts
