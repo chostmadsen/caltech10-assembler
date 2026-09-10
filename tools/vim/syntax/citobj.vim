@@ -10,7 +10,7 @@ syntax match    citobj_comment  ";.*"                                   contains
 
 
 "-LINKING--------------------------------------------------------------------------------------------------------------"
-highlight default link citobj_hex       Identifier
+highlight default link citobj_hex       Identifier      " can also be number, but this looks better on my colorscheme
 highlight default link citobj_comment   Comment
 highlight default link citobj_todo      Todo
 

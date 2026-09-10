@@ -17,8 +17,8 @@ instructions, see
 If your compiler fails to compile the assembler, you should be directed to some file within this directory. Below are
 what the files do.
 
-- [tools/alignment_def.c](https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/alignment_def.c)
-[tools/alignment_def.sh](https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/alignment_def.sh) help
+- [tools/alignment_def.sh](https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/alignment_def.sh) /
+[tools/alignment_def.c](https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/alignment_def.c) help
 determine padding to align singular line assembly instructions across cache lines, so the threader can properly split
 items across threads without false sharing. It shouldn't need modification, but if it does, run the shell script and
 it will tell you what to set the padding to.
