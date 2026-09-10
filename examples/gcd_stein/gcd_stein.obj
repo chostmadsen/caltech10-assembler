@@ -1,0 +1,190 @@
+;-gcd_stein.asm--------------------------------------------------------------------------------------------------------;
+;~  description         ACAMA GCD algorithm assembler testing.
+
+;~  history             Christian Host-Madsen       2026.09.06      creation
+
+;*  global fns          gcd_stein                   Stein's GCD algorithm and program entry
+;*  local fns           none
+
+;*  global vars         a_l                         Gcd number a [l]
+;*                      a_h                         Gcd number a [h]
+;*                      b_l                         Gcd number b [l]
+;*                      b_h                         Gcd number b [h]
+
+; constants
+;;  .const      LOW_BIT_MASK            0x01                            ; low bit check mask
+
+;-CODE-SEGMENT---------------------------------------------------------------------------------------------------------;
+;;  .code
+;;  .org        0x0000
+
+                    ;-gcd_stein----------------------------------------------------------------------------------------;
+                    ;~  description         Finds the GCD of two words using Stein's algorithm (and program entry).
+                    ;~  operation           Uses Stein's GCD algorithm to find the GCD of unsigned 16-bit numbers a and
+                    ;                       b, then return with the high GCD in X and low in the accumulator.
+
+                    ;~  arguments           none
+                    ;~  return              uint16              gcd of a and b                          * X | A
+
+                    ;~  local variables     uint8   k           stein k counter
+                    ;~  shared variables    none
+                    ;~  global variables    uint16  a_l         number a [l]
+                    ;~                      uint8   a_h         number a [h]
+                    ;~                      uint16  b_l         number b [l]
+                    ;~                      uint8   b_h         number b [h]
+
+                    ;~  input               none
+                    ;~  output              none
+
+                    ;~  error handling      none
+                    ;~  algorithms          Stein's GCD algorithm.
+                    ;~  data structures     none
+
+                    ;*  last modified       Christian Host-Madsen       2026.09.06      creation
+
+                    ;*  changed registers   A, X
+                    ;*  stack depth         0
+; 0000           ;; gcd_stein:
+  0000  80 00    ;;     ldd     a_l                                                     ; check for nonzero a
+  0001  74 01    ;;     or      a_h
+  0002  9c 05    ;;     jnz     a_nz
+                      ; jz      ret_b
+
+; 0003           ;;     ret_b:      
+  0003  80 03    ;;                 ldd     b_h                                         ; a is zero, return b
+  0004  07 80    ;;                 tax
+  0005  80 02    ;;                 ldd     b_l
+  0006  1f 00    ;;                 rts
+  0007  1f 80    ;;                 nop                                                 ; [*] branch delay
+
+  0008  80 02    ;;     a_nz:       ldd     b_l                                         ; check for nonzero b
+  0009  74 02    ;;                 or      b_l
+  000a  9c 05    ;;                 jnz     set_k
+                                  ; jz      ret_a
+
+  000b  80 03    ;;     ret_a:      ldd     b_h                                         ; a is zero, return b
+  000c  07 80    ;;                 tax
+  000d  80 02    ;;                 ldd     b_l
+  000e  1f 00    ;;                 rts
+  000f  1f 80    ;;                 nop                                                 ; [*] branch delay
+
+  0010  89 00    ;;     set_k:      ldi     0x00                                        ; X to initialize k
+  0011  07 80    ;;                 tax
+  0012  80 00    ;;                 ldd     a_l                                         ; [*] a_l preload
+
+  0013  74 02    ;;     pair_shft:  or      b_l                                         ; check if a or b is odd
+  0014  47 01    ;;                 andi    LOW_BIT_MASK
+  0015  9c 0f    ;;                 jnz     store_k
+
+  0016  80 01    ;;                 ldd     a_h                                         ; shift a
+  0017  71 00    ;;                 lsr
+  0018  a0 01    ;;                 std     a_h
+  0019  80 00    ;;                 ldd     a_l
+  001a  71 03    ;;                 rrc
+  001b  a0 00    ;;                 std     a_l
+
+  001c  80 03    ;;                 ldd     b_h                                         ; shift b
+  001d  71 00    ;;                 lsr
+  001e  a0 03    ;;                 std     b_h
+  001f  80 02    ;;                 ldd     b_l
+  0020  71 03    ;;                 rrc
+  0021  a0 02    ;;                 std     b_l
+
+  0022  05 80    ;;                 inx                                                 ; increment X (k)
+  0023  c0 12    ;;                 jmp     pair_shft
+  0024  80 00    ;;                 ldd     a_l                                         ; [*] a_l preload
+
+  0025  67 01    ;;     store_k:    txa                                                 ; store k as X
+  0026  a0 04    ;;                 std     k
+  0027  80 00    ;;                 ldd     a_l                                         ; [*] a_l preload
+
+  0028  47 01    ;;     find_gcd:   andi    LOW_BIT_MASK                                ; check if a is odd
+  0029  9c 06    ;;                 jnz     a_odd      
+
+  002a  80 01    ;;                 ldd     a_h                                         ; shift a
+  002b  71 00    ;;                 lsr
+  002c  80 00    ;;                 ldd     a_l
+  002d  71 03    ;;                 rrc
+
+  002e  c0 27    ;;                 jmp     find_gcd                                    ; [*] aka make_a_odd
+  002f  80 00    ;;                 ldd     a_l                                         ; [*] a_l preload
+
+  0030  80 00    ;;     a_odd:      ldd     a_l                                         ; check if b > a
+  0031  10 02    ;;                 sub     b_l
+  0032  80 01    ;;                 ldd     a_h
+  0033  18 03    ;;                 sbb     b_h
+
+  0034  8f 0c    ;;                 jc      a_geq_b
+                                  ; jnc     swap_words
+
+  0035  80 00    ;;     swap_words: ldd     a_l                                         ; move a low to X
+  0036  07 80    ;;                 tax
+  0037  80 02    ;;                 ldd     b_l                                         ; move b low to a low
+  0038  a0 00    ;;                 std     a_l
+  0039  07 80    ;;                 tax                                                 ; move X to b low
+  003a  a0 02    ;;                 std     b_l
+
+  003b  80 01    ;;                 ldd     a_h                                         ; move a high to X
+  003c  07 80    ;;                 tax
+  003d  80 03    ;;                 ldd     b_h                                         ; move b high to a low
+  003e  a0 01    ;;                 std     a_h
+  003f  07 80    ;;                 tax                                                 ; move X to b high
+  0040  a0 03    ;;                 std     b_h
+
+; 0041           ;;     a_geq_b:  ; ldd     a_l                                         ; [*] a preloaded
+  0041  10 02    ;;                 sub     b_l                                         ; adjust a
+  0042  a0 00    ;;                 std     a_l
+  0043  80 01    ;;                 ldd     a_h
+  0044  18 03    ;;                 sbb     b_h
+  0045  a0 01    ;;                 std     a_h
+
+  0046  80 00    ;;                 ldd     a_l                                         ; check if a is zero
+  0047  74 01    ;;                 or      a_h
+  0048  9f 02    ;;                 jz      k_load
+  0049  80 04    ;;                 ldd     k                                           ; [*] preload k && branch delay
+  004a  c0 27    ;;                 jmp     find_gcd
+
+  004b  80 04    ;;     k_load:     ldd     k                                           ; check if k is zero
+  004c  4f 00    ;;                 tsti    0x00
+  004d  9c 05    ;;                 jnz     get_gcd                                     ; [*] aka k_nz
+                                  ; jz      k_zero
+
+  004e  80 03    ;;     k_zero:     ldd     b_h                                         ; k is zero, return b
+  004f  07 80    ;;                 tax
+  0050  80 02    ;;                 ldd     b_l
+  0051  1f 00    ;;                 rts
+  0052  1f 80    ;;                 nop
+
+  0053  80 02    ;;     get_gcd:    ldd     b_l                                         ; shift b
+  0054  58 00    ;;                 lsl
+  0055  a0 02    ;;                 std     b_l
+  0056  80 03    ;;                 ldd     b_h
+  0057  50 00    ;;                 rlc
+  0058  a0 03    ;;                 std     b_h
+
+  0059  80 04    ;;                 ldd     k                                           ; decrement k until zero
+  005a  7b 00    ;;                 dec
+  005b  9c f7    ;;                 jnz     get_gcd
+                                  ; jz      got_gcd
+  005c  a0 04    ;;                 std     k                                           ; [*] store k && branch delay
+
+  005d  80 03    ;;     got_gcd:    ldd     b_h                                         ; return gcd (b)
+  005e  07 80    ;;                 tax
+  005f  80 02    ;;                 ldd     b_l
+  0060  1f 00    ;;                 rts
+  0061  1f 80    ;;                 nop
+
+
+;;  .none
+;-DATA-SEGMENT---------------------------------------------------------------------------------------------------------;
+;;  .data
+;;  .org        0x0000
+
+                    ; gcd arguments
+;          00    ;; a_l                 db          ?                                   ; number a [l]
+;          01    ;; a_h                 db          ?                                   ; number a [h]
+;          02    ;; b_l                 db          ?                                   ; number b [l]
+;          03    ;; b_h                 db          ?                                   ; number b [h]
+
+                    ; gcd local variables
+;          04    ;; k                   db          ?                                   ; number k
