@@ -172,7 +172,7 @@ static void data_chck_dup_( const data_var *const d_var,
     if (data_rnge_chck_(&smap_itm, err_f))      return  true;
     data_chck_dup_(&smap_itm, smap, err_f);
     const   bool    ret =   identifier_verify(smap, &smap_itm, err_f);
-    if (!ret)               ++(*loc);
+    ++(*loc);
     return  ret;
 }
 
@@ -199,6 +199,7 @@ static void data_chck_dup_( const data_var *const d_var,
     // segment section
     do {
         // get first character
+        err_f->ln   =   sptr->ln;
         for (; is_whitespace(*sptr->str); inc_strptr(sptr));
 
         // check psuedo-ops

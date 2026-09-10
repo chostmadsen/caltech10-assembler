@@ -182,6 +182,7 @@ add_code:
     do {
         // get first character
         for (; is_whitespace(*sptr->str); inc_strptr(sptr));
+        err_f->ln   =   sptr->ln;
 
         // check psuedo-ops
         if (*sptr->str == PSEUDO_STRT) {

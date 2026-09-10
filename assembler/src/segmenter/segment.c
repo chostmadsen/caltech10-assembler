@@ -220,7 +220,7 @@ void range_msg( const var_tok *const var,
     } else if (clsn_t == smap_full_clsn_t){
         // full collision
         cit10a_msg( &(msg_info){ .type=msg_err_t, .header="redefinition", .report_f=err_f },
-                "redefinition of identifier [ @ %s::%d::%d-%d ]", ln, file, col, col_e       );
+                "redefinition of identifier [ @ %s::%d::%d-%d ]", file, ln, col, col_e       );
         return  true;
     }
     return  false;
