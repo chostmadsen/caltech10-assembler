@@ -42,6 +42,7 @@
 
 ;*  last modified       Christian Host-Madsen       2026.09.06      creation
 
+;*  changed registers   A, X
 ;*  stack depth         0
 gcd_stein:
     ldd     a_l                                                     ; check for nonzero a
@@ -49,7 +50,8 @@ gcd_stein:
     jnz     a_nz
   ; jz      ret_b
 
-    ret_b:      ldd     b_h                                         ; a is zero, return b
+    ret_b:      
+                ldd     b_h                                         ; a is zero, return b
                 tax
                 ldd     b_l
                 rts

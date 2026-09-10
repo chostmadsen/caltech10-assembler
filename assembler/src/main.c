@@ -3,6 +3,7 @@
  * Main assembler call.
  */
 
+#include "assemble/assemble_emit.h"
 #if     defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
 #error  "cit10a does not support windows"
 #endif
@@ -56,6 +57,10 @@ int main(const int argc, const char *const *const argv) {                       
     // assembly output
     if (c_args.verbosity >= 2)                          print_asm_info(&asm_r);
     if (c_args.verbosity >= 4 || c_args.emit.aasm)      print_asm(&asm_r);
+
+
+    // emit assembly
+    emit_asm(stdout, &source_f, &smaps, &asm_r);
 
     // end free
     free_src_f(&source_f);

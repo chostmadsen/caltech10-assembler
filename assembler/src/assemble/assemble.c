@@ -10,6 +10,7 @@
 #include    "datastructures/stack.h"
 #include    "output/errors.h"
 #include    "argparse/argparse.h"
+#include "output/external.h"
 #include    "segmenter/headerseg.h"
 #include    "segmenter/seg_orch.h"
 #include    "assemble/line.h"
@@ -82,6 +83,11 @@ static void *asm_thread_(void *const asm_thrd_args_v) {                         
     const   int     n_thrds =   (n_segs >= c_args.n_thrds) ? c_args.n_thrds : n_segs;
     const   int     n_lns   =   ret.num_segs / n_thrds;
     const   int     slack   =   ret.num_segs % n_thrds;
+    if (c_args.verbosity >= 3) {
+        // thread output
+        printf( CLR_DIM "%d new thread(s) (1 inline) | %d lines / thread | %d line slack\x1b[0m\n",
+                n_thrds - 1, n_lns, slack                                                           );
+    }
 
     // inline call
     if (n_thrds <= 1) {
@@ -144,8 +150,8 @@ void print_asm(const asm_ret *const asm_r) {                                    
 
     for (int i = 0; i < asm_r->num_segs; ++i) {
         // emit instructions
-        printf("%04x  %04x  ", asm_r->ln_asms[i].loc, asm_r->ln_asms[i].instr);
-        printf(CLR_DIM "  [[ %s::%d ]]\x1b[0m\n", asm_r->ln_asms[i].source->f_name, asm_r->ln_asms[i].ln);
+        printf("%04x  %04x", asm_r->ln_asms[i].loc, asm_r->ln_asms[i].instr);
+        printf(CLR_DIM "  [[ %s::%d ]]\x1b[0m\n", asm_r->ln_asms[i].source->f_name, asm_r->ln_asms[i].ln + 1);
     }
 
     fputs(DEBUG_DELIM "\n", stdout);

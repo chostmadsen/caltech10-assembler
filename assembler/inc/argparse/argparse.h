@@ -63,6 +63,7 @@ typedef struct {                                                                
             int         max_errs;
             int         n_thrds;
             bool        case_sens;
+            bool        bin;
 
     // exit on set flags
             bool        help;
@@ -111,6 +112,10 @@ static  const   flag_itm        max_errs_f  =   { .flag='e',            .desc="m
                                                   .min=1,               .max=0x7fff,
                                                   .dflt=20                                                            };
 
+static  const   flag_itm        bin_f       =   { .flag='b',            .desc="emit binary only",
+                                                  .type=flag_bool_t,    .offset=offsetof(assemble_args, bin),
+                                                  .exit=false,          .arg_itm=nullptr                              };
+
 static  const   flag_itm        case_sens_f =   { .flag='C',            .desc="case-sensitive identifiers",
                                                   .type=flag_bool_t,    .offset=offsetof(assemble_args, case_sens),
                                                   .exit=false,          .arg_itm=nullptr                              };
@@ -135,7 +140,7 @@ static  const   flag_itm        output_f    =   { .flag='o',            .desc="a
                                                   .exit=false,          .arg_itm="output"                             };
 
 // flag item arrays
-static  const   flag_itm    *const  a_flg[] =   { &verbosity_f, &warnings_f,    &emit_f,    &max_errs_f,
+static  const   flag_itm    *const  a_flg[] =   { &verbosity_f, &warnings_f,    &emit_f,    &max_errs_f,    &bin_f,
                                                   &case_sens_f, &n_thrds_f,     &help_f,    &version_f,     &output_f };
 
 /*-GLOBAL-ASSEMBLE-ARGS-STRUCT----------------------------------------------------------------------------------------*/

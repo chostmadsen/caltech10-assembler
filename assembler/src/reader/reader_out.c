@@ -49,5 +49,5 @@ void print_src_f_info(const src_f *const source_f) {                            
     cit10a_asrt(source_f != nullptr);
     cit10a_msg( &(msg_info){ .type=msg_vrbse_t, .header="source file read",
                              .report_f=&(rprt_f){ .file=source_f, .len=0 } },
-                             "%zu lines, %zu characters", source_f->ln_num, source_f->len );
+                             "%zu line(s), %zu character(s)", source_f->ln_num, source_f->len );
 }

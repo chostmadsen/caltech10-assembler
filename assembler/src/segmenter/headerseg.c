@@ -67,6 +67,7 @@ void print_header_map(const headermap *const hmap) {                            
     const       size_t  slc_strt    =   sptr->col;
     const   smap_head   s_head      =   get_identifier(sptr, err_f);
     if (s_head.key.str == nullptr)      return  true;
+    for(; is_whitespace(*sptr->str); inc_strptr(sptr));
     if (*sptr->str != HEADER_CHR) {
         // code line - skip
         push_stack(&hmap->stmts, &(ln_info){ .loc=(*loc)++, .source=err_f->file, .ln=sptr->ln });

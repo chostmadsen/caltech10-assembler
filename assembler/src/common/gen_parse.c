@@ -45,6 +45,8 @@
 [[nodiscard]] src_slice get_ident(strptr *const sptr, rprt_f *const err_f) {    // identifier parser
     src_slice           slc         =   { .str=sptr->str, .len=0 };
     if (!is_alpha(*sptr->str)) {
+
+        cit10a_asrt(err_f != nullptr);
         // invalid identifier
         err_f->col  =   sptr->col;
         err_f->len  =   1;
