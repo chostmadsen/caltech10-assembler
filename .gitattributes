@@ -1,4 +1,4 @@
 # .h as c headers always
 *.h linguist-language=C
 # ignore tools/ (since it isn't part of the main project)
-tools/* linguist-detectable=false
+tools/** linguist-vendored
