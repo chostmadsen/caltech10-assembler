@@ -13,6 +13,7 @@
 #include    "common/kwrds.h"
 #include    "common/gen_parse.h"
 #include    "common/hash_tables/pseudo.h"
+#include    "perfhash/inc/hash_table.h"
 #include    "preprocessor/folder_parse.h"
 
 /*-LINE-VERIFIERS-----------------------------------------------------------------------------------------------------*/
@@ -84,20 +85,30 @@
 }
 
 /**
+ * Lookup a .pseudo directive, and adjust the string pointer. Returns the full tok_itm.
+ *
+ * @param       sptr            string pointer
+ * @return                      .pseudo directive token
+ */
+[[nodiscard]] tok_itm pseudo_hash_lu_adj_tok(strptr *const sptr) {              // .psuedo lookup w/ strptr adj
+    cit10a_asrt(sptr != nullptr);
+
+    inc_strptr(sptr);
+    size_t          n       =   0;
+    for (; is_alphanum(sptr->str[n]); ++n);
+    const   tok_itm tok     =   pseudo_hash_lu(sptr->str, n);
+    adj_strptr(sptr, n);
+    return  tok;
+}
+
+/**
  * Lookup a .pseudo directive, and adjust the string pointer.
  *
  * @param       sptr            string pointer
  * @return                      .pseudo directive
  */
 [[nodiscard]] int pseudo_hash_lu_adj(strptr *const sptr) {                      // .psuedo lookup w/ strptr adj
-    cit10a_asrt(sptr != nullptr);
-
-    inc_strptr(sptr);
-    size_t          n       =   0;
-    for (; is_alphanum(sptr->str[n]); ++n);
-    const   int     tok     =   pseudo_hash_lu(sptr->str, n).tok;
-    adj_strptr(sptr, n);
-    return  tok;
+    return  pseudo_hash_lu_adj_tok(sptr).tok;
 }
 
 /*-NUMBER-PARSERS-----------------------------------------------------------------------------------------------------*/

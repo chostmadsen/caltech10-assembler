@@ -11,6 +11,8 @@
 #include    "helpers/general.h"
 #include    "output/messages.h"
 #include    "reader/reader.h"
+#include    "common/kwrds.h"
+#include    "preprocessor/folder_parse.h"
 #include    "datastructures/stackmap.h"
 
 /*-CONSTANTS----------------------------------------------------------------------------------------------------------*/
@@ -44,5 +46,13 @@ void range_msg( const var_tok   *var,
 [[nodiscard]] bool identifier_verify(       stackmap *smap,
                                       const void     *smap_itm, 
                                             rprt_f   *err_f     );              // identifier verification
+
+typedef bool (*add_fn)(strptr *sptr, int *loc, void *map, rprt_f *err_f);
+[[nodiscard]] bool commonseg(       int         *org,
+                              const src_f       *source,
+                              const sources     *srcs,
+                              const pseudo_tok   tok,
+                                    add_fn       fn,
+                                    void        *map     );                     // header stackmap creation
 
 void print_var_tok(const var_tok *var);                                         // var_tok printer

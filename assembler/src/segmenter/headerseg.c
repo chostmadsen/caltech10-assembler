@@ -91,6 +91,7 @@ static void code_chck_dup_( const ln_info *const ln_inf,
                 "an overlapping data item is declared at %s::%d::%d, but it couldn't be found",
                 err_f->file->f_name, err_f->ln, err_f->col                                      );
 }
+
 /**
  * Check the range the given code item.
  *
@@ -118,15 +119,15 @@ static void code_chck_dup_( const ln_info *const ln_inf,
  *
  * @param       sptr            string pointer
  * @param       loc             code location
- * @param       smap            header stackmap
+ * @param       hmap_v          header stackmap
  * @param       err_f           error report file
  * @return                      whether an error occurred
  */
-[[nodiscard]] static bool header_chck_add_( strptr    *const sptr,
-                                            int       *const loc,
-                                            headermap *const hmap,
-                                            rprt_f    *const err_f  ) {         // header add
-    cit10a_asrt(sptr != nullptr && hmap != nullptr);
+[[nodiscard]] static bool header_chck_add_( strptr *const sptr,
+                                            int    *const loc,
+                                            void   *const hmap_v,
+                                            rprt_f *const err_f   ) {           // header add
+    cit10a_asrt(sptr != nullptr && hmap_v != nullptr);
     cit10a_asrt(*loc >= 0);
     cit10a_asrt(err_f != nullptr);
 
@@ -146,7 +147,7 @@ static void code_chck_dup_( const ln_info *const ln_inf,
     header_var          smap_itm    =   { .var={ .head=s_head,     .source=err_f->file,
                                                  .ln=sptr->ln + 1, .col=slc_strt        },
                                           .loc=*loc                                        };
-    ret                             =   identifier_verify(&hmap->smap, &smap_itm, err_f);
+    ret                             =   identifier_verify(&((headermap*)(hmap_v))->smap, &smap_itm, err_f);
 
     // check for additional code
     for (inc_strptr(sptr); is_whitespace(*sptr->str); inc_strptr(sptr));
@@ -154,73 +155,8 @@ static void code_chck_dup_( const ln_info *const ln_inf,
 
 add_code:
     const   ln_info     ln_inf                  =   { .loc=(*loc)++, .source=err_f->file, .ln=sptr->ln };
-    if (!code_rnge_chck_(sptr->ln, *loc, err_f))    code_chck_dup_(&ln_inf, &hmap->stmts, err_f);
-    push_stack(&hmap->stmts, &ln_inf);
-    return  ret;
-}
-
-/**
- * Parses a .code segment until it ends for headers, adjusting the .org as necessary.
- *
- * @param       sptr            string pointer
- * @param       org             code start location
- * @param       smap            header stackmap
- * @param       srcs            sources
- * @param       err_f           error report file
- * @return                      whether an error occurred
- */
-[[nodiscard]] static bool codeseg_parse_(       strptr    *const sptr,
-                                                int       *const org,
-                                                headermap *const hmap,
-                                          const sources   *const srcs,
-                                                rprt_f    *const err_f  ) {     // code segment parse
-    cit10a_asrt(sptr != nullptr && hmap != nullptr);
-    cit10a_asrt(org != nullptr && *org >= 0);
-    cit10a_asrt(err_f != nullptr);
-
-    // set flag
-    bool    ret =   false;
-
-    // segment section
-    do {
-        // get first character
-        for (; is_whitespace(*sptr->str); inc_strptr(sptr));
-        err_f->ln   =   sptr->ln;
-
-        // check psuedo-ops
-        if (*sptr->str == PSEUDO_STRT) {
-            // check pseudo-op
-            switch (pseudo_hash_lu_adj(sptr)) {
-                case tok_code:
-                    // verify && skip
-                    if      (verify_sctn_strt(sptr, err_f))         ret =   true;
-                    else if (sptr->str == nullptr)                  return  ret;
-                    break;
-                case tok_none:  [[fallthrough]];
-                case tok_data:
-                    // break out of this (incremented in returned loop)
-                    return  false;
-                case tok_org:
-                    // new org
-                    const   int n_org   =   parse_org(sptr, err_f);
-                    if (n_org == -1)        return  true;
-                    *org                =   n_org;
-                    break;
-                case tok_incl:
-                    // new file
-                    const   src_f   *const  sourc_f =   get_inc_static(sptr, srcs);
-                    ret                             =   headerseg(org, sourc_f, srcs, hmap);
-                    break;
-                default:
-                    // handled elsewhere (hopefully)
-                    break;
-            }
-        } else if (*sptr->str != CMMT_CHR && *sptr->str != '\0') {
-            // skip blank lines
-            if (header_chck_add_(sptr, org, hmap, err_f))    ret =   true;
-        }
-    } while (!newln_strptr(sptr, err_f->file));
-
+    if (!code_rnge_chck_(sptr->ln, *loc, err_f))    code_chck_dup_(&ln_inf, &((headermap*)hmap_v)->stmts, err_f);
+    push_stack(&((headermap*)hmap_v)->stmts, &ln_inf);
     return  ret;
 }
 
@@ -231,42 +167,12 @@ add_code:
  * @param       source          source file
  * @param       srcs            sources
  * @param       err             error flag
- * @return                      header stackmap
+ * @param       hmap            headermap
+ * @return                      whether an error occurred
  */
 [[nodiscard]] bool headerseg(       int       *const org,
                               const src_f     *const source,
                               const sources   *const srcs,
                                     headermap *const hmap    ) {                // header stackmap creation
-    cit10a_asrt(source != nullptr);
-    cit10a_asrt(hmap != nullptr);
-
-    // initialize header items
-    bool        err     =   false;
-
-    for (size_t i = 0; i < source->ln_num; ++i) {
-        // skip over non pseudo-op items
-        strptr  sptr                =   { .str=src_f_getline(source, i), .ln=i, .col=0 };
-        for (; is_whitespace(*sptr.str); inc_strptr(&sptr));
-        if (*sptr.str != PSEUDO_STRT)   continue;
-
-        // check for .code start
-        const   int pseudo_op   =   pseudo_hash_lu_adj(&sptr);
-        if (pseudo_op == tok_incl) {
-            const   src_f   *const  sourc_f =   get_inc_static(&sptr, srcs);
-            err                             =   headerseg(org, sourc_f, srcs, hmap);
-        }
-        if (pseudo_op != tok_code)  continue;
-
-        // check .code line
-        rprt_f  err_f   =   (rprt_f){ .file=source, .ln=sptr.ln, .col=sptr.col};
-        if (verify_sctn_strt(&sptr, &err_f))                    err =   true;
-        if (sptr.str == nullptr)                                break;
-
-        // parse .code
-        if (codeseg_parse_(&sptr, org, hmap, srcs, &err_f))     err =   true;
-        i               =   sptr.ln;
-    }
-
-    // return populated constants
-    return  err;
+    return  commonseg(org, source, srcs, tok_code, header_chck_add_, hmap);
 }

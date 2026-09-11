@@ -14,7 +14,9 @@
 #include    "argparse/argparse.h"
 #include    "datastructures/hash.h"
 #include    "datastructures/stackmap.h"
+#include    "common/kwrds.h"
 #include    "common/gen_parse.h"
+#include    "perfhash/inc/hash_table.h"
 #include    "segmenter/segment.h"
 
 /*-PARSER-HELPERS-----------------------------------------------------------------------------------------------------*/
@@ -207,6 +209,133 @@ void range_msg( const var_tok *const var,
         return  true;
     }
     return  false;
+}
+
+/*-SECTION-ITERATORS--------------------------------------------------------------------------------------------------*/
+
+/**
+ * Parses a section segment until it ends, adjusting the .org as necessary.
+ *
+ * @param       sptr            string pointer
+ * @param       org             start location
+ * @param       map             headermap or stackmap
+ * @param       srcs            sources
+ * @param       tok             match token
+ * @param       fn              inner add function call
+ * @param       err_f           error report file
+ * @return                      whether an error occurred
+ */
+[[nodiscard]] static bool commonseg_parse_(       strptr     *const sptr,
+                                                  int        *const org,
+                                                  void       *const map,
+                                            const sources    *const srcs,
+                                                  pseudo_tok        tok,
+                                                  add_fn            fn,
+                                                  rprt_f     *const err_f ) {   // section segment parse
+    cit10a_asrt(sptr != nullptr && map != nullptr);
+    cit10a_asrt(org != nullptr && *org >= 0);
+    cit10a_asrt(err_f != nullptr);
+
+    // set flag
+    bool        ret         =   false;
+
+    // segment section
+    do {
+        // get first character
+        for (; is_whitespace(*sptr->str); inc_strptr(sptr));
+        err_f->ln   =   sptr->ln;
+
+        // skip blank lines
+        if (*sptr->str == CMMT_CHR || *sptr->str == '\0')   continue;
+
+        // use lookup fn
+        if (*sptr->str != PSEUDO_STRT) {
+            if (fn(sptr, org, map, err_f))          ret =   true;
+            continue;
+        }
+
+        // check pseudo-op
+        const   tok_itm tok_lu  =   pseudo_hash_lu_adj_tok(sptr);
+        if (tok_lu.grp == pseudo_segspec_t) {
+            // break out of this (incremented in returned loop)
+            if ((pseudo_tok)tok_lu.tok != tok)          return  false;
+
+            // verify && skip
+            if      (verify_sctn_strt(sptr, err_f))     ret =   true;
+            else if (sptr->str == nullptr)              return  ret;
+            continue;
+        }
+
+        switch (tok_lu.tok) {
+            case tok_org:
+                // new org
+                const   int n_org   =   parse_org(sptr, err_f);
+                if (n_org == -1)        return  true;
+                *org                =   n_org;
+                break;
+            case tok_incl:
+                // new file
+                const   src_f   *const  sourc_f =   get_inc_static(sptr, srcs);
+                ret                             =   commonseg(org, sourc_f, srcs, tok, fn, map);
+                break;
+            default:
+                // handled elsewhere (hopefully)
+                break;
+        }
+    } while (!newln_strptr(sptr, err_f->file));
+
+    return  ret;
+}
+
+/**
+ * Creates the lookup table of headers, and finds the total number of statements.
+ *
+ * @param       org             code start location
+ * @param       source          source file
+ * @param       srcs            sources
+ * @param       tok             match token
+ * @param       fn              inner add function call
+ * @param       map             headermap or stackmap
+ * @return                      whether an error occurred
+ */
+[[nodiscard]] bool commonseg(       int         *const org,
+                              const src_f       *const source,
+                              const sources     *const srcs,
+                              const pseudo_tok         tok,
+                                    add_fn             fn,
+                                    void        *const map     ) {              // header stackmap creation
+    cit10a_asrt(source != nullptr);
+    cit10a_asrt(map != nullptr);
+
+    // initialize header items
+    bool        err     =   false;
+
+    for (size_t i = 0; i < source->ln_num; ++i) {
+        // skip over non pseudo-op items
+        strptr  sptr                =   { .str=src_f_getline(source, i), .ln=i, .col=0 };
+        for (; is_whitespace(*sptr.str); inc_strptr(&sptr));
+        if (*sptr.str != PSEUDO_STRT)   continue;
+
+        // check for section start
+        const   pseudo_tok  pseudo_op       =   pseudo_hash_lu_adj(&sptr);
+        if (pseudo_op == tok_incl) {
+            const   src_f   *const  sourc_f =   get_inc_static(&sptr, srcs);
+            err                             =   commonseg(org, sourc_f, srcs, tok, fn, map);
+        }
+        if (pseudo_op != tok)       continue;
+
+        // check section line
+        rprt_f  err_f   =   (rprt_f){ .file=source, .ln=sptr.ln, .col=sptr.col};
+        if (verify_sctn_strt(&sptr, &err_f))                            err =   true;
+        if (sptr.str == nullptr)                                        break;
+
+        // parse section
+        if (commonseg_parse_(&sptr, org, map, srcs, tok, fn, &err_f))   err =   true;
+        i               =   sptr.ln;
+    }
+
+    // return populated constants
+    return  err;
 }
 
 /*-VARIABLE-TOKEN-PRINTER---------------------------------------------------------------------------------------------*/
