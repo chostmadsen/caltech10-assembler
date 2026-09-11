@@ -173,8 +173,8 @@
     size_t      v_len   =   text->col;
     for (;; inc_strptr(text)) {
         if (*text->str == '\0') {
-            err_f->len  =   text->col - v_len;
-            err_f->len  =   (err_f->len > 0) ? err_f->len : 1;
+            err_f->col  =   text->col;
+            err_f->len  =   1;
             cit10a_msg(&str_err, "unterminated string");
             *err        =   true;
             return  (src_slice){ .str=nullptr, .len=0 };

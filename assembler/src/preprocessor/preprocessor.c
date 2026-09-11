@@ -3,6 +3,7 @@
  * Assembler preprocessor.
  */
 
+#include    <stdio.h>
 #include    <stddef.h>
 
 #include    "helpers/general.h"
@@ -24,16 +25,32 @@ static  stack           recursion_st;                                           
 
 /*-PSEUDO-OP-HELPERS--------------------------------------------------------------------------------------------------*/
 
+/**
+ * Dumps the recursion stack for all the files that were opened.
+ */
 static void dump_recurs_st_(void) {                                             // dump the recursion stack
     cit10a_msg( &(msg_info){ .type=msg_norm_t, .header="lookthrough stack", .report_f=nullptr },
-                "this is the order in which files were opened, up until %d", c_args.max_recurs  );
+                "this is the order in which files were opened, up until %d lookthrough(s)", c_args.max_recurs  );
+
+    // print recursion stack
+    const   int     prnt_pad    =   snprintf(nullptr, 0, "%d", c_args.max_recurs);
     for (int i = 0; i < recursion_st.len; ++i) {
         const   char    *const  f_name  =   *(char**)peek_stack(&recursion_st, i);
-        printf(CLR_DIM "    depth %d : \x1b[0m%s\n", i + 1, f_name);
+        printf(OUT_INDENT MSG_DELIM CLR_DIM "depth %*d : \x1b[0m%s\n", prnt_pad, i + 1, f_name);
     }
 }
 
-[[nodiscard]] static src_f *get_incl(strptr *const sptr, sources *const srcs, rprt_f *const err_f) {
+/**
+ * Gets a source file from .include. nullptr if it could not be found.
+ *
+ * @param       sptr            string pointer
+ * @param       srcs            sources
+ * @param       err_f           error report file
+ * @return                      found file, or nullptr
+ */
+[[nodiscard]] static src_f *get_incl_( strptr  *const sptr,
+                                       sources *const srcs,
+                                       rprt_f  *const err_f ) {                 // inclusion get
     // get string value
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
     err_f->col  =   sptr->col;
@@ -42,7 +59,7 @@ static void dump_recurs_st_(void) {                                             
     if (has_err)                        return  nullptr;
 
     // check line end
-    err_f->len  =   err_f->col - sptr->col;
+    err_f->len  =   sptr->col - err_f->col + 1;
     inc_strptr(sptr);
     if (check_ln_end(sptr, err_f))      return  nullptr;
 
@@ -51,7 +68,7 @@ static void dump_recurs_st_(void) {                                             
     if (ret == nullptr)             return nullptr;
 
     // add to recursion stack
-    push_stack(&recursion_st, ret->f_name);
+    push_stack(&recursion_st, &ret->f_name);
     if (recursion_st.len >= c_args.max_recurs) {
         cit10a_msg( &(msg_info){ .type=msg_err_t, .header="maximum inclusion recursion reached", .report_f=err_f},
                     "maximum file inclusion recursion reached"                                                     );
@@ -69,6 +86,7 @@ static void dump_recurs_st_(void) {                                             
  * Verify all .none sections (for constants, helps w/ output alignment).
  *
  * @param       source          source file
+ * @param       srcs            sources
  * @return                      whether there was an invalid none section
  */
 [[nodiscard]] static bool verify_none_sctn_( rprt_f  *const err_f,
@@ -116,7 +134,7 @@ static void dump_recurs_st_(void) {                                             
             case tok_const: break;
             case tok_incl:
                 adj_strptr(sptr, n);
-                src_f   *const  new_f   =   get_incl(sptr, srcs, err_f);
+                src_f   *const  new_f   =   get_incl_(sptr, srcs, err_f);
                 if (new_f == nullptr) {
                     ret =   true;
                     break;
@@ -141,12 +159,12 @@ static void dump_recurs_st_(void) {                                             
  * Verify all directives (pseudo-ops).
  *
  * @param       source          source file
+ * @param       srcs            sources
  * @return                      whether there was an invalid pseudo-op
  */
 [[nodiscard]] static bool pseudoop_chck_( const src_f   *const source,
                                                 sources *const srcs    ) {      // pseudo-op verifier
     cit10a_asrt(source != nullptr);
-    printf("now on file %s\n", source->f_name);
 
     // item setup
     bool    ret     =   false;
@@ -177,7 +195,7 @@ static void dump_recurs_st_(void) {                                             
             case tok_const: break;
             case tok_incl:
                 adj_strptr(&sptr, n);
-                src_f   *const  new_f   =   get_incl(&sptr, srcs, &err_f);
+                src_f   *const  new_f   =   get_incl_(&sptr, srcs, &err_f);
                 if (new_f == nullptr) {
                     ret =   true;
                     break;
@@ -201,6 +219,7 @@ static void dump_recurs_st_(void) {                                             
 
     // return boolean flag
     return  ret;
+    rm_stack(&recursion_st);
 }
 
 /*-PREPROCESSOR-------------------------------------------------------------------------------------------------------*/
@@ -209,9 +228,11 @@ static void dump_recurs_st_(void) {                                             
  * Preprocessor; currently doesn't do anything, just verifies all pseudo-ops.
  *
  * @param       source          source file
+ * @param       srcs            sources
  */
 void preprocess(const src_f *const source, sources *const srcs) {               // preprocessor
     recursion_st                        =   new_stack(sizeof(char**));
+    push_stack(&recursion_st, &source->f_name);
     if (pseudoop_chck_(source, srcs))       cit10a_exit(PREPROCESS_ERRNO);
     free_stack(&recursion_st);
 }
