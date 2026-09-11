@@ -6,5 +6,5 @@ This directory contains detailed documentation for items within this repository.
 has the CPU architecture information.
 
 There should be a document about how the assembler works and how to use it, but I am unfortunately too lazy to write
-this (for at least a little bit), so you can probably get by with varous READMEs and providing the assembler with the
+this (for at least a little bit), so you can probably get by with various READMEs and providing the assembler with the
 `-h` flag.
