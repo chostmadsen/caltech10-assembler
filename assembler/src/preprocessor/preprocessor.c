@@ -100,7 +100,9 @@ static void dump_recurs_st_(void) {                                             
     // check section end
     bool    ret     =   end_chck && check_ln_end(sptr, err_f);
 
-    while (!newln_strptr(sptr, err_f->file)) {
+    bool    adv     =   end_chck;
+    while (!adv && !newln_strptr(sptr, err_f->file)) {
+        adv         =   true;
         // skip whitespace
         for(; is_whitespace(*sptr->str); inc_strptr(sptr));
 

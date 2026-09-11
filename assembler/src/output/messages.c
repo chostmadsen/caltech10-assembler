@@ -218,19 +218,3 @@ void cit10a_msg(const msg_info *const info, const char *const fmt, ...) {       
     cit10a_msg_v(info, fmt, &args);
     va_end(args);
 }
-
-/*-LOGGING-HEPLER-FUNCTIONS-------------------------------------------------------------------------------------------*/
-
-/**
- * Locates the line and column from a character index. Stores length as 1 by default.
- *
- * @param       file            report file
- * @param       idx             character index
- */
-void find_file_loc(rprt_f *const file, const size_t idx) {                      // character locator
-    size_t  ln  =   0;
-    for (; ln < file->file->ln_num && file->file->ln_idxs[ln] <= idx; ++ln);
-    file->len   =   1;
-    file->ln    =   ln - 1;
-    file->col   =   idx - file->file->ln_idxs[ln - 1];
-}

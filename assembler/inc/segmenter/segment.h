@@ -53,6 +53,6 @@ typedef bool (*add_fn)(strptr *sptr, int *loc, void *map, rprt_f *err_f);
                               const sources     *srcs,
                               const pseudo_tok   tok,
                                     add_fn       fn,
-                                    void        *map     );                     // header stackmap creation
+                                    void        *map     );                     // common segment map creation
 
 void print_var_tok(const var_tok *var);                                         // var_tok printer

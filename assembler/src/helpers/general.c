@@ -20,7 +20,7 @@
  * @return                          lowercase
  */
 [[nodiscard]] char to_lwr_chr(const char chr) {                                 // character to lower
-    return  chr | (uint8_t)((chr - 'A') < 26) << 5;
+    return  chr | (uint8_t)((uint8_t)(chr - 'A') <= ('Z' - 'A')) << 5;
 }
 
 /**
