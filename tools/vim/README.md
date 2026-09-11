@@ -39,12 +39,9 @@ You can verify proper installation with the following:
 > - Vim 8.0+ or any version of Neovim
 
 > #### **File Information**
-> - [tools/vim/syntax/citobj.vim]
->(https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/vim/syntax/citobj.vim) adds syntax
-> highlighting
-> - [tools/vim/ftplugin/citobj.vim]
->(https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/vim/ftplugin/citobj.vim) adds
-> buffer-local settings
-> - [tools/vim/ftdetect/citobj.vim]
->(https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/vim/ftdetect/citobj.vim) recognizes
-> `.obj` files correctly
+> - [tools/vim/syntax/citobj.vim](https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/vim/syntax/citobj.vim)
+> adds syntax highlighting
+> - [tools/vim/ftplugin/citobj.vim](https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/vim/ftplugin/citobj.vim)
+> adds buffer-local settings
+> - [tools/vim/ftdetect/citobj.vim](https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/vim/ftdetect/citobj.vim)
+> recognizes `.obj` files correctly
