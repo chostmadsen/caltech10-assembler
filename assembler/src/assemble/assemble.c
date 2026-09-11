@@ -168,7 +168,7 @@ void print_asm(const asm_ret *const asm_r) {                                    
  */
 void print_asm_info(const asm_ret *const asm_r) {                               // print asm_ret struct info
     cit10a_asrt(asm_r != nullptr);
-    cit10a_msg(&(msg_info){ .type=msg_vrbse_t, .header="assembly assembled" }, "%zu instruction(s)", asm_r->num_segs);
+    cit10a_msg(&(msg_info){ .type=msg_vrbse_t, .header="assembly assembled" }, "%d instruction(s)", asm_r->num_segs);
 }
 
 /*-ASM_RET-FREE-FUNCTION----------------------------------------------------------------------------------------------*/
