@@ -45,7 +45,7 @@ You can invoke the assembler with `cit10a` once it is installed. For more detail
 
 ## **Contributing**
 
-See [CONTRIBUTING](https://github.com/chostmadsen/caltech10-assembler/blob/main/CONTRIBUTING)
+See [CONTRIBUTING](https://github.com/chostmadsen/caltech10-assembler/blob/main/CONTRIBUTING).
 
 ------------------------------------------------------------------------------------------------------------------------
 
