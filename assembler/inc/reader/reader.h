@@ -15,11 +15,11 @@ constexpr   size_t      F_PAD               =   128;                            
 
 /*-STRUCTS-/-ENUMS----------------------------------------------------------------------------------------------------*/
 
-typedef struct {
-    const   char       *f_name;
-  /*const*/ char       *text;
-  /*const*/ size_t     *ln_idxs;
-  /*const*/ size_t      ln_num,     len,    size;
+typedef struct {                                                                // source file struct
+            char       *f_name;
+            char       *text;
+            size_t     *ln_idxs;
+            size_t      ln_num,     len,    size;
 } src_f;
 
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/

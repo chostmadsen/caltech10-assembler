@@ -24,6 +24,8 @@
 #include    "reader/reader.h"
 #include    "reader/reader_out.h"
 #include    "preprocessor/preprocessor.h"
+#include    "preprocessor/folder_parse.h"
+#include    "preprocessor/folder_parse_out.h"
 #include    "segmenter/seg_orch.h"
 #include    "assemble/assemble.h"
 #include    "assemble/assemble_emit.h"
@@ -37,32 +39,37 @@
  */
 int main(const int argc, const char *const *const argv) {                       // main
     // get compilation flags
-    if (parse_args(argc, argv))     goto    comp_exit;
-    if (c_args.verbosity >= 3)      cit10a_startup();
+    if (parse_args(argc, argv))             goto    comp_exit;
+    if (c_args.verbosity >= EXTRA_PRNT)     cit10a_startup();
 
     // read source file
     src_f       source_f        =   read_source(c_args.target);
     // source file output
-    if (c_args.verbosity >= 2)                          print_src_f_info(&source_f);
-    if (c_args.verbosity >= 4 || c_args.emit.file)      print_src_f(&source_f);
+    if (c_args.verbosity >= INFO_PRNT)                          print_src_f_info(&source_f);
+    if (c_args.verbosity >= DUMP_PRNT || c_args.emit.file)      print_src_f(&source_f);
 
+    // sources get (make sure inc is first; otherwise, change in folder_parse.c)
+    sources     srcs            =   get_sources(2 /* 2 sources following this */, &c_args.inc, &c_args.src);
+    // sources output
+    if (c_args.verbosity >= INFO_PRNT)                          print_sources_info(&srcs);
+    if (c_args.verbosity >= DUMP_PRNT || c_args.emit.files)     print_sources(&srcs);
     // preprocessor
     preprocess(&source_f);
 
     // segment processor
     segmaps     smaps           =   segment(&source_f);
     // segmenter output
-    if (c_args.verbosity >= 2)                          print_segmap_info(&smaps);
-    if (c_args.verbosity >= 4 || c_args.emit.table)     print_segmap(&smaps);
+    if (c_args.verbosity >= INFO_PRNT)                          print_segmap_info(&smaps);
+    if (c_args.verbosity >= DUMP_PRNT || c_args.emit.table)     print_segmap(&smaps);
 
     // assembly
     asm_ret     asm_r           =   assemble(&smaps);
     // assembly output
-    if (c_args.verbosity >= 2)                          print_asm_info(&asm_r);
-    if (c_args.verbosity >= 4 || c_args.emit.aasm)      print_asm(&asm_r);
+    if (c_args.verbosity >= INFO_PRNT)                          print_asm_info(&asm_r);
+    if (c_args.verbosity >= DUMP_PRNT || c_args.emit.aasm)      print_asm(&asm_r);
 
 
-    if (werror_exit)                cit10a_exit(WARN_ERRNO);
+    if (werror_exit)            cit10a_exit(WARN_ERRNO);
     // emit assembly
     emit_asm(c_args.output, &source_f, &smaps, &asm_r);
 
@@ -74,6 +81,6 @@ int main(const int argc, const char *const *const argv) {                       
 comp_exit:
     // assembler exit
     free_c_args();
-    if (c_args.verbosity >= 1)      cit10a_exit_msg(0);
+    if (c_args.verbosity >= EXIT_PRNT)      cit10a_exit_msg(0);
     return  0;
 }

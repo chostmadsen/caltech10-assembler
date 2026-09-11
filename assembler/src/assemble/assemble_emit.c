@@ -236,7 +236,7 @@ void emit_asm( const char    *const f_name, const src_f   *const source,
     // open file
     FILE   *const           fp      =   fopen(f_name, "wb");
     if (fp == nullptr) {
-        const   rprt_f      err_f   =   { .file=&(src_f){ .f_name=f_name } };
+        const   rprt_f      err_f   =   { .file=&(src_f){ .f_name=(char*)f_name }, .len=0 };
         // invalid file
         cit10a_msg( &(msg_info){ .type=msg_err_t, .header="file error", .report_f=&err_f },
                     "couldn't open / read output file"                                      );

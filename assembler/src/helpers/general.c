@@ -77,6 +77,7 @@ void print_src_slice(const src_slice *const slice, FILE *const stream) {        
  */
 [[nodiscard]] bool srcslc_eq( const src_slice *const slc_1,
                               const src_slice *const slc_2  ) {                 // source slice equality check
+    if (slc_1->len == 0 && slc_2->len == 0)     return  true;
     return  slc_1->len == slc_2->len && !memcmp(slc_1->str, slc_2->str, slc_1->len);
 }
 
@@ -89,7 +90,7 @@ void print_src_slice(const src_slice *const slice, FILE *const stream) {        
  */
 [[nodiscard]] bool srcslc_eq_lwr( const src_slice *const slc_1,
                                   const src_slice *const slc_2  ) {             // source slice equality check (lower)
-    if (slc_1->len != slc_2->len)       return  false;
+    if (slc_1->len != slc_2->len)           return  false;
     for (size_t i = 0; i < slc_1->len; ++i) {
         if (to_lwr_chr(slc_1->str[i]) != to_lwr_chr(slc_2->str[i]))     return  false;
     }

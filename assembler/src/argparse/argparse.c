@@ -448,10 +448,14 @@ void reset_args(void) {                                                         
 
         // set default value if applicable
         if (flag->type == flag_val_t) {
-            int     *const  field   =   (int*)((char*)&c_args + flag->offset);
-            *field                  =   flag->dflt;
+            int         *const  field   =   (int*)((char*)&c_args + flag->offset);
+            *field                      =   flag->dflt;
+        } else if (flag->type == flag_strm_t) {
+            strm_arr    *const  field   =   (strm_arr*)((char*)&c_args + flag->offset);
+            field->flag                 =   flag->flag;
         }
     }
+
     c_arg_s     =   false;
 }
 

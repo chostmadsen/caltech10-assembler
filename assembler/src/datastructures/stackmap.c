@@ -8,6 +8,7 @@
 #include    <stdio.h>
 #include    <string.h>
 #include    <limits.h>
+#include    <inttypes.h>
 
 #include    "helpers/general.h"
 #include    "helpers/mem.h"
@@ -292,15 +293,25 @@ void free_stackmap(stackmap *const smap) {                                      
 /*-STACKMAP-PRINTER-FUNCTIONS-----------------------------------------------------------------------------------------*/
 
 /**
- * Stackmap printer.
+ * Prints the stackmap's head.
+ *
+ * @param       head            stackmap head (must be smap_head*)
+ */
+void print_smap_head(const void *const head) {                                  // stackmap head printer
+    cit10a_asrt(head != nullptr);
+    printf("0x%016" PRIx64 " : ", ((smap_head*)head)->hash);
+    print_src_slice(&((smap_head*)head)->key, stdout);
+}
+
+/**
+ * Stackmap printer. nullptr as prnt_fn to not print anything (treat it like a hashset)
  *
  * @param       smap            stackmap
  * @param       prnt_fn         stackmap data printer
  */
-void print_stackmap( const stackmap *const                        smap,
-                           void     (*const prnt_fn)(const void*)       ) {     // stackmap printer
+void print_stackmap( const stackmap *const smap,
+                           void            (*prnt_fn)(const void*) ) {          // stackmap printer
     cit10a_asrt(smap != nullptr);
-    cit10a_asrt(prnt_fn != nullptr);
 
     // header
     printf(CLR_DIM "[[ %zuitm(s)::%zubckts ]]\x1b[0m\n", smap->elements, smap->buckets);
@@ -310,6 +321,8 @@ void print_stackmap( const stackmap *const                        smap,
 
     // stackmap print
     bool            empty_prnt  =   false;
+    size_t          empty_bck   =   0;
+    if (prnt_fn == nullptr)         prnt_fn =   print_smap_head;
     for (size_t i = 0; i < smap->buckets; ++i) {
         const   stack   *const  head_st =   smap->heads + i;
         if (head_st->len == 0) {
@@ -317,6 +330,7 @@ void print_stackmap( const stackmap *const                        smap,
             if (empty_prnt)     continue;
             printf("    [ 0x%0*x::", prnt_pad, (int)i);
             empty_prnt  =   true;
+            empty_bck   =   i;
             continue;
         }
 
@@ -333,5 +347,13 @@ void print_stackmap( const stackmap *const                        smap,
         }
         fputc('\n', stdout);
     }
-    if (empty_prnt)     printf("0x%0*x ] - " NULL_CHR "\n", prnt_pad, (int)smap->buckets - 1);
+
+    if (!empty_prnt)        return;
+
+    // close out
+    if (empty_bck != smap->buckets - 1)     printf("0x%0*x", prnt_pad, (int)smap->buckets - 1);
+    else {
+        printf("\b\b%*s", prnt_pad + (int)sizeof("::0x") - 1, "");
+    }
+    fputs(" ] - " NULL_CHR "\n", stdout);
 }

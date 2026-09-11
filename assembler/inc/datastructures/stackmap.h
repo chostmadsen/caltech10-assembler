@@ -54,5 +54,5 @@ typedef enum {                                                                  
 
 void free_stackmap(stackmap *smap);                                             // free stackmap
 
-void print_stackmap( const stackmap                         *smap,
-                           void     (*prnt_fn)(const void*)        );           // stackmap printer
+void print_smap_head(const void *head);                                         // stackmap head printer
+void print_stackmap(const stackmap *smap, void (*prnt_fn)(const void*));        // stackmap printer

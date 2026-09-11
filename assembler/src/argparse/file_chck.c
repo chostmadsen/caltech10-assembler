@@ -14,16 +14,9 @@
 
 /*-FILE-CHECKERS------------------------------------------------------------------------------------------------------*/
 
-/**
- * Get the file extension of a string. nullptr for no extension.
- * 
- * @param       f_nm            file name
- * @return                      pointer to extension
- */
-[[nodiscard]] const char *file_extension(const char *const f_nm) {              // gets file extension
+[[nodiscard]] const char *file_extnsn_( const char *const f_nm,
+                                        const int         f_len ) {             // get file extension (length provided)
     cit10a_asrt(f_nm != nullptr);
-    const   int f_len   =   strlen(f_nm) - 1;
-
     for (int i = f_len - 1; i > 0; --i) {
         // valid file extension
         if (f_nm[i] == FILE_EXTNS_CHR) {
@@ -32,6 +25,30 @@
         }
     }
     return  nullptr;
+}
+
+/**
+ * Get the file extension of a string. nullptr for no extension.
+ * 
+ * @param       f_nm            file name
+ * @return                      pointer to extension
+ */
+[[nodiscard]] const char *file_extension(const char *const f_nm) {              // gets file extension
+    cit10a_asrt(f_nm != nullptr);
+    return  file_extnsn_(f_nm, strlen(f_nm));
+}
+
+/**
+ * Get the file extension of a string. empty src_slice for no extension.
+ * 
+ * @param       f_nm            file name
+ * @return                      pointer to extension
+ */
+[[nodiscard]] src_slice file_extension_slc(src_slice *const slc) {              // gets file extension
+    cit10a_asrt(slc != nullptr);
+    const   char    *const  extnsn  =   file_extnsn_(slc->str, slc->len);
+    if (extnsn == nullptr)              return  (src_slice){ .str=nullptr, .len=0 };
+    return  (src_slice){ .str=extnsn, .len=slc->len + (slc->str - extnsn)};
 }
 
 /**
@@ -45,9 +62,9 @@
     const   char    *const  f_extns             =   file_extension(target);
     if (f_extns == nullptr)                         return  false;
 
-    for (size_t i = 0; i < arr_s(ALLOWED_EXTNS); ++i) {
+    for (size_t i = 0; i < arr_s(SRC_EXTNS); ++i) {
         // check array
-        if (!strcmp(f_extns, ALLOWED_EXTNS[i]))     return  true;
+        if (!strcmp(f_extns, SRC_EXTNS[i]))         return  true;
     }
     return  false;
 }

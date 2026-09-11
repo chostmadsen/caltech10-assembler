@@ -113,7 +113,7 @@ static void *headerseg_call(void *const hseg_v) {                               
     char       *thrd_name[SEGMENT_NUM - 1]              =   { "headerseg", "dataseg" };
     bool        live[SEGMENT_NUM - 1]                   =   { 0 };
 
-    if (c_args.verbosity >= 3) {
+    if (c_args.verbosity >= EXTRA_PRNT) {
         // thread output
         printf( CLR_DIM "%d new thread(s) (1 inline)\x1b[0m\n",
                 ((int)SEGMENT_NUM - 1 > c_args.n_thrds - 1) ? c_args.n_thrds - 1 : (int)SEGMENT_NUM - 1 );

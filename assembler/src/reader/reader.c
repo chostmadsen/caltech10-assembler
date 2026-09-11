@@ -27,7 +27,7 @@
 [[nodiscard]] static char *buffer_read_src_( const char   *const f_name,
                                                    size_t *const f_size  ) {    // read source to buffer
     // error report setup
-    const   rprt_f      err_f   =   { .file=&(src_f){ .f_name=f_name } };
+    const   rprt_f      err_f   =   { .file=&(src_f){ .f_name=(char*)f_name, .len=0 } };
     const   msg_info    f_err   =   { .type=msg_err_t, .header="file error", .report_f=&err_f };
 
     // open file
@@ -142,7 +142,7 @@ read_cleanup:
  */
 void free_src_f(src_f *source_f) {                                              // free source struct
     cit10a_asrt(source_f != nullptr);
-    free((void*)source_f->f_name);
+    free(source_f->f_name);
     safe_free(source_f->ln_idxs);
     safe_free(source_f->text);
 

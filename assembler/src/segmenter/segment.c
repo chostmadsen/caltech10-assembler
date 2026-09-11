@@ -237,7 +237,6 @@ void range_msg( const var_tok *const var,
 void print_var_tok(const var_tok *const var) {                                  // var_tok printer
     cit10a_asrt(var != nullptr);
 
-    printf("0x%016" PRIx64 " : ", var->head.hash);
-    print_src_slice(&var->head.key, stdout);
+    print_smap_head(&var->head);
     printf("[%s::%zu::%zu]", var->source->f_name, var->ln, var->col);
 }

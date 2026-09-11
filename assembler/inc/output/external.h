@@ -36,8 +36,13 @@
 #define                 MSG_INTRNL              "internal"
 #define                 MSG_INTRNL_WRN          "internal warning"
 #define                 NULL_CHR                CLR_ERR CLR_BOLD CLR_INVERT                                            \
-                                                "\\\x1b[0m"                     // null character
+                                                "0\x1b[0m"                      // null character
 #define                 DEBUG_DELIM             CLR_VRBSE ">>\x1b[0m"           // debug delimiter
+
+constexpr   int         DUMP_PRNT           =   4;                              // dump print verbosity threshold
+constexpr   int         EXTRA_PRNT          =   3;                              // extra info print verbosity threshold
+constexpr   int         INFO_PRNT           =   2;                              // info print verbosity threshold
+constexpr   int         EXIT_PRNT           =   1;                              // exit print verbosity threshold
 
 /*-COMBINED-CONSTANT-STRINGS------------------------------------------------------------------------------------------*/
 

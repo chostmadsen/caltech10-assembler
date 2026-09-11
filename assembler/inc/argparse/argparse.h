@@ -8,6 +8,7 @@
 #include    <stddef.h>
 
 #include    "helpers/general.h"
+#include    "argparse/file_chck.h"
 
 /*-FLAG-BASE-INFORMATION-ITEMS----------------------------------------------------------------------------------------*/
 
@@ -21,6 +22,7 @@ typedef struct {                                                                
     const   char              **vals;
             int                 num;
             int                 size;
+            char                flag;
 } strm_arr;
 
 typedef enum {                                                                  // flag types
@@ -57,6 +59,7 @@ struct wrn_t_ {                                                                 
 
 struct emit_t_ {                                                                // emit options
     bool                file;
+    bool                files;
     bool                table;
     bool                aasm;
 };
@@ -108,6 +111,8 @@ static  const   flag_itm        warnings_f  =   { .flag='W',            .desc="a
 
 static  const   struct  str_f_t emit_itm_[] =   { { .arg="file",        .desc="emit read file",
                                                     .offset=offsetof(struct emit_t_, file)                          },
+                                                  { .arg="files",       .desc="emit found source files",
+                                                    .offset=offsetof(struct emit_t_, files)                         },
                                                   { .arg="table",       .desc="emit generated lookup tables",
                                                     .offset=offsetof(struct emit_t_, table)                         },
                                                   { .arg="asm",         .desc="emit asm",
@@ -153,11 +158,11 @@ static  const   flag_itm        version_f   =   { .flag='V',            .desc="p
                                                   .type=flag_bool_t,    .offset=offsetof(assemble_args, version),
                                                   .exit=true,           .arg_itm=nullptr                              };
 
-static  const   flag_itm        inc_f       =   { .flag='I',            .desc="assembly inclusions directory",
+static  const   flag_itm        inc_f       =   { .flag=INC_FLG,        .desc="assembly inclusions directory",
                                                   .type=flag_strm_t,    .offset=offsetof(assemble_args, inc),
                                                   .exit=false,          .arg_itm="include"                            };
 
-static  const   flag_itm        sourc_f     =   { .flag='S',            .desc="assembly secondary sources directory",
+static  const   flag_itm        sourc_f     =   { .flag=SRC_FLG,        .desc="assembly secondary sources directory",
                                                   .type=flag_strm_t,    .offset=offsetof(assemble_args, src),
                                                   .exit=false,          .arg_itm="source"                             };
 
