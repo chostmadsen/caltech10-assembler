@@ -34,7 +34,6 @@ typedef struct {                                                                
 
 [[nodiscard]] int parse_org(strptr *sptr, rprt_f *err_f);                       // .org parser
 [[nodiscard]] bool verify_sctn_strt(strptr *sptr, rprt_f *err_f);               // .section start verification
-[[nodiscard]] int pseudo_hash_lu_adj(strptr *sptr);                             // .psuedo lookup w/ strptr adj
 
 void range_msg( const var_tok   *var,
                       rprt_f    *err_f,

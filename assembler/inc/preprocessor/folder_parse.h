@@ -13,7 +13,6 @@
 
 /*-CONSTANTS----------------------------------------------------------------------------------------------------------*/
 
-constexpr   char        FOLD_SEP            =   '/';                            // folder seperator
 constexpr   size_t      SRC_F_SMAP_BCKTS    =   32;                             // initial folder stackmap buckets
 constexpr   size_t      FMAP_SHFT           =   1;                              // file stackmap overshift
 

@@ -14,7 +14,6 @@
 #include    "argparse/argparse.h"
 #include    "datastructures/hash.h"
 #include    "datastructures/stackmap.h"
-#include    "common/hash_tables/pseudo.h"
 #include    "common/gen_parse.h"
 #include    "segmenter/segment.h"
 
@@ -119,23 +118,6 @@
 
     if (newln_strptr(sptr, err_f->file))    sptr->str   =   nullptr;
     return  false;
-}
-
-/**
- * Lookup a .pseudo directive, and adjust the string pointer.
- *
- * @param       sptr            string pointer
- * @return                      .pseudo directive
- */
-[[nodiscard]] int pseudo_hash_lu_adj(strptr *const sptr) {                      // .psuedo lookup w/ strptr adj
-    cit10a_asrt(sptr != nullptr);
-
-    inc_strptr(sptr);
-    size_t          n       =   0;
-    for (; is_alphanum(sptr->str[n]); ++n);
-    const   int     tok     =   pseudo_hash_lu(sptr->str, n).tok;
-    adj_strptr(sptr, n);
-    return  tok;
 }
 
 /*-RANGE-CHECKERS-----------------------------------------------------------------------------------------------------*/

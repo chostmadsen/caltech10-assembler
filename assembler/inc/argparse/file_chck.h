@@ -11,6 +11,7 @@
 
 /*-CONSTANTS----------------------------------------------------------------------------------------------------------*/
 
+constexpr   char        FOLD_SEP            =   '/';                            // folder seperator
 constexpr   char        FILE_EXTNS_CHR      =   '.';                            // file extension character
 
 constexpr   size_t      ECL                 =   4;                              // extension length

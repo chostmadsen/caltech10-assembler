@@ -30,7 +30,7 @@ static  stack           recursion_st;                                           
  */
 static void dump_recurs_st_(void) {                                             // dump the recursion stack
     cit10a_msg( &(msg_info){ .type=msg_norm_t, .header="lookthrough stack", .report_f=nullptr },
-                "this is the order in which files were opened, up until %d lookthrough(s)", c_args.max_recurs  );
+                "these are all the opened file(s), up until %d lookthrough(s)", c_args.max_recurs  );
 
     // print recursion stack
     const   int     prnt_pad    =   snprintf(nullptr, 0, "%d", c_args.max_recurs);
@@ -218,8 +218,8 @@ static void dump_recurs_st_(void) {                                             
     }
 
     // return boolean flag
-    return  ret;
     rm_stack(&recursion_st);
+    return  ret;
 }
 
 /*-PREPROCESSOR-------------------------------------------------------------------------------------------------------*/

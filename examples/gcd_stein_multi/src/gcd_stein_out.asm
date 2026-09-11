@@ -12,7 +12,7 @@
 
 
 ; inclusions (echoed)
-; .include    "gcd_stein_consts.inc"
+; .include    "gcd_stein.asm"
 
 
 ;-CODE-SEGMENT---------------------------------------------------------------------------------------------------------;

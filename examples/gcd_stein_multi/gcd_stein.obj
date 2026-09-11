@@ -1,0 +1,279 @@
+; [*] .text `src/gcd_stein.asm`
+;-gcd_stein.asm--------------------------------------------------------------------------------------------------------;
+;~  description         Caltech10 assembler GCD algorithm assembler testing (multi-file test).
+
+;~  history             Christian Host-Madsen       2026.09.06      creation
+;~                      Christian Host-Madsen       2026.09.11      multi-file split
+
+;*  global fns          gcd_stein                   Stein's GCD algorithm and program entry.
+;*  local fns           none
+
+;*  global vars         a_l                         gcd number a [l]
+;*                      a_h                         gcd number a [h]
+;*                      b_l                         gcd number b [l]
+;*                      b_h                         gcd number b [h]
+
+
+;-CONSTANT-INCLUSIONS--------------------------------------------------------------------------------------------------;
+; [*] .text `inc/gcd_stein_consts.inc`
+;-gcd_stein_consts.inc-------------------------------------------------------------------------------------------------;
+;~  description         Caltech10 assembler GCD algorithm assembler testing (multi-file test).
+
+;~  history             Christian Host-Madsen       2026.09.06      creation
+;~                      Christian Host-Madsen       2026.09.11      multi-file split
+
+
+;-CONSTANTS------------------------------------------------------------------------------------------------------------;
+
+;;  .const      LOW_BIT_MASK            0x01                            ; low bit check mask
+;;  .const      TST_LDI                 0x00                            ; ldi to make the equivalent of the `tst` instr
+;;  .const      PORT_OUT                0x05                            ; test output port
+; [*] .endtext `inc/gcd_stein_consts.inc`
+
+
+;-CODE-SEGMENT---------------------------------------------------------------------------------------------------------;
+;;  .code
+;;  .org        0x0000
+
+                    ;-gcd_stein----------------------------------------------------------------------------------------;
+                    ;~  description         Finds the GCD of two words using Stein's algorithm (and program entry).
+                    ;~  operation           Uses Stein's GCD algorithm to find the GCD of unsigned 16-bit numbers a and
+                    ;                       b, then return with the high GCD in X and low in the accumulator.
+
+                    ;~  arguments           none
+                    ;~  return              uint16              gcd of a and b                          * X | A
+
+                    ;~  local variables     uint8   k           stein k counter
+                    ;~  shared variables    none
+                    ;~  global variables    uint16  a_l         number a [l]
+                    ;~                      uint8   a_h         number a [h]
+                    ;~                      uint16  b_l         number b [l]
+                    ;~                      uint8   b_h         number b [h]
+
+                    ;~  input               none
+                    ;~  output              none
+
+                    ;~  error handling      none
+                    ;~  algorithms          Stein's GCD algorithm.
+                    ;~  data structures     none
+
+                    ;*  last modified       Christian Host-Madsen       2026.09.06      creation
+
+                    ;*  changed registers   A, X
+                    ;*  stack depth         2
+; 0000           ;; gcd_stein:
+  0000  80 00    ;;     ldd     a_l                                                     ; check for nonzero a
+  0001  74 01    ;;     or      a_h
+  0002  9c 06    ;;     jnz     a_nz
+                      ; jz      ret_b
+
+  0003  80 03    ;;     ret_b:      ldd     b_h                                         ; a is zero, return b
+  0004  07 80    ;;                 tax
+  0005  80 02    ;;                 ldd     b_l
+  0006  e0 66    ;;                 call    gcd_stein_out                               ; output gcd
+  0007  1f 00    ;;                 rts
+  0008  1f 80    ;;                 nop                                                 ; [*] branch delay
+
+  0009  80 02    ;;     a_nz:       ldd     b_l                                         ; check for nonzero b
+  000a  74 02    ;;                 or      b_l
+  000b  9c 06    ;;                 jnz     set_k
+                                  ; jz      ret_a
+
+  000c  80 03    ;;     ret_a:      ldd     b_h                                         ; a is zero, return b
+  000d  07 80    ;;                 tax
+  000e  80 02    ;;                 ldd     b_l
+  000f  e0 66    ;;                 call    gcd_stein_out                               ; output gcd
+  0010  1f 00    ;;                 rts
+  0011  1f 80    ;;                 nop                                                 ; [*] branch delay
+
+  0012  89 00    ;;     set_k:      ldi     TST_LDI                                     ; X to initialize k
+  0013  07 80    ;;                 tax
+  0014  80 00    ;;                 ldd     a_l                                         ; [*] a_l preload
+
+  0015  74 02    ;;     pair_shft:  or      b_l                                         ; check if a or b is odd
+  0016  47 01    ;;                 andi    LOW_BIT_MASK
+  0017  9c 0f    ;;                 jnz     store_k
+
+  0018  80 01    ;;                 ldd     a_h                                         ; shift a
+  0019  71 00    ;;                 lsr
+  001a  a0 01    ;;                 std     a_h
+  001b  80 00    ;;                 ldd     a_l
+  001c  71 03    ;;                 rrc
+  001d  a0 00    ;;                 std     a_l
+
+  001e  80 03    ;;                 ldd     b_h                                         ; shift b
+  001f  71 00    ;;                 lsr
+  0020  a0 03    ;;                 std     b_h
+  0021  80 02    ;;                 ldd     b_l
+  0022  71 03    ;;                 rrc
+  0023  a0 02    ;;                 std     b_l
+
+  0024  05 80    ;;                 inx                                                 ; increment X (k)
+  0025  c0 15    ;;                 jmp     pair_shft
+  0026  80 00    ;;                 ldd     a_l                                         ; [*] a_l preload
+
+  0027  67 01    ;;     store_k:    txa                                                 ; store k as X
+  0028  a0 04    ;;                 std     k
+  0029  80 00    ;;                 ldd     a_l                                         ; [*] a_l preload
+
+  002a  47 01    ;;     find_gcd:   andi    LOW_BIT_MASK                                ; check if a is odd
+  002b  9c 06    ;;                 jnz     a_odd      
+
+  002c  80 01    ;;                 ldd     a_h                                         ; shift a
+  002d  71 00    ;;                 lsr
+  002e  80 00    ;;                 ldd     a_l
+  002f  71 03    ;;                 rrc
+
+  0030  c0 2a    ;;                 jmp     find_gcd                                    ; [*] aka make_a_odd
+  0031  80 00    ;;                 ldd     a_l                                         ; [*] a_l preload
+
+  0032  80 00    ;;     a_odd:      ldd     a_l                                         ; check if b > a
+  0033  10 02    ;;                 sub     b_l
+  0034  80 01    ;;                 ldd     a_h
+  0035  18 03    ;;                 sbb     b_h
+
+  0036  8f 0c    ;;                 jc      a_geq_b
+                                  ; jnc     swap_words
+
+  0037  80 00    ;;     swap_words: ldd     a_l                                         ; move a low to X
+  0038  07 80    ;;                 tax
+  0039  80 02    ;;                 ldd     b_l                                         ; move b low to a low
+  003a  a0 00    ;;                 std     a_l
+  003b  07 80    ;;                 tax                                                 ; move X to b low
+  003c  a0 02    ;;                 std     b_l
+
+  003d  80 01    ;;                 ldd     a_h                                         ; move a high to X
+  003e  07 80    ;;                 tax
+  003f  80 03    ;;                 ldd     b_h                                         ; move b high to a low
+  0040  a0 01    ;;                 std     a_h
+  0041  07 80    ;;                 tax                                                 ; move X to b high
+  0042  a0 03    ;;                 std     b_h
+
+; 0043           ;;     a_geq_b:  ; ldd     a_l                                         ; [*] a preloaded
+  0043  10 02    ;;                 sub     b_l                                         ; adjust a
+  0044  a0 00    ;;                 std     a_l
+  0045  80 01    ;;                 ldd     a_h
+  0046  18 03    ;;                 sbb     b_h
+  0047  a0 01    ;;                 std     a_h
+
+  0048  80 00    ;;                 ldd     a_l                                         ; check if a is zero
+  0049  74 01    ;;                 or      a_h
+  004a  9f 02    ;;                 jz      k_load
+  004b  80 04    ;;                 ldd     k                                           ; [*] preload k && branch delay
+  004c  c0 2a    ;;                 jmp     find_gcd
+
+  004d  80 04    ;;     k_load:     ldd     k                                           ; check if k is zero
+  004e  4f 00    ;;                 tsti    TST_LDI
+  004f  9c 06    ;;                 jnz     get_gcd                                     ; [*] aka k_nz
+                                  ; jz      k_zero
+
+  0050  80 03    ;;     k_zero:     ldd     b_h                                         ; k is zero, return b
+  0051  07 80    ;;                 tax
+  0052  80 02    ;;                 ldd     b_l
+  0053  e0 66    ;;                 call    gcd_stein_out                               ; output gcd
+  0054  1f 00    ;;                 rts
+  0055  1f 80    ;;                 nop
+
+  0056  80 02    ;;     get_gcd:    ldd     b_l                                         ; shift b
+  0057  58 00    ;;                 lsl
+  0058  a0 02    ;;                 std     b_l
+  0059  80 03    ;;                 ldd     b_h
+  005a  50 00    ;;                 rlc
+  005b  a0 03    ;;                 std     b_h
+
+  005c  80 04    ;;                 ldd     k                                           ; decrement k until zero
+  005d  7b 00    ;;                 dec
+  005e  9c f7    ;;                 jnz     get_gcd
+                                  ; jz      got_gcd
+  005f  a0 04    ;;                 std     k                                           ; [*] store k && branch delay
+
+  0060  80 03    ;;     got_gcd:    ldd     b_h                                         ; return gcd (b)
+  0061  07 80    ;;                 tax
+  0062  80 02    ;;                 ldd     b_l
+  0063  e0 66    ;;                 call    gcd_stein_out                               ; output gcd
+  0064  1f 00    ;;                 rts
+  0065  1f 80    ;;                 nop
+
+
+;;  .none
+;-DATA-SEGMENT---------------------------------------------------------------------------------------------------------;
+;;  .data
+;;  .org        0x00
+
+                    ; gcd arguments
+;          00    ;; a_l                 db          ?                                   ; number a [l]
+;          01    ;; a_h                 db          ?                                   ; number a [h]
+;          02    ;; b_l                 db          ?                                   ; number b [l]
+;          03    ;; b_h                 db          ?                                   ; number b [h]
+
+                    ; gcd local variables
+;          04    ;; k                   db          ?                                   ; number k
+
+
+;;  .none       ; not necessary, just for the following comment to be aligned properly
+;-CODE-INCLUSIONS------------------------------------------------------------------------------------------------------;
+; [*] .text `src/gcd_stein_out.asm`
+;-gcd_stein_out.asm----------------------------------------------------------------------------------------------------;
+;~  description         Caltech10 assembler GCD algorithm assembler testing (multi-file test).
+;~                      Simulates outputting the gcd at port PORT_OUT.
+
+;~  history             Christian Host-Madsen       2026.09.06      creation
+;~                      Christian Host-Madsen       2026.09.11      multi-file split
+
+;*  global fns          gcd_out                     Test GCD Stein output.
+;*  local fns           none
+
+;*  local vars          tmp_store                   temporary storage
+
+
+; inclusions (echoed)
+; .include    "gcd_stein.asm"
+
+
+;-CODE-SEGMENT---------------------------------------------------------------------------------------------------------;
+;;  .code
+
+                    ;-gcd_stein_out------------------------------------------------------------------------------------;
+                    ;~  description         Outputs whatever the gcd is to PORT_OUT.
+                    ;~  operation           uses the `out` instruction to output the GCD.
+
+                    ;~  arguments           uint16              gcd of a and b                          * X | A
+                    ;~  return              none
+
+                    ;~  local variables     none
+                    ;~  shared variables    none
+                    ;~  global variables    none
+
+                    ;~  input               none
+                    ;~  output              port PORT_OUT
+
+                    ;~  error handling      none
+                    ;~  algorithms          none
+                    ;~  data structures     none
+
+                    ;*  last modified       Christian Host-Madsen       2026.09.11      creation
+
+                    ;*  changed registers   none
+                    ;*  stack depth         0
+; 0066           ;; gcd_stein_out:
+  0066  b0 05    ;;     out     PORT_OUT                                                ; output low bit
+  0067  a0 05    ;;     std     tmp_store                                               ; save low byte
+
+  0068  67 01    ;;     txa                                                             ; save high byte
+  0069  b0 05    ;;     out     PORT_OUT
+  006a  80 05    ;;     ldd     tmp_store                                               ; reload low byte
+
+  006b  1f 00    ;;     rts                                                             ; return
+  006c  1f 80    ;;     nop                                                             ; [*] branch delay
+
+
+;;  .none
+;-DATA-SEGMENT---------------------------------------------------------------------------------------------------------;
+;;  .data
+
+;          05    ;; tmp_store           db          ?                                   ; temporary storage
+; [*] .endtext `src/gcd_stein_out.asm`
+; [*] .endtext `src/gcd_stein.asm`
+
+
+; [*] .metadata | 109 words | 12 threads | cit10av0.1.9*--128B@2026.09.04

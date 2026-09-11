@@ -8,6 +8,7 @@
 #include    <string.h>
 #include    <limits.h>
 
+#include    "common/gen_parse.h"
 #include    "helpers/general.h"
 #include    "helpers/mem.h"
 #include    "output/errors.h"
@@ -103,6 +104,38 @@
     return  dp;
 }
 
+/**
+ * Gets the filename with escaped characters, for lookup within the file.
+ *
+ * @param       fname           file name
+ * @return                      file name in code recognition
+ */
+[[nodiscard]] static src_slice fname_esc_(const char *const fname) {            // filename with escaped characters
+    // find malloc size
+    const   size_t  f_len   =   strlen(fname);
+    size_t          m_size  =   1;
+    const   rprt_f  err_f   =   { .file=&(src_f){ .f_name=(char*)fname }, .len=0 };
+    for (size_t i = 0; i < f_len; ++i) {
+        if (fname[i] == ESC_CHR || fname[i] == '"')     m_size  +=  ESC_CHR_LEN;
+        ++m_size;
+    }
+
+    // filename init
+    size_t          idx         =   0;
+    char    *const  fname_esc   =   chckd_malloc(m_size, "adjusted file name char*");
+    fname_esc[m_size - 1]       =   '\0';
+    for (size_t i = 0; i < f_len; ++i) {
+        // setup recognized filename
+        if (fname[i] == ESC_CHR || fname[i] == '"')     fname_esc[idx++]    =   ESC_CHR;
+        fname_esc[idx++]    =   fname[i];
+        if (' ' <= fname[i] && fname[i] <= '~')         continue;
+        cit10a_msg( &(msg_info){ .type=msg_warn_t, .header="filename", .report_f=&err_f}, 
+                    "the assembler has no way of identifying the character `%c` for this filename in code "
+                    "(please just be normal with your filenames)", fname[i]                                 );
+    }
+    return  (src_slice){ .str=fname_esc, .len=m_size - 1 };
+}
+
 /*-FILE-GATHERER-SINGULAR-SETUP---------------------------------------------------------------------------------------*/
 
 /**
@@ -163,10 +196,7 @@
                 if (!strcmp(extns[j], file_extension(ent->d_name)))     continue;
 
                 // add file source
-                const   int         f_ln    =   strlen(ent->d_name);
-                char    *const      f_nm    =   chckd_malloc(f_ln * sizeof(char), "file name char*");
-                memcpy(f_nm, ent->d_name, f_ln);
-                const   src_slice   slc     =   { .str=f_nm, .len=f_ln };
+                const   src_slice   slc     =   fname_esc_(ent->d_name);
                 const   smap_head   head    =   { .key=slc, .hash=hash_fnv1a_slc_lwr(&slc) };
                 const   fname_itm   sm_itm  =   { .head=head, .folder=strm->vals[i] };
 
@@ -245,15 +275,20 @@
                                                               "source file name char*"             );
     memcpy(f_nm_m, source_nm->folder, fold_len);
     if (f_nm_o != 0)                            f_nm_m[fold_len]    =   FOLD_SEP;
-    memcpy(f_nm_m + fold_len + f_nm_o, f_name->str, f_name->len);
-    f_nm_m[fold_len + f_name->len + f_nm_o] =   '\0';
+    size_t      add_idx     =   fold_len + f_nm_o;
+    for (size_t i = 0; i < f_name->len; ++i, ++add_idx) {
+        // remove escape characters
+        if (f_name->str[i] == ESC_CHR)  ++i;
+        f_nm_m[add_idx] =   f_name->str[i];
+    }
+    f_nm_m[add_idx]         =   '\0';
 
     // read source
     *source                                 =   read_source(f_nm_m);
     free(f_nm_m);
     const   src_f_sm            smap_new    =   { .head={ .key=*f_name, .hash=hash_fnv1a_slc_lwr(f_name) },
                                                   .source=source                                            };
-    smap_clsn_t     clsn_t;
+    [[maybe_unused]]    smap_clsn_t clsn_t;
     if   (c_args.case_sens)         clsn_t  =   stackmap_add(&grp->open_files, &smap_new);
     else                            clsn_t  =   stackmap_add_lwr(&grp->open_files, &smap_new);
     cit10a_asrt(clsn_t == smap_no_clsn_t);

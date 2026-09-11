@@ -11,10 +11,11 @@
 #include    "output/errors.h"
 #include    "output/messages.h"
 #include    "datastructures/stackmap.h"
-#include    "common/hash_tables/pseudo.h"
+#include    "common/gen_parse.h"
 #include    "common/kwrds.h"
 #include    "argparse/argparse.h"
 #include    "reader/reader.h"
+#include    "preprocessor/folder_parse.h"
 #include    "segmenter/headerseg.h"
 #include    "segmenter/seg_orch.h"
 #include    "assemble/line.h"
@@ -54,19 +55,13 @@
 }
 
 /**
- * Pseudo-op lookup on a string.
+ * Pseudo-op lookup on a string, ensuring no invalid preprocessor directives.
  *
- * @param       str             string
+ * @param       sptr            string pointer
  * @return                      lookup token
  */
-[[nodiscard]] static pseudo_tok get_pseudo_(const char *str) {                  // pseudo-op lookup
-    for (; is_whitespace(*str); ++str);
-    cit10a_asrt(*str == PSEUDO_STRT);
-
-    const   char    *const  lu_str  =   ++str;
-    size_t                  len     =   0;
-    for (; is_alphanum(*str); ++str, ++len);
-    const   pseudo_tok      ret     =   pseudo_hash_lu(lu_str, len).tok;
+[[nodiscard]] static pseudo_tok get_pseudo_(strptr *const sptr) {               // pseudo-op lookup
+    const   pseudo_tok  ret =   pseudo_hash_lu_adj(sptr);
     cit10a_asrt(ret != pseudo_no_tok);
     return  ret;
 }
@@ -104,22 +99,32 @@ static void asm_emit_instr_(       FILE *const fp,
 
 /*-ASSEMBLY-SECTION-EMITTERS------------------------------------------------------------------------------------------*/
 
+static void emit_asm_fp_(       FILE    *fp,
+                          const src_f   *source,
+                          const sources *srcs,
+                          const segmaps *segmap,
+                          const asm_ret *asm_r   );                             // assembly emitter (fp)
+
 /**
  * .data section emitter for a file.
  *
  * @param       fp              output file
  * @param       start           file start location
  * @param       source          source file
- * @param       datamap         data lookup map
+ * @param       srcs            sources
+ * @param       segmap          segmaps
+ * @param       asm_r           assembly
  * @return                      ended location (-1 for EOF)
  */
-[[nodiscard]] static size_t emit_asm_data_(       FILE     *const fp,     
+[[nodiscard]] static size_t emit_asm_data_(       FILE     *const fp,
                                             const size_t          strt,
                                             const src_f    *const source,
-                                            const stackmap *const datamap ) {   // assembly data emitter
+                                            const sources  *const srcs,
+                                            const segmaps  *const segmap,
+                                            const asm_ret  *const asm_r    ) {  // assembly data emitter
     cit10a_asrt(fp != nullptr);
     cit10a_asrt(source != nullptr);
-    cit10a_asrt(datamap != nullptr);
+    cit10a_asrt(segmap != nullptr);
 
     for (size_t i = strt; i < source->ln_num; ++i) {
         const   char    *const  ln          =   src_f_getline(source, i);
@@ -129,13 +134,16 @@ static void asm_emit_instr_(       FILE *const fp,
         // special lookup
         if      (frst_chr == '\0')              { fputc('\n', fp); continue; }
         else if (frst_chr == CMMT_CHR)          { fprintf(fp, FULL_OUT "%s\n", ln); continue; }
-        else if (frst_chr == PSEUDO_STRT)       { switch (get_pseudo_(ln)) {
+        else if (frst_chr == PSEUDO_STRT)       { switch (get_pseudo_(&sptr)) {
             case tok_org:   [[fallthrough]];
             case tok_const: [[fallthrough]];
             case tok_data:
                 fprintf(fp, CMMT_STRT "%s\n", ln);
                 break;
-            case tok_incl:  cit10a_asrt(!"invalid for now");
+            case tok_incl:
+                const   src_f   *const  sourc_f =   get_inc_static(&sptr, srcs);
+                emit_asm_fp_(fp, sourc_f, srcs, segmap, asm_r);
+                break;
             default:        return  i;
         } continue; }
 
@@ -144,8 +152,8 @@ static void asm_emit_instr_(       FILE *const fp,
         for (; is_alphanum(*sptr.str); inc_strptr(&sptr), ++ident.len);
 
         const   header_var  *const  dt  =   (c_args.case_sens)
-                                            ? (header_var*)stackmap_get_k_lwr(datamap, &ident)
-                                            : (header_var*)stackmap_get_k_lwr_lwr(datamap, &ident);
+                                            ? (header_var*)stackmap_get_k_lwr(&segmap->datamap, &ident)
+                                            : (header_var*)stackmap_get_k_lwr_lwr(&segmap->datamap, &ident);
         cit10a_asrt(dt != nullptr);
         fprintf(fp, DATA_STRT "%02x" DATA_END "%s\n", dt->loc, ln);
     }
@@ -153,23 +161,25 @@ static void asm_emit_instr_(       FILE *const fp,
 }
 
 /**
- * .data section emitter for a file.
+ * .code section emitter for a file.
  *
  * @param       fp              output file
  * @param       start           file start location
  * @param       source          source file
- * @param       headmap         header lookup map
+ * @param       srcs            sources
+ * @param       segmap          segmaps
  * @param       asm_r           assembly
  * @return                      ended location (-1 for EOF)
  */
-[[nodiscard]] static size_t emit_asm_code_(       FILE     *const fp,     
+[[nodiscard]] static size_t emit_asm_code_(       FILE     *const fp,
                                             const size_t          strt,
                                             const src_f    *const source,
-                                            const stackmap *const headmap,
-                                            const asm_ret  *const asm_r    ) {  // assembly data emitter
+                                            const sources  *const srcs,
+                                            const segmaps  *const segmap,
+                                            const asm_ret  *const asm_r    ) {  // assembly code emitter
     cit10a_asrt(fp != nullptr);
     cit10a_asrt(source != nullptr);
-    cit10a_asrt(headmap != nullptr);
+    cit10a_asrt(segmap != nullptr);
     cit10a_asrt(asm_r != nullptr);
 
     // assembly reference
@@ -184,13 +194,16 @@ static void asm_emit_instr_(       FILE *const fp,
         // special lookup
         if      (frst_chr == '\0')              { fputc('\n', fp); continue; }
         else if (frst_chr == CMMT_CHR)          { fprintf(fp, FULL_OUT "%s\n", ln); continue; }
-        else if (frst_chr == PSEUDO_STRT)       { switch (get_pseudo_(ln)) {
+        else if (frst_chr == PSEUDO_STRT)       { switch (get_pseudo_(&sptr)) {
             case tok_org:   [[fallthrough]];
             case tok_const: [[fallthrough]];
             case tok_code:
                 fprintf(fp, CMMT_STRT "%s\n", ln);
                 break;
-            case tok_incl:  cit10a_asrt(!".include invalid for now");
+            case tok_incl:
+                const   src_f   *const  sourc_f =   get_inc_static(&sptr, srcs);
+                emit_asm_fp_(fp, sourc_f, srcs, segmap, asm_r);
+                break;
             default:        return  i;
         } continue; }
 
@@ -198,8 +211,8 @@ static void asm_emit_instr_(       FILE *const fp,
         const   src_slice   head    =   header_get_(&sptr);
         if (head.str != nullptr) {
             const   header_var  *const  hd  =   (c_args.case_sens)
-                                                ? (header_var*)stackmap_get_k_lwr(headmap, &head)
-                                                : (header_var*)stackmap_get_k_lwr_lwr(headmap, &head);
+                                                ? (header_var*)stackmap_get_k_lwr(&segmap->headmap.smap, &head)
+                                                : (header_var*)stackmap_get_k_lwr_lwr(&segmap->headmap.smap, &head);
             cit10a_asrt(hd != nullptr);
             asm_emit_instr_(fp, hd->loc, -1, ln);
             continue;
@@ -219,14 +232,73 @@ static void asm_emit_instr_(       FILE *const fp,
 /*-FULL-ASSEMBLY-EMITTER----------------------------------------------------------------------------------------------*/
 
 /**
+ * Assembly emitter to a file (fp).
+ *
+ * @param       fp              file pointer
+ * @param       source          source file
+ * @param       srcs            sources
+ * @param       segmap          lookup maps
+ * @param       asm_r           assembly
+ */
+static void emit_asm_fp_(       FILE    *const fp,
+                          const src_f   *const source,
+                          const sources *const srcs,
+                          const segmaps *const segmap,
+                          const asm_ret *const asm_r   ) {                      // assembly emitter (fp)
+    cit10a_asrt(fp != nullptr);
+    cit10a_asrt(source != nullptr);
+    cit10a_asrt(segmap != nullptr);
+    cit10a_asrt(asm_r != nullptr);
+
+    fprintf(fp, VERS_STRT ".text `%s`\n", source->f_name);
+    for (size_t i = 0; i < source->ln_num; ++i) {
+        // iterate over .none
+        const   char    *const  ln          =   src_f_getline(source, i);
+        strptr                  sptr        =   { .str=ln, .ln=i, .col=0 };
+        const   char            frst_chr    =   first_chr_(&sptr);
+
+        // possible new section
+        if      (frst_chr == '\0')              { fputc('\n', fp); continue; }
+        else if (frst_chr == CMMT_CHR)          { fprintf(fp, "%s\n", ln); continue; }
+        else if (frst_chr == PSEUDO_STRT)       { switch (get_pseudo_(&sptr)) {
+            case tok_org:   [[fallthrough]];
+            case tok_const: [[fallthrough]];
+            case tok_none:
+                fprintf(fp, CMMT_STRT "%s\n", ln);
+                break;
+            case tok_code:
+                const size_t    c_ret   =   emit_asm_code_(fp, i, source, srcs, segmap, asm_r);
+                if (c_ret == (size_t)-1)    goto    easm_fp_e;
+                i                       =   c_ret - 1;
+                break;
+            case tok_data:
+                const size_t    d_ret   =   emit_asm_data_(fp, i, source, srcs, segmap, asm_r);
+                if (d_ret == (size_t)-1)    goto    easm_fp_e;
+                i                       =   d_ret - 1;
+                break;
+            case tok_incl:
+                const   src_f   *const  sourc_f =   get_inc_static(&sptr, srcs);
+                emit_asm_fp_(fp, sourc_f, srcs, segmap, asm_r);
+                break;
+            default:        cit10a_asrt(!"invalid pseudo-op state");
+        } continue; }
+    }
+
+easm_fp_e:
+    fprintf(fp, VERS_STRT ".endtext `%s`\n", source->f_name);
+}
+
+/**
  * Assembly emitter to a file.
  *
  * @param       f_name          output file name
  * @param       source          source file
+ * @param       srcs            sources
  * @param       segmap          lookup maps
  * @param       asm_r           assembly
  */
 void emit_asm( const char    *const f_name, const src_f   *const source,
+               const sources *const srcs,
                const segmaps *const segmap, const asm_ret *const asm_r   ) {    // assembly emitter
     cit10a_asrt(f_name != nullptr);
     cit10a_asrt(source != nullptr);
@@ -251,40 +323,23 @@ void emit_asm( const char    *const f_name, const src_f   *const source,
         return;
     }
 
-    for (size_t i = 0; i < source->ln_num; ++i) {
-        // iterate over .none
-        const   char    *const  ln          =   src_f_getline(source, i);
-        strptr                  sptr        =   { .str=ln, .ln=-1, .col=0 };
-        const   char            frst_chr    =   first_chr_(&sptr);
+    emit_asm_fp_(fp, source, srcs, segmap, asm_r);
 
-        // possible new section
-        if      (frst_chr == '\0')              { fputc('\n', fp); continue; }
-        else if (frst_chr == CMMT_CHR)          { fprintf(fp, "%s\n", ln); continue; }
-        else if (frst_chr == PSEUDO_STRT)       { switch (get_pseudo_(ln)) {
-            case tok_org:   [[fallthrough]];
-            case tok_const: [[fallthrough]];
-            case tok_none:
-                fprintf(fp, CMMT_STRT "%s\n", ln);
-                break;
-            case tok_code:
-                const size_t    c_ret   =   emit_asm_code_(fp, i, source, &segmap->headmap.smap, asm_r);
-                if (c_ret == (size_t)-1)    goto    debug_emit;
-                i                       =   c_ret - 1;
-                break;
-            case tok_data:
-                const size_t    d_ret   =   emit_asm_data_(fp, i, source, &segmap->datamap);
-                if (d_ret == (size_t)-1)    goto    debug_emit;
-                i                       =   d_ret - 1;
-                break;
-            case tok_incl:  cit10a_asrt(!"invalid for now");
-            default:        cit10a_asrt(!"invalid pseudo-op state");
-        } continue; }
-    }
-
-debug_emit:
     // debug information
     fputs("\n\n", fp);
-    fprintf(fp, VERS_STRT "%d words | ", asm_r->num_segs);
+    fprintf(fp, VERS_STRT ".metadata | %d words | %d threads | ", asm_r->num_segs, c_args.n_thrds);
     cit10a_version_f(fp, false);
     fputc('\n', fp);
+}
+
+/*-FULL-ASSEMBLY-INFO-OUTPUT------------------------------------------------------------------------------------------*/
+
+/**
+ * Assembly emit info printer.
+ *
+ * @param       output          output location
+ */
+void print_asm_emit_info(const char *const output) {                            // assembly emission info
+    const   rprt_f  r_f =   { .file=&(src_f){ .f_name=(char*)output }, .len=0 };
+    cit10a_msg(&(msg_info){ .type=msg_vrbse_t, .header="assembly emitted to file", .report_f=&r_f}, nullptr);
 }

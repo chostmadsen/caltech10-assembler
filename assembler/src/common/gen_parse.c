@@ -11,6 +11,7 @@
 #include    "output/messages.h"
 #include    "common/kwrds.h"
 #include    "common/gen_parse.h"
+#include    "common/hash_tables/pseudo.h"
 #include    "preprocessor/folder_parse.h"
 
 /*-LINE-VERIFIERS-----------------------------------------------------------------------------------------------------*/
@@ -81,6 +82,23 @@
     return  ret;
 }
 
+/**
+ * Lookup a .pseudo directive, and adjust the string pointer.
+ *
+ * @param       sptr            string pointer
+ * @return                      .pseudo directive
+ */
+[[nodiscard]] int pseudo_hash_lu_adj(strptr *const sptr) {                      // .psuedo lookup w/ strptr adj
+    cit10a_asrt(sptr != nullptr);
+
+    inc_strptr(sptr);
+    size_t          n       =   0;
+    for (; is_alphanum(sptr->str[n]); ++n);
+    const   int     tok     =   pseudo_hash_lu(sptr->str, n).tok;
+    adj_strptr(sptr, n);
+    return  tok;
+}
+
 /*-NUMBER-PARSERS-----------------------------------------------------------------------------------------------------*/
 
 /**
@@ -104,7 +122,7 @@
 }
 
 /**
- * Escape character ascii value. -1 if escape character is invalid
+ * Escape character ascii value. -1 if escape character is invalid.
  *
  * @param       chr                 character
  * @return                          ascii value
@@ -113,6 +131,21 @@
     switch (chr) {
 #define X( chr, val )   case chr:   return  (int)val;
         ESC_CHRS
+#undef  X
+        default:    return  -1;
+    }
+}
+
+/**
+ * Escape characters for string value. -1 if escape character is invalid.
+ *
+ * @param       chr                 character
+ * @return                          ascii value
+ */
+[[nodiscard]] static int str_esc_chr_val_(const char chr) {                     // escape character value
+    switch (chr) {
+#define X( chr, val )   case chr:   return  (int)val;
+        STR_ESC_CHRS
 #undef  X
         default:    return  -1;
     }
@@ -212,7 +245,7 @@
 
         // find escape character
         bool    is_val_esc  =   false;
-        is_val_esc          =   (esc_chr_val_(text->str[1]) != -1);
+        is_val_esc          =   (str_esc_chr_val_(text->str[1]) != -1);
 
         // check escape character
         if (!is_val_esc && err_f != nullptr) {

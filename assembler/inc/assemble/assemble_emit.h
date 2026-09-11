@@ -43,4 +43,7 @@ _Static_assert(2 * B_PER_HEX == BIT_OUT, "output alignment requires this (adjust
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
 
 void emit_asm( const char    *f_name, const src_f   *source,
+               const sources *srcs,
                const segmaps *segmap, const asm_ret *asm_r   );                 // assembly emitter
+
+void print_asm_emit_info(const char *output);                                   // assembly emission info

@@ -12,12 +12,35 @@
 #include    "output/errors.h"
 #include    "argparse/file_chck.h"
 
-/*-FILE-CHECKERS------------------------------------------------------------------------------------------------------*/
+/*-FILE-PATH-CLEANER--------------------------------------------------------------------------------------------------*/
 
-[[nodiscard]] const char *file_extnsn_( const char *const f_nm,
-                                        const int         f_len ) {             // get file extension (length provided)
+/**
+ * Gets the "realpath" of a file (gets the) final actual file
+ * 
+ * @param       path            path
+ * @return                      realpath
+ */
+[[nodiscard]] static const char *realpath_(const char *const path) {            // gets the realpath
+    cit10a_asrt(path != nullptr);
+    for (int i = strlen(path) - 1; i >= 0; --i) {
+        if (path[i] == FOLD_SEP)    return  path + i + 1;
+    }
+    return  path;
+}
+
+/*-FILE-CHECKER-HELPERS-----------------------------------------------------------------------------------------------*/
+
+/**
+ * Get the file extension of a string. nullptr for no extension. based on a given length.
+ * 
+ * @param       f_nm            file name
+ * @param       f_len           file name length
+ * @return                      pointer to extension
+ */
+[[nodiscard]] static const char *file_extnsn_( const char *const f_nm,
+                                               const int         f_len ) {      // get file extension (length provided)
     cit10a_asrt(f_nm != nullptr);
-    for (int i = f_len - 1; i > 0; --i) {
+    for (int i = f_len - 1; i >= 0; --i) {
         // valid file extension
         if (f_nm[i] == FILE_EXTNS_CHR) {
             if    (i != f_len)              return  f_nm + i + 1;
@@ -26,6 +49,8 @@
     }
     return  nullptr;
 }
+
+/*-FILE-CHECKERS------------------------------------------------------------------------------------------------------*/
 
 /**
  * Get the file extension of a string. nullptr for no extension.
@@ -88,10 +113,11 @@
 
     cit10a_asrt(target != nullptr);
     // create output
-    const   int     f_targ_len  =   file_extension(target) - target - 1;
-    const   int     f_targ_tot  =   f_targ_len + sizeof(OBJ_EXTENSION);
-    char    *const  outp        =   chckd_malloc(f_targ_tot * sizeof(char), "output char*");
-    memcpy(outp, target, f_targ_len);
+    const   char    *const  targ_pth    =   realpath_(target);
+    const   int             f_targ_len  =   file_extension(targ_pth) - targ_pth - 1;
+    const   int             f_targ_tot  =   f_targ_len + sizeof(OBJ_EXTENSION);
+    char    *const          outp        =   chckd_malloc(f_targ_tot * sizeof(char), "output char*");
+    memcpy(outp, targ_pth, f_targ_len);
     memcpy(outp + f_targ_len, OBJ_EXTENSION, sizeof(OBJ_EXTENSION));
     return  outp;
 }

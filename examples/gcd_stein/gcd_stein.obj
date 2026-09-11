@@ -1,3 +1,4 @@
+; [*] .text `gcd_stein.asm`
 ;-gcd_stein.asm--------------------------------------------------------------------------------------------------------;
 ;~  description         Caltech10 assembler GCD algorithm assembler testing.
 
@@ -187,6 +188,7 @@
 
                     ; gcd local variables
 ;          04    ;; k                   db          ?                                   ; number k
+; [*] .endtext `gcd_stein.asm`
 
 
-; [*] 98 words | cit10av0.1.9*as128B@2026.09.04
+; [*] .metadata | 98 words | 12 threads | cit10av0.1.9*--128B@2026.09.04
