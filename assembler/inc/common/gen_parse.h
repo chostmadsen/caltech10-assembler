@@ -23,7 +23,10 @@ constexpr   unsigned    MAX_PARSE           =   (MAX_ADRS_PARSE > MAX_NUM_PARSE)
 constexpr   char        HEX_CHR_ALT         =   '$';                            // alternate hexadecimal character
 
 constexpr   char        CHR_CHR             =   '\'';                           // character value
+constexpr   char        STR_CHR             =   '\"';                           // string value
 constexpr   char        ESC_CHR             =   '\\';                           // escape character
+constexpr   int         STR_CHR_LEN         =   1;                              // string character length
+constexpr   int         ESC_CHR_LEN         =   1;                              // escape character length
 #define ESC_CHRS        /* chr, val */                                                                                 \
     X( 'a',     '\a' )                                                                                                 \
     X( 'b',     '\b' )                                                                                                 \
@@ -46,6 +49,7 @@ constexpr   char        ESC_CHR             =   '\\';                           
 [[nodiscard]] bool is_num_strt(char chr);                                       // number start checker
 [[nodiscard]] bool is_num_strt_ns(char chr);                                    // number start checker (non-signed)
 [[nodiscard]] int parse_char(strptr *sptr, rprt_f *err_f);                      // character to value parser
+[[nodiscard]] src_slice parse_str(rprt_f *err_f, strptr *text, bool *err);      // string value parser
 [[nodiscard]] int parse_num(strptr *sptr, rprt_f *err_f);                       // number parser
 [[nodiscard]] int parse_num_repr(strptr *sptr, rprt_f *err_f);                  // number parser (negative repr)
 [[nodiscard]] int parse_num_adrs(strptr *sptr, rprt_f *err_f);                  // address number parser

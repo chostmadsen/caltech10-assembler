@@ -141,6 +141,67 @@
     return  ret;
 }
 
+
+/**
+ * Finds a source slice for a string value, counting escape characters. If used, ensure err is initialized to false.
+ *
+ * @param       err_f           error report file
+ * @param       text            text
+ * @param       docstr          whether to use docstring escape characters
+ * @param       err             error flag
+ * @return                      source slice
+ */
+[[nodiscard]] src_slice parse_str( rprt_f  *const err_f,
+                                   strptr  *const text,
+                                   bool    *const err     ) {                   // string value parser
+    // error setup
+    const       msg_info    str_err =   { .type=msg_err_t,  .header="string error",     .report_f=err_f };
+    const       msg_info    str_wrn =   { .type=msg_warn_t, .header="escape character", .report_f=err_f };
+
+    err_f->col  =   text->col;
+    if (*text->str != STR_CHR) {
+        // invalid string
+        err_f->len  =   1;
+        cit10a_msg(&str_err, "invalid string start");
+        if (err != nullptr)     *err    =   true;
+        return  (src_slice){ .str=nullptr, .len=0 };
+    }
+
+    // get string value
+    inc_strptr(text);
+    src_slice   ret     =   (src_slice){ .str=text->str };
+    size_t      v_len   =   text->col;
+    for (;; inc_strptr(text)) {
+        if (*text->str == '\0') {
+            err_f->len  =   text->col - v_len;
+            err_f->len  =   (err_f->len > 0) ? err_f->len : 1;
+            cit10a_msg(&str_err, "unterminated string");
+            *err        =   true;
+            return  (src_slice){ .str=nullptr, .len=0 };
+        }
+        if (*text->str != ESC_CHR) {
+            // not escape character
+            if (*text->str != STR_CHR)  continue;
+            // string end
+            ret.len =   text->col - v_len;
+            return  ret;
+        }
+
+        // find escape character
+        bool    is_val_esc  =   false;
+        is_val_esc          =   (esc_chr_val_(text->str[1]) != -1);
+
+        // check escape character
+        if (!is_val_esc) {
+            // report error
+            err_f->len  =   STR_CHR_LEN + ESC_CHR_LEN;
+            cit10a_msg(&str_wrn, "invalid escape character");
+        }
+        // skip character, regardless
+        adj_strptr(text, ESC_CHR_LEN);
+    }
+}
+
 /**
  * Find a number (positive representation), and store the representation and value.
  *

@@ -45,7 +45,7 @@ typedef struct {                                                                
 
 [[nodiscard]] sources get_sources(const size_t count, ...);                     // get sources for flags
 
-[[nodiscard]] src_f *get_source(       src_slice *f_name,
+[[nodiscard]] src_f *get_source( const src_slice *f_name,
                                        sources   *srcs,
                                  const rprt_f    *err_f   );                    // source file getter
 

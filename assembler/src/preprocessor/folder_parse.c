@@ -8,12 +8,12 @@
 #include    <string.h>
 #include    <limits.h>
 
-#include "datastructures/stack.h"
 #include    "helpers/general.h"
 #include    "helpers/mem.h"
 #include    "output/errors.h"
 #include    "output/messages.h"
 #include    "datastructures/hash.h"
+#include    "datastructures/stack.h"
 #include    "datastructures/stackmap.h"
 #include    "argparse/argparse.h"
 #include    "argparse/file_chck.h"
@@ -241,7 +241,8 @@
     const   size_t              f_nm_o      =   (source_nm->folder[fold_len - 1] == FOLD_SEP) ? 0 : 1;
 
     // setup filename
-    char                *const  f_nm_m      =   chckd_malloc(fold_len + f_name->len + f_nm_o, "source file name char*");
+    char                *const  f_nm_m      =   chckd_malloc( fold_len + f_name->len + f_nm_o + 1,
+                                                              "source file name char*"             );
     memcpy(f_nm_m, source_nm->folder, fold_len);
     if (f_nm_o != 0)                            f_nm_m[fold_len]    =   FOLD_SEP;
     memcpy(f_nm_m + fold_len + f_nm_o, f_name->str, f_name->len);
@@ -294,7 +295,7 @@
  * @param       srcs            sources
  * @return                      found source file; nullptr if no file was found
  */
-[[nodiscard]] src_f *get_source(       src_slice *const f_name,
+[[nodiscard]] src_f *get_source( const src_slice *const f_name,
                                        sources   *const srcs,
                                  const rprt_f    *const err_f   ) {             // source file getter
     cit10a_asrt(f_name != nullptr);

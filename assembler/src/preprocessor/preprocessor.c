@@ -6,15 +6,64 @@
 #include    <stddef.h>
 
 #include    "helpers/general.h"
+#include    "output/external.h"
 #include    "output/errors.h"
 #include    "output/messages.h"
+#include    "datastructures/stack.h"
 #include    "common/kwrds.h"
 #include    "common/hash_tables/pseudo.h"
 #include    "common/gen_parse.h"
+#include    "argparse/argparse.h"
 #include    "reader/reader.h"
+#include    "preprocessor/folder_parse.h"
 #include    "preprocessor/preprocessor.h"
 
+/*-PSEUDO-OP-ITEMS----------------------------------------------------------------------------------------------------*/
+
+static  stack           recursion_st;                                           // recursion stack
+
+/*-PSEUDO-OP-HELPERS--------------------------------------------------------------------------------------------------*/
+
+static void dump_recurs_st_(void) {                                             // dump the recursion stack
+    cit10a_msg( &(msg_info){ .type=msg_norm_t, .header="lookthrough stack", .report_f=nullptr },
+                "this is the order in which files were opened, up until %d", c_args.max_recurs  );
+    for (int i = 0; i < recursion_st.len; ++i) {
+        const   char    *const  f_name  =   *(char**)peek_stack(&recursion_st, i);
+        printf(CLR_DIM "    depth %d : \x1b[0m%s\n", i + 1, f_name);
+    }
+}
+
+[[nodiscard]] static src_f *get_incl(strptr *const sptr, sources *const srcs, rprt_f *const err_f) {
+    // get string value
+    for (; is_whitespace(*sptr->str); inc_strptr(sptr));
+    err_f->col  =   sptr->col;
+    bool                    has_err =   false;
+    const   src_slice       f_name  =   parse_str(err_f, sptr, &has_err);
+    if (has_err)                        return  nullptr;
+
+    // check line end
+    err_f->len  =   err_f->col - sptr->col;
+    inc_strptr(sptr);
+    if (check_ln_end(sptr, err_f))      return  nullptr;
+
+    // get source
+    src_f   *const      ret     =   get_source(&f_name, srcs, err_f);
+    if (ret == nullptr)             return nullptr;
+
+    // add to recursion stack
+    push_stack(&recursion_st, ret->f_name);
+    if (recursion_st.len >= c_args.max_recurs) {
+        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="maximum inclusion recursion reached", .report_f=err_f},
+                    "maximum file inclusion recursion reached"                                                     );
+        dump_recurs_st_();
+        cit10a_exit(PREPROCESS_ERRNO);
+    }
+    return  ret;
+}
+
 /*-PSEUDO-OP-VERIFIER-------------------------------------------------------------------------------------------------*/
+
+[[nodiscard]] static bool pseudoop_chck_(const src_f *source, sources *srcs);   // pseudo-op verifier
 
 /**
  * Verify all .none sections (for constants, helps w/ output alignment).
@@ -22,8 +71,9 @@
  * @param       source          source file
  * @return                      whether there was an invalid none section
  */
-[[nodiscard]] static bool verify_none_sctn_( rprt_f *const err_f,
-                                             strptr *const sptr   ) {           // .none verifier
+[[nodiscard]] static bool verify_none_sctn_( rprt_f  *const err_f,
+                                             sources *const srcs,
+                                             strptr  *const sptr   ) {          // .none verifier
     cit10a_asrt(err_f != nullptr);
     cit10a_asrt(sptr != nullptr);
 
@@ -63,8 +113,16 @@
                             "ignored .org directive"                                                 );
                 continue;
             case tok_none:  [[fallthrough]];
-            case tok_const: [[fallthrough]];
-            case tok_incl:  break;
+            case tok_const: break;
+            case tok_incl:
+                adj_strptr(sptr, n);
+                src_f   *const  new_f   =   get_incl(sptr, srcs, err_f);
+                if (new_f == nullptr) {
+                    ret =   true;
+                    break;
+                }
+                if (pseudoop_chck_(new_f, srcs))    ret =   true;
+                break;
             case pseudo_no_tok:
                 cit10a_msg( &(msg_info){ .type=msg_err_t, .header="unknown directive", .report_f=err_f },
                             "unknown pseudo-op directive"                                                 );
@@ -85,14 +143,16 @@
  * @param       source          source file
  * @return                      whether there was an invalid pseudo-op
  */
-[[nodiscard]] static bool pseudoop_chck_(const src_f *const source) {           // pseudo-op verifier
+[[nodiscard]] static bool pseudoop_chck_( const src_f   *const source,
+                                                sources *const srcs    ) {      // pseudo-op verifier
     cit10a_asrt(source != nullptr);
+    printf("now on file %s\n", source->f_name);
 
     // item setup
     bool    ret     =   false;
     rprt_f  err_f   =   { .file=source };
     strptr  sptr    =   { .str=src_f_getline(source, 0), .ln=0, .col=0 };
-    if (verify_none_sctn_(&err_f, &sptr))   ret =   true;
+    if (verify_none_sctn_(&err_f, srcs, &sptr))     ret =   true;
 
     while (!newln_strptr(&sptr, source)) {
         for (; is_whitespace(*sptr.str); inc_strptr(&sptr));
@@ -114,11 +174,19 @@
             case tok_data:  [[fallthrough]];
             case tok_code:  [[fallthrough]];
             case tok_org:   [[fallthrough]];
-            case tok_const: [[fallthrough]];
-            case tok_incl:  break;
+            case tok_const: break;
+            case tok_incl:
+                adj_strptr(&sptr, n);
+                src_f   *const  new_f   =   get_incl(&sptr, srcs, &err_f);
+                if (new_f == nullptr) {
+                    ret =   true;
+                    break;
+                }
+                if (pseudoop_chck_(new_f, srcs))    ret =   true;
+                break;
             case tok_none:
                 adj_strptr(&sptr, n);
-                if (verify_none_sctn_(&err_f, &sptr))   ret =   true;
+                if (verify_none_sctn_(&err_f, srcs, &sptr))   ret =   true;
                 break;
             case pseudo_no_tok:
                 cit10a_msg( &(msg_info){ .type=msg_err_t, .header="unknown directive", .report_f=&err_f },
@@ -142,6 +210,8 @@
  *
  * @param       source          source file
  */
-void preprocess(const src_f *const source) {                                    // preprocessor
-    if (pseudoop_chck_(source))     cit10a_exit(PREPROCESS_ERRNO);
+void preprocess(const src_f *const source, sources *const srcs) {               // preprocessor
+    recursion_st                        =   new_stack(sizeof(char**));
+    if (pseudoop_chck_(source, srcs))       cit10a_exit(PREPROCESS_ERRNO);
+    free_stack(&recursion_st);
 }

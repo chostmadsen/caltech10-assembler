@@ -44,7 +44,7 @@
  * @param       f_nm            file name
  * @return                      pointer to extension
  */
-[[nodiscard]] src_slice file_extension_slc(src_slice *const slc) {              // gets file extension
+[[nodiscard]] src_slice file_extension_slc(const src_slice *const slc) {        // gets file extension
     cit10a_asrt(slc != nullptr);
     const   char    *const  extnsn  =   file_extnsn_(slc->str, slc->len);
     if (extnsn == nullptr)              return  (src_slice){ .str=nullptr, .len=0 };

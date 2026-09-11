@@ -72,6 +72,7 @@ typedef struct {                                                                
             int         max_errs;
             int         max_warns;
             int         n_thrds;
+            int         max_recurs;
             bool        case_sens;
             bool        bin;
 
@@ -150,6 +151,12 @@ static  const   flag_itm        n_thrds_f   =   { .flag='t',            .desc="m
                                                   .min=0,               .max=0x7fff,
                                                   .dflt=0                                                             };
 
+static  const   flag_itm        max_recr_f  =   { .flag='r',            .desc="maximum file open recursion allowed",
+                                                  .type=flag_val_t,     .offset=offsetof(assemble_args, max_recurs),
+                                                  .exit=false,          .arg_itm="number",
+                                                  .min=1,               .max=0x7fff,
+                                                  .dflt=40                                                            };
+
 static  const   flag_itm        help_f      =   { .flag='h',            .desc="print assembler flag usage information",
                                                   .type=flag_bool_t,    .offset=offsetof(assemble_args, help),
                                                   .exit=true,           .arg_itm=nullptr                              };
@@ -175,7 +182,7 @@ static  const   flag_itm        output_f    =   { .flag='o',            .desc="a
 // flag item arrays
 static  const   flag_itm    *const  a_flg[] =   { &verbosity_f, &warnings_f,    &emit_f,        &max_errs_f,
                                                   &max_warns_f, &bin_f,         &case_sens_f,   &n_thrds_f,
-                                                  &help_f,      &version_f,
+                                                  &max_recr_f,  &help_f,        &version_f,
                                                   &inc_f,       &sourc_f,       &output_f                    };
 
 /*-GLOBAL-ASSEMBLE-ARGS-STRUCT----------------------------------------------------------------------------------------*/

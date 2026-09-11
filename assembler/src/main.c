@@ -48,13 +48,13 @@ int main(const int argc, const char *const *const argv) {                       
     if (c_args.verbosity >= INFO_PRNT)                          print_src_f_info(&source_f);
     if (c_args.verbosity >= DUMP_PRNT || c_args.emit.file)      print_src_f(&source_f);
 
-    // sources get (make sure inc is first; otherwise, change in folder_parse.c)
-    sources     srcs            =   get_sources(2 /* 2 sources following this */, &c_args.inc, &c_args.src);
+    // sources get (make sure inc is first; otherwise, change in folder_parse.c, and 2 for the 2 sources)
+    sources     srcs            =   get_sources(2, &c_args.inc, &c_args.src);
+    // preprocessor
+    preprocess(&source_f, &srcs);
     // sources output
     if (c_args.verbosity >= INFO_PRNT)                          print_sources_info(&srcs);
     if (c_args.verbosity >= DUMP_PRNT || c_args.emit.files)     print_sources(&srcs);
-    // preprocessor
-    preprocess(&source_f);
 
     // segment processor
     segmaps     smaps           =   segment(&source_f);
@@ -75,6 +75,7 @@ int main(const int argc, const char *const *const argv) {                       
 
     // end free
     free_src_f(&source_f);
+    free_sources(&srcs);
     free_segmap(&smaps);
     free_asm_ret(&asm_r);
 

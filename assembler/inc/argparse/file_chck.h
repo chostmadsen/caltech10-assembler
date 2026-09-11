@@ -24,6 +24,6 @@ constexpr   char        INC_EXTNS[][ECL]    =   { "inc" };                      
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
 
 [[nodiscard]] const char *file_extension(const char *f_nm);                     // gets file extension
-[[nodiscard]] src_slice file_extension_slc(src_slice *slc);                     // gets file extension
+[[nodiscard]] src_slice file_extension_slc(const src_slice *slc);               // gets file extension
 [[nodiscard]] bool verify_target(const char *target);                           // verify target extension
 [[nodiscard]] char *get_output(const char *target, const char *output);         // get output
