@@ -57,7 +57,7 @@ int main(const int argc, const char *const *const argv) {                       
     if (c_args.verbosity >= DUMP_PRNT || c_args.emit.files)     print_sources(&srcs);
 
     // segment processor
-    segmaps     smaps           =   segment(&source_f);
+    segmaps     smaps           =   segment(&source_f, &srcs);
     // segmenter output
     if (c_args.verbosity >= INFO_PRNT)                          print_segmap_info(&smaps);
     if (c_args.verbosity >= DUMP_PRNT || c_args.emit.table)     print_segmap(&smaps);

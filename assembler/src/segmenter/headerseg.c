@@ -165,13 +165,15 @@ add_code:
  * @param       sptr            string pointer
  * @param       org             code start location
  * @param       smap            header stackmap
+ * @param       srcs            sources
  * @param       err_f           error report file
  * @return                      whether an error occurred
  */
-[[nodiscard]] static bool codeseg_parse_( strptr    *const sptr,
-                                          int       *const org,
-                                          headermap *const hmap,
-                                          rprt_f    *const err_f  ) {           // code segment parse
+[[nodiscard]] static bool codeseg_parse_(       strptr    *const sptr,
+                                                int       *const org,
+                                                headermap *const hmap,
+                                          const sources   *const srcs,
+                                                rprt_f    *const err_f  ) {     // code segment parse
     cit10a_asrt(sptr != nullptr && hmap != nullptr);
     cit10a_asrt(org != nullptr && *org >= 0);
     cit10a_asrt(err_f != nullptr);
@@ -204,6 +206,11 @@ add_code:
                     if (n_org == -1)        return  true;
                     *org                =   n_org;
                     break;
+                case tok_incl:
+                    // new file
+                    const   src_f   *const  sourc_f =   get_inc_static(sptr, srcs);
+                    ret                             =   headerseg(org, sourc_f, srcs, hmap);
+                    break;
                 default:
                     // handled elsewhere (hopefully)
                     break;
@@ -220,16 +227,20 @@ add_code:
 /**
  * Creates the lookup table of headers, and finds the total number of statements.
  *
+ * @param       org             code start location
  * @param       source          source file
+ * @param       srcs            sources
  * @param       err             error flag
  * @return                      header stackmap
  */
-[[nodiscard]] bool headerseg(const src_f *const source, headermap *const hmap) {// header stackmap creation
+[[nodiscard]] bool headerseg(       int       *const org,
+                              const src_f     *const source,
+                              const sources   *const srcs,
+                                    headermap *const hmap    ) {                // header stackmap creation
     cit10a_asrt(source != nullptr);
     cit10a_asrt(hmap != nullptr);
 
     // initialize header items
-    int         org     =   0;
     bool        err     =   false;
 
     for (size_t i = 0; i < source->ln_num; ++i) {
@@ -239,15 +250,20 @@ add_code:
         if (*sptr.str != PSEUDO_STRT)   continue;
 
         // check for .code start
-        if (pseudo_hash_lu_adj(&sptr) != tok_code)          continue;
+        const   int pseudo_op   =   pseudo_hash_lu_adj(&sptr);
+        if (pseudo_op == tok_incl) {
+            const   src_f   *const  sourc_f =   get_inc_static(&sptr, srcs);
+            err                             =   headerseg(org, sourc_f, srcs, hmap);
+        }
+        if (pseudo_op != tok_code)  continue;
 
         // check .code line
         rprt_f  err_f   =   (rprt_f){ .file=source, .ln=sptr.ln, .col=sptr.col};
-        if (verify_sctn_strt(&sptr, &err_f))                err =   true;
-        if (sptr.str == nullptr)                            break;
+        if (verify_sctn_strt(&sptr, &err_f))                    err =   true;
+        if (sptr.str == nullptr)                                break;
 
         // parse .code
-        if (codeseg_parse_(&sptr, &org, hmap, &err_f))      err =   true;
+        if (codeseg_parse_(&sptr, org, hmap, srcs, &err_f))     err =   true;
         i               =   sptr.ln;
     }
 

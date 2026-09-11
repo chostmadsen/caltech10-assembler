@@ -42,4 +42,7 @@ typedef struct {                                                                
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
 
 void print_header_map(const headermap *hmap);                                   // header stackmap printer
-[[nodiscard]] bool headerseg(const src_f *source, headermap *hmap);             // header stackmap creation
+[[nodiscard]] bool headerseg(       int       *org,
+                              const src_f     *source,
+                              const sources   *srcs,
+                                    headermap *smap    );                       // data stackmap creation

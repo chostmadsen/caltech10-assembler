@@ -48,5 +48,7 @@ typedef struct {                                                                
 [[nodiscard]] src_f *get_source( const src_slice *f_name,
                                        sources   *srcs,
                                  const rprt_f    *err_f   );                    // source file getter
+[[nodiscard]] src_f *get_source_static( const src_slice *f_name,
+                                        const sources   *srcs    );             // static source file getter
 
 void free_sources(sources *srcs);                                               // frees source files

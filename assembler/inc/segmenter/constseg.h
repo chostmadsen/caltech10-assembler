@@ -9,6 +9,7 @@
 
 #include    "datastructures/stackmap.h"
 #include    "reader/reader.h"
+#include    "preprocessor/folder_parse.h"
 #include    "segmenter/segment.h"
 
 /*-CONSTANTS----------------------------------------------------------------------------------------------------------*/
@@ -25,4 +26,6 @@ typedef struct {                                                                
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
 
 void print_const_map(const stackmap *smap);                                     // constant stackmap printer
-[[nodiscard]] bool constseg(const src_f *source, stackmap *smap);               // constant stackmap creation
+[[nodiscard]] bool constseg( const src_f    *source,
+                             const sources  *srcs,
+                                   stackmap *smap    );                         // constant stackmap creation

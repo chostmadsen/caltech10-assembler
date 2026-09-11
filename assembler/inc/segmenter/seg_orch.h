@@ -10,6 +10,7 @@
 #include    "helpers/general.h"
 #include    "datastructures/stackmap.h"
 #include    "reader/reader.h"
+#include    "preprocessor/folder_parse.h"
 #include    "segmenter/headerseg.h"
 
 /*-CONSTANTS----------------------------------------------------------------------------------------------------------*/
@@ -26,7 +27,7 @@ typedef struct {
 
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
 
-[[nodiscard]] segmaps segment(const src_f *source);                             // segment orchestrator
+[[nodiscard]] segmaps segment(const src_f *source, const sources *const srcs);  // segment orchestrator
 
 void print_segmap(const segmaps *segmap);                                       // print segmap struct
 void print_segmap_info(const segmaps *segmap);                                  // print segmap struct info

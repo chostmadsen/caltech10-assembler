@@ -7,6 +7,7 @@
 
 #include    "helpers/general.h"
 #include    "output/messages.h"
+#include    "preprocessor/folder_parse.h"
 
 /*-CONSTANTS----------------------------------------------------------------------------------------------------------*/
 
@@ -45,6 +46,7 @@ constexpr   int         ESC_CHR_LEN         =   1;                              
 
 [[nodiscard]] bool check_ln_end(strptr *sptr, rprt_f *err_f);                   // line end checker
 [[nodiscard]] src_slice get_ident(strptr *sptr, rprt_f *err_f);                 // identifier parser
+[[nodiscard]] src_f *get_inc_static(strptr *sptr, const sources *srcs);         // static inclusion get
 
 [[nodiscard]] bool is_num_strt(char chr);                                       // number start checker
 [[nodiscard]] bool is_num_strt_ns(char chr);                                    // number start checker (non-signed)

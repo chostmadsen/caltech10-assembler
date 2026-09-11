@@ -126,7 +126,7 @@
     DIR        *dirs[strm->num];
     for (int i = 0; i < strm->num; ++i)     dirs[i] =   dir_scan_(strm->flag, strm->vals[i], &total);
     if (total == 0) {
-        for (int i = 0; i < strm->num; ++i) closedir(dirs[i]);
+        for (int i = 0; i < strm->num; ++i) if (dirs[i] != nullptr) closedir(dirs[i]);
         return  grp;
     }
     grp.empty               =   false;
@@ -293,6 +293,7 @@
  *
  * @param       f_name          file name
  * @param       srcs            sources
+ * @param       err_f           errpr report file
  * @return                      found source file; nullptr if no file was found
  */
 [[nodiscard]] src_f *get_source( const src_slice *const f_name,
@@ -320,6 +321,51 @@
     cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid file extension", .report_f=err_f},
                 "invalid file extension for code source"                                          );
     return  nullptr;
+}
+
+/**
+ * Gets a source for a static source lookup (after preprocessing).
+ * The file type extension will determine which source to look through.
+ *
+ * @param       f_name          file name
+ * @param       srcs            sources
+ * @return                      found source file; should never be nullptr
+ */
+[[nodiscard]] src_f *get_source_static( const src_slice *const f_name,
+                                        const sources   *const srcs    ) {      // static source file getter
+    cit10a_asrt(f_name != nullptr);
+    cit10a_asrt(srcs != nullptr);
+    
+    // get extension
+    const   src_slice   extnsn  =   file_extension_slc(f_name);
+
+    for (size_t i = 0; i < arr_s(INC_EXTNS); ++i) {
+        const   src_grp     grp =   srcs->items[0];
+        // check include extensions
+        const   src_slice   slc =   (src_slice){ .str=INC_EXTNS[i], .len=strlen(INC_EXTNS[i]) };
+        if (!srcslc_eq_lwr(&extnsn, &slc))  continue;
+        const   src_f_sm    *const  smap_itm    =   (c_args.case_sens) ? 
+                                                    (src_f_sm*)stackmap_get_k_lwr(&grp.open_files, f_name) :
+                                                    (src_f_sm*)stackmap_get_k_lwr_lwr(&grp.open_files, f_name);
+        cit10a_asrt(smap_itm != nullptr);
+        return  smap_itm->source;
+    }
+
+    for (size_t i = 0; i < arr_s(SRC_EXTNS); ++i) {
+        const   src_grp     grp =   srcs->items[1];
+        // check source extensions
+        const   src_slice   slc =   (src_slice){ .str=SRC_EXTNS[i], .len=strlen(SRC_EXTNS[i]) };
+        if (!srcslc_eq_lwr(&extnsn, &slc))  continue;
+        const   src_f_sm    *const  smap_itm    =   (c_args.case_sens) ? 
+                                                    (src_f_sm*)stackmap_get_k_lwr(&grp.open_files, f_name) :
+                                                    (src_f_sm*)stackmap_get_k_lwr_lwr(&grp.open_files, f_name);
+        cit10a_asrt(smap_itm != nullptr);
+        return  smap_itm->source;
+    }
+
+    // invalid extension
+    cit10a_asrt(!"invalid file grab after preprocessing");
+    cit10a_exit(INTRNL_ERRNO);
 }
 
 /*-FILE-GATHERER-CLEANER----------------------------------------------------------------------------------------------*/
@@ -357,14 +403,14 @@ void free_sources(sources *const srcs) {                                        
         // free names
         stackmap    f_smap  =   srcs->items[i].files;
         for (size_t j = 0; j < f_smap.buckets; ++j) {
-            for (int k = 0; k < f_smap.heads[k].len; ++k)       free_fname_itm_(peek_stack(&f_smap.heads[k], k));
+            for (int k = 0; k < f_smap.heads[j].len; ++k)       free_fname_itm_(peek_stack(&f_smap.heads[j], k));
         }
         free_stackmap(&f_smap);
 
         // free files
         stackmap    c_smap  =   srcs->items[i].open_files;
         for (size_t j = 0; j < c_smap.buckets; ++j) {
-            for (int k = 0; k < c_smap.heads[k].len; ++k)       free_src_f_sm_(peek_stack(&c_smap.heads[k], k));
+            for (int k = 0; k < c_smap.heads[j].len; ++k)       free_src_f_sm_(peek_stack(&c_smap.heads[j], k));
         }
         free_stackmap(&c_smap);
     }

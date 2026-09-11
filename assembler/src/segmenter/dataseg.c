@@ -16,6 +16,7 @@
 #include    "common/kwrds.h"
 #include    "common/gen_parse.h"
 #include    "argparse/argparse.h"
+#include    "preprocessor/folder_parse.h"
 #include    "reader/reader.h"
 #include    "segmenter/segment.h"
 #include    "segmenter/dataseg.h"
@@ -209,13 +210,15 @@ static void data_chck_dup_( const data_var *const d_var,
  * @param       sptr            string pointer
  * @param       org             data start location
  * @param       smap            data stackmap
+ * @param       srcs            sources
  * @param       err_f           error report file
  * @return                      whether an error occurred
  */
-[[nodiscard]] static bool dataseg_parse_( strptr   *const sptr,
-                                          int      *const org,
-                                          stackmap *const smap,
-                                          rprt_f   *const err_f ) {             // data segment parse
+[[nodiscard]] static bool dataseg_parse_(       strptr   *const sptr,
+                                                int      *const org,
+                                                stackmap *const smap,
+                                          const sources  *const srcs,
+                                                rprt_f   *const err_f ) {       // data segment parse
     cit10a_asrt(sptr != nullptr && smap != nullptr);
     cit10a_asrt(org != nullptr && *org >= 0);
     cit10a_asrt(err_f != nullptr);
@@ -248,6 +251,11 @@ static void data_chck_dup_( const data_var *const d_var,
                     if (n_org == -1)        return  true;
                     *org                =   n_org;
                     break;
+                case tok_incl:
+                    // new file
+                    const   src_f   *const  sourc_f =   get_inc_static(sptr, srcs);
+                    ret                             =   dataseg(org, sourc_f, srcs, smap);
+                    break;
                 default:
                     // handled elsewhere (hopefully)
                     break;
@@ -264,17 +272,21 @@ static void data_chck_dup_( const data_var *const d_var,
 /**
  * Creates the lookup table of data segment variables.
  *
+ * @param       org             data start location
  * @param       source          source file
+ * @param       srcs            sources
  * @param       err             error flag
  * @return                      variable stackmap
  */
-[[nodiscard]] bool dataseg(const src_f *const source, stackmap *const smap) {   // data stackmap creation
+[[nodiscard]] bool dataseg(       int      *const org,
+                            const src_f    *const source,
+                            const sources  *const srcs,
+                                  stackmap *const smap    ) {                   // data stackmap creation
     cit10a_asrt(source != nullptr);
     cit10a_asrt(smap != nullptr);
 
     // initialize data items
     bool        err     =   false;
-    int         org     =   0;
 
     for (size_t i = 0; i < source->ln_num; ++i) {
         // skip over non pseudo-op items
@@ -283,15 +295,20 @@ static void data_chck_dup_( const data_var *const d_var,
         if (*sptr.str != PSEUDO_STRT)   continue;
 
         // check for .data start
-        if (pseudo_hash_lu_adj(&sptr) != tok_data)          continue;
+        const   int pseudo_op   =   pseudo_hash_lu_adj(&sptr);
+        if (pseudo_op == tok_incl) {
+            const   src_f   *const  sourc_f =   get_inc_static(&sptr, srcs);
+            err                             =   dataseg(org, sourc_f, srcs, smap);
+        }
+        if (pseudo_op != tok_data)  continue;
 
         // check .data line
         rprt_f  err_f   =   (rprt_f){ .file=source, .ln=sptr.ln, .col=sptr.col};
-        if (verify_sctn_strt(&sptr, &err_f))                err =   true;
+        if (verify_sctn_strt(&sptr, &err_f))                    err =   true;
         if (sptr.str == nullptr)    break;
 
         // parse .data
-        if (dataseg_parse_(&sptr, &org, smap, &err_f))      err =   true;
+        if (dataseg_parse_(&sptr, org, smap, srcs, &err_f))     err =   true;
         i               =   sptr.ln;
     }
 

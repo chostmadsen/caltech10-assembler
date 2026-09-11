@@ -12,6 +12,7 @@
 #include    "datastructures/stackmap.h"
 #include    "common/kwrds.h"
 #include    "common/gen_parse.h"
+#include    "preprocessor/folder_parse.h"
 #include    "reader/reader.h"
 #include    "segmenter/segment.h"
 #include    "segmenter/constseg.h"
@@ -83,10 +84,13 @@ void print_const_map(const stackmap *const smap) {                              
  * Creates the lookup table of constants (only to be used in non-pseudo-op items).
  *
  * @param       source          source file
+ * @param       srcs            sources
  * @param       err             error flag
  * @return                      constant stackmap
  */
-[[nodiscard]] bool constseg(const src_f *const source, stackmap *const smap) {  // constant stackmap creation
+[[nodiscard]] bool constseg( const src_f    *const source,
+                             const sources  *const srcs,
+                                   stackmap *const smap    ) {                  // constant stackmap creation
     cit10a_asrt(source != nullptr);
     cit10a_asrt(smap != nullptr);
 
@@ -99,8 +103,13 @@ void print_const_map(const stackmap *const smap) {                              
         for (; is_whitespace(*sptr.str); inc_strptr(&sptr));
         if (*sptr.str != PSEUDO_STRT)   continue;
 
-        // check for .const
-        if (pseudo_hash_lu_adj(&sptr) != tok_const)         continue;
+        // check for .const and .include
+        const   int pseudo_op   =   pseudo_hash_lu_adj(&sptr);
+        if (pseudo_op == tok_incl) {
+            const   src_f   *const  sourc_f =   get_inc_static(&sptr, srcs);
+            err                             =   constseg(sourc_f, srcs, smap);
+        }
+        if (pseudo_op != tok_const)     continue;
 
         // add const value
         if (const_chck_add_(&sptr, smap, &(rprt_f){ .file=source, .ln=i, .col=sptr.col }))      err =   true;

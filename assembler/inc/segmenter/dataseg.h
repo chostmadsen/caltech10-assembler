@@ -31,4 +31,7 @@ typedef struct {                                                                
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
 
 void print_data_map(const stackmap *smap);                                      // data stackmap printer
-[[nodiscard]] bool dataseg(const src_f *source, stackmap *smap);                // data stackmap creation
+[[nodiscard]] bool dataseg(       int      *org,
+                            const src_f    *source,
+                            const sources  *srcs,
+                                  stackmap *smap    );                          // data stackmap creation

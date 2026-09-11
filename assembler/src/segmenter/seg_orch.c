@@ -12,6 +12,7 @@
 #include    "output/errors.h"
 #include    "argparse/argparse.h"
 #include    "reader/reader.h"
+#include    "preprocessor/folder_parse.h"
 #include    "segmenter/constseg.h"
 #include    "segmenter/dataseg.h"
 #include    "segmenter/headerseg.h"
@@ -25,6 +26,7 @@ static      atomic_bool     seg_end_flg;                                        
 
 typedef struct {                                                                // constseg call args
     const   src_f       *const  source;
+    const   sources     *const  srcs;
             stackmap    *const  smap;
 } cseg_args;
 /**
@@ -37,7 +39,7 @@ static void *constseg_call(void *const cseg_v) {                                
     cit10a_asrt(cseg_v != nullptr);
 
     const   cseg_args   *const  cseg        =   (cseg_args*)cseg_v;
-    if (constseg(cseg->source, cseg->smap) && !atomic_load_explicit(&seg_end_flg, memory_order_relaxed)) {
+    if (constseg(cseg->source, cseg->srcs, cseg->smap)) {
         atomic_store_explicit(&seg_end_flg, true, memory_order_relaxed);
     }
     return  nullptr;
@@ -45,6 +47,7 @@ static void *constseg_call(void *const cseg_v) {                                
 
 typedef struct {                                                                // dataseg call args
     const   src_f       *const  source;
+    const   sources     *const  srcs;
             stackmap    *const  smap;
 } dseg_args;
 /**
@@ -57,7 +60,8 @@ static void *dataseg_call(void *const dseg_v) {                                 
     cit10a_asrt(dseg_v != nullptr);
 
     const   dseg_args   *const  dseg        =   (dseg_args*)dseg_v;
-    if (dataseg(dseg->source, dseg->smap) && !atomic_load_explicit(&seg_end_flg, memory_order_relaxed)) {
+    int                         org         =   0;
+    if (dataseg(&org, dseg->source, dseg->srcs, dseg->smap)) {
         atomic_store_explicit(&seg_end_flg, true, memory_order_relaxed);
     }
     return  nullptr;
@@ -65,6 +69,7 @@ static void *dataseg_call(void *const dseg_v) {                                 
 
 typedef struct {                                                                // headerseg call args
     const   src_f       *const  source;
+    const   sources     *const  srcs;
             headermap   *const  hmap;
 } hseg_args;
 /**
@@ -77,7 +82,8 @@ static void *headerseg_call(void *const hseg_v) {                               
     cit10a_asrt(hseg_v != nullptr);
 
     const   hseg_args   *const  hseg        =   (hseg_args*)hseg_v;
-    if (headerseg(hseg->source, hseg->hmap) && !atomic_load_explicit(&seg_end_flg, memory_order_relaxed)) {
+    int                         org         =   0;
+    if (headerseg(&org, hseg->source, hseg->srcs, hseg->hmap)) {
         atomic_store_explicit(&seg_end_flg, true, memory_order_relaxed);
     }
     return  nullptr;
@@ -89,9 +95,11 @@ static void *headerseg_call(void *const hseg_v) {                               
  * Segmenter orchestrator. Attempts to split across threads; otherwise, inlines calls.
  *
  * @param       source          source file
+ * @param       srcs            sources
  * @return                      segmaps
  */
-[[nodiscard]] segmaps segment(const src_f *const source) {                      // segment orchestrator
+[[nodiscard]] segmaps segment( const src_f   *const source,
+                               const sources *const srcs    ) {                 // segment orchestrator
     cit10a_asrt(source != nullptr);
 
     atomic_store_explicit(&seg_end_flg, false, memory_order_relaxed);
@@ -103,8 +111,9 @@ static void *headerseg_call(void *const hseg_v) {                               
                                               .smap=new_stackmap_aln(HEADER_BUCKETS, sizeof(header_var)) } };
 
     // call arg setup
-    hseg_args   hseg    =   { .source=source, .hmap=&segmap.headmap };
-    dseg_args   dseg    =   { .source=source, .smap=&segmap.datamap };
+    hseg_args   hseg    =   { .source=source, .hmap=&segmap.headmap,  .srcs=srcs };
+    dseg_args   dseg    =   { .source=source, .smap=&segmap.datamap,  .srcs=srcs };
+    cseg_args   cseg    =   { .source=source, .smap=&segmap.constmap, .srcs=srcs };
 
     // setup thread items
     pthread_t   threads[SEGMENT_NUM - 1];
@@ -131,7 +140,6 @@ static void *headerseg_call(void *const hseg_v) {                               
     }
 
     // inlined cseg call
-    cseg_args   cseg    =   { .source=source, .smap=&segmap.constmap };
     constseg_call(&cseg);
 
     // thread cleanup

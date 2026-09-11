@@ -11,6 +11,7 @@
 #include    "output/messages.h"
 #include    "common/kwrds.h"
 #include    "common/gen_parse.h"
+#include    "preprocessor/folder_parse.h"
 
 /*-LINE-VERIFIERS-----------------------------------------------------------------------------------------------------*/
 
@@ -60,6 +61,24 @@
     // get and return identifier
     for (; is_alphanum(*sptr->str); inc_strptr(sptr), ++slc.len);
     return  slc;
+}
+
+/**
+ * Gets an inclusion file when all files to be opened have been opened.
+ *
+ * @param       sptr            string pointer
+ * @param       srcs            sources
+ * @return                      source file
+ */
+[[nodiscard]] src_f *get_inc_static(       strptr  *const sptr,
+                                     const sources *const srcs  ) {             // static inclusion get
+    // get string value
+    for (; is_whitespace(*sptr->str); inc_strptr(sptr));
+    const   src_slice       f_name  =   parse_str(nullptr, sptr, nullptr);
+
+    // get source
+    src_f   *const      ret     =   get_source_static(&f_name, srcs);
+    return  ret;
 }
 
 /*-NUMBER-PARSERS-----------------------------------------------------------------------------------------------------*/
@@ -154,13 +173,16 @@
 [[nodiscard]] src_slice parse_str( rprt_f  *const err_f,
                                    strptr  *const text,
                                    bool    *const err     ) {                   // string value parser
+    cit10a_asrt(text != nullptr);
+
     // error setup
     const       msg_info    str_err =   { .type=msg_err_t,  .header="string error",     .report_f=err_f };
     const       msg_info    str_wrn =   { .type=msg_warn_t, .header="escape character", .report_f=err_f };
 
-    err_f->col  =   text->col;
     if (*text->str != STR_CHR) {
         // invalid string
+        cit10a_asrt(err_f != nullptr);
+        err_f->col  =   text->col;
         err_f->len  =   1;
         cit10a_msg(&str_err, "invalid string start");
         if (err != nullptr)     *err    =   true;
@@ -173,6 +195,7 @@
     size_t      v_len   =   text->col;
     for (;; inc_strptr(text)) {
         if (*text->str == '\0') {
+            cit10a_asrt(err_f != nullptr);
             err_f->col  =   text->col;
             err_f->len  =   1;
             cit10a_msg(&str_err, "unterminated string");
@@ -192,7 +215,7 @@
         is_val_esc          =   (esc_chr_val_(text->str[1]) != -1);
 
         // check escape character
-        if (!is_val_esc) {
+        if (!is_val_esc && err_f != nullptr) {
             // report error
             err_f->len  =   STR_CHR_LEN + ESC_CHR_LEN;
             cit10a_msg(&str_wrn, "invalid escape character");
