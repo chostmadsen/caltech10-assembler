@@ -203,7 +203,9 @@ void hash_full( const hash_itm *const itm_arr,
 
     // header
     fprintf(fp, "/**\n * %s\n", file);
-    fprintf(fp, " * AUTO-GENERATED - DO NOT MANUALLY MODIFY; see perfhash/README.md for usage.\n */\n\n");
+    fprintf( fp,
+             " * AUTO-GENERATED (seed %" PRIu64 ") - DO NOT MANUALLY MODIFY; "
+             "see perfhash/README.md for usage.\n */\n\n", fn.seed             );
     fprintf(fp, "#ifndef %s_HASH_TABLE_\n", name_upper);
     fprintf(fp, "#define %s_HASH_TABLE_\n\n", name_upper);
 

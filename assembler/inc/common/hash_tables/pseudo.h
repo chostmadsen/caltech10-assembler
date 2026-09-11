@@ -1,6 +1,6 @@
 /**
  * inc/common/hash_tables/pseudo.h
- * AUTO-GENERATED - DO NOT MANUALLY MODIFY; see perfhash/README.md for usage.
+ * AUTO-GENERATED (seed 1) - DO NOT MANUALLY MODIFY; see perfhash/README.md for usage.
  */
 
 #ifndef PSEUDO_HASH_TABLE_

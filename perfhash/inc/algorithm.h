@@ -30,6 +30,7 @@ typedef struct {                                                                
 typedef struct {                                                                // hash function constant struct
     const   uint64_t        offset;
     const   size_t          buckets;
+    const   uint64_t        seed;
 } hash_fn;
 
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/

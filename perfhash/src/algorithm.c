@@ -278,6 +278,7 @@ trial_end:
 
 static      atomic_bool         terminate   =   false;                          // threaded termination flag
 static      uint64_t            offset_t    =   0x0;                            // final offset
+static      uint64_t            seed_t      =   0x0;                            // final seed
 
 typedef struct {                                                                // multithreaded trial data
     const   str_map            *map;
@@ -351,6 +352,7 @@ typedef struct {                                                                
     if (!atomic_exchange_explicit(&terminate, true, memory_order_relaxed)) {
         // NOTE : modify offset_t if not terminating here
         offset_t    =   offset;
+        seed_t      =   seed;
         out_str     =   "success";
     }
 
@@ -428,7 +430,7 @@ static hash_fn alg_orch_( const hash_grp *const group,
     free(data);
     free(threads);
     fputc('\n', stdout);
-    return  (hash_fn){ .offset=offset_t, .buckets=buckets };
+    return  (hash_fn){ .offset=offset_t, .buckets=buckets, .seed=seed_t };
 }
 
 #endif  /* NTHREAD */
@@ -471,6 +473,6 @@ static hash_fn alg_orch_( const hash_grp *const group,
     // end
     free_str_map_(&map);
     fputc('\n', stdout);
-    return  (hash_fn){ .offset=offs, .buckets=buckets };
+    return  (hash_fn){ .offset=offs, .buckets=buckets, .seed=seed - 1 };
 #endif  /* NTHREAD */
 }
