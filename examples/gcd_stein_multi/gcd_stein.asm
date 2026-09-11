@@ -1,7 +1,8 @@
 ;-gcd_stein.asm--------------------------------------------------------------------------------------------------------;
-;~  description         Caltech10 assembler GCD algorithm assembler testing.
+;~  description         Caltech10 assembler GCD algorithm assembler testing (multi-file test).
 
 ;~  history             Christian Host-Madsen       2026.09.06      creation
+;~                      Christian Host-Madsen       2026.09.11      multi-file split
 
 ;*  global fns          gcd_stein                   Stein's GCD algorithm and program entry.
 ;*  local fns           none
@@ -11,8 +12,10 @@
 ;*                      b_l                         gcd number b [l]
 ;*                      b_h                         gcd number b [h]
 
-; constants
-.const      LOW_BIT_MASK            0x01                            ; low bit check mask
+
+;-CONSTANT-INCLUSIONS--------------------------------------------------------------------------------------------------;
+.include    "gcd_stein_consts.inc"
+
 
 ;-CODE-SEGMENT---------------------------------------------------------------------------------------------------------;
 .code
@@ -43,7 +46,7 @@
 ;*  last modified       Christian Host-Madsen       2026.09.06      creation
 
 ;*  changed registers   A, X
-;*  stack depth         0
+;*  stack depth         2
 gcd_stein:
     ldd     a_l                                                     ; check for nonzero a
     or      a_h
@@ -53,6 +56,7 @@ gcd_stein:
     ret_b:      ldd     b_h                                         ; a is zero, return b
                 tax
                 ldd     b_l
+                call    gcd_stein_out                               ; output gcd
                 rts
                 nop                                                 ; [*] branch delay
 
@@ -64,10 +68,11 @@ gcd_stein:
     ret_a:      ldd     b_h                                         ; a is zero, return b
                 tax
                 ldd     b_l
+                call    gcd_stein_out                               ; output gcd
                 rts
                 nop                                                 ; [*] branch delay
 
-    set_k:      ldi     0x00                                        ; X to initialize k
+    set_k:      ldi     TST_LDI                                     ; X to initialize k
                 tax
                 ldd     a_l                                         ; [*] a_l preload
 
@@ -144,13 +149,14 @@ gcd_stein:
                 jmp     find_gcd
 
     k_load:     ldd     k                                           ; check if k is zero
-                tsti    0x00
+                tsti    TST_LDI
                 jnz     get_gcd                                     ; [*] aka k_nz
               ; jz      k_zero
 
     k_zero:     ldd     b_h                                         ; k is zero, return b
                 tax
                 ldd     b_l
+                call    gcd_stein_out                               ; output gcd
                 rts
                 nop
     
@@ -170,6 +176,7 @@ gcd_stein:
     got_gcd:    ldd     b_h                                         ; return gcd (b)
                 tax
                 ldd     b_l
+                call    gcd_stein_out                               ; output gcd
                 rts
                 nop
 
@@ -187,3 +194,8 @@ b_h                 db          ?                                   ; number b [
 
 ; gcd local variables
 k                   db          ?                                   ; number k
+
+
+.none       ; not necessary, just for the following comment to be aligned properly
+;-CODE-INCLUSIONS------------------------------------------------------------------------------------------------------;
+.include    "gcd_stein_out.asm"

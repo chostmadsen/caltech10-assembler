@@ -61,8 +61,6 @@
  */
 [[nodiscard]] char *get_output( const char *const target,
                                 const char *const output  ) {                   // get output
-    cit10a_asrt(target != nullptr);
-
     if (output != nullptr) {
         // keep output formatting consistant
         const   size_t  n_itms  =   strlen(output) + 1;
@@ -71,6 +69,7 @@
         return  outp;
     }
 
+    cit10a_asrt(target != nullptr);
     // create output
     const   int     f_targ_len  =   file_extension(target) - target - 1;
     const   int     f_targ_tot  =   f_targ_len + sizeof(OBJ_EXTENSION);

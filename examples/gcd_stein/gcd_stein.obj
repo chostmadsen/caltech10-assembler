@@ -3,13 +3,13 @@
 
 ;~  history             Christian Host-Madsen       2026.09.06      creation
 
-;*  global fns          gcd_stein                   Stein's GCD algorithm and program entry
+;*  global fns          gcd_stein                   Stein's GCD algorithm and program entry.
 ;*  local fns           none
 
-;*  global vars         a_l                         Gcd number a [l]
-;*                      a_h                         Gcd number a [h]
-;*                      b_l                         Gcd number b [l]
-;*                      b_h                         Gcd number b [h]
+;*  global vars         a_l                         gcd number a [l]
+;*                      a_h                         gcd number a [h]
+;*                      b_l                         gcd number b [l]
+;*                      b_h                         gcd number b [h]
 
 ; constants
 ;;  .const      LOW_BIT_MASK            0x01                            ; low bit check mask
