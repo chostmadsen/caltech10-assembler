@@ -79,7 +79,8 @@ static void *asm_thread_(void *const asm_thrd_args_v) {                         
     ret.ln_asms             =   chckd_aln_alloc(ret.num_segs * sizeof(ln_asm), "assemble ln_asm*");
 
     // calculate required threads
-    const   int     n_segs  =   ret.num_segs / (int)ASMS_PER_LN;
+    int             n_segs  =   ret.num_segs / (int)ASMS_PER_LN;
+    if (n_segs == 0)            n_segs  =   1;
     const   int     n_thrds =   (n_segs >= c_args.n_thrds) ? c_args.n_thrds : n_segs;
     int             n_lns   =   ret.num_segs / n_thrds;
     n_lns                   =   (n_lns + (int)ASMS_PER_LN - 1) & ~((int)ASMS_PER_LN - 1);

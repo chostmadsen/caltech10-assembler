@@ -202,7 +202,8 @@
 
                 // push file source
                 smap_clsn_t         clsn_t;
-                if   (c_args.case_sens)         clsn_t  =   stackmap_add(&grp.files, &sm_itm);
+                if   (c_args.case_sens)         clsn_t  =   stackmap_add(&grp.files, &sm_itm) ? smap_no_clsn_t 
+                                                                                              : smap_full_clsn_t;
                 else                            clsn_t  =   stackmap_add_lwr(&grp.files, &sm_itm);
                 if (clsn_t == smap_no_clsn_t)   break;
 
@@ -289,7 +290,8 @@
     const   src_f_sm            smap_new    =   { .head={ .key=*f_name, .hash=hash_fnv1a_slc_lwr(f_name) },
                                                   .source=source                                            };
     [[maybe_unused]]    smap_clsn_t clsn_t;
-    if   (c_args.case_sens)         clsn_t  =   stackmap_add(&grp->open_files, &smap_new);
+    if   (c_args.case_sens)         clsn_t  =   stackmap_add(&grp->open_files, &smap_new) ? smap_no_clsn_t
+                                                                                          : smap_full_clsn_t;
     else                            clsn_t  =   stackmap_add_lwr(&grp->open_files, &smap_new);
     cit10a_asrt(clsn_t == smap_no_clsn_t);
 
@@ -423,6 +425,7 @@ static void free_fname_itm_(fname_itm *const itm) {                             
 static void free_src_f_sm_(src_f_sm *const itm) {                               // frees source file item
     cit10a_asrt(itm != nullptr);
     free_src_f(itm->source);
+    free(itm->source);
 }
 
 /**
@@ -449,4 +452,5 @@ void free_sources(sources *const srcs) {                                        
         }
         free_stackmap(&c_smap);
     }
+    free(srcs->items);
 }

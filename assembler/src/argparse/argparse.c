@@ -428,7 +428,7 @@ static void process_strm_f_( const flag_itm *const         flag,
         cit10a_msg(&(msg_info){ .type=msg_norm_t, .header="use the -h flag for assembler flag usage" }, nullptr);
         cit10a_exit(ARGPARSE_ERRNO);
     }
-    if (c_args.output != nullptr)       c_args.output   =   get_output(nullptr, c_args.output);
+    if (end_comp && c_args.output != nullptr)   c_args.output   =   get_output(nullptr, c_args.output);
     c_arg_s     =   true;
     return  end_comp;
 }

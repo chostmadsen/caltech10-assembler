@@ -277,11 +277,14 @@
     }
 
     if (*sptr->str == HEX_CHR_ALT)  inc_strptr(sptr);
+    const   char    *const  n_strt  =   sptr->str;
     for (; is_alphanum(*sptr->str); inc_strptr(sptr), ++slice.len);
 
     // single number
     if (slice.len == 1) {
-        if ('0' <= *slice.str && *slice.str <= '9')     return  (int)strtol(slice.str, nullptr, 10);
+        char           *end_chr;
+        const   int     ret         =   (int)strtol(n_strt, &end_chr, (*slice.str == HEX_CHR_ALT) ? 16 : 10);
+        if (end_chr == n_strt + 1)      return  ret;
         err_f->ln   =   sptr->ln;
         err_f->col  =   start + 1;
         err_f->len  =   1;

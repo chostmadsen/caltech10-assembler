@@ -209,17 +209,9 @@ void llist_rm_n(llist *const list, size_t n) {                                  
 
     // node removal
     --list->size;
-    if (prev == nullptr) {
-        // head update
-        list->head  =   curr->next;
-    } else if (curr == nullptr) {
-        // tail update
-        list->tail  =   nullptr;
-        prev->next  =   nullptr;
-    } else {
-        // arbitrary
-        prev->next  =   curr->next;
-    }
+    if   (prev == nullptr)          list->head  =   curr->next;     // head update
+    else                            prev->next  =   curr->next;     // arbritrary
+    if   (curr->next == nullptr)    list->tail  =   prev;           // tail update
     free_ll_node_(curr);
 }
 
@@ -249,17 +241,9 @@ void llist_rm_h(       llist     *const list,
 
     // node removal
     --list->size;
-    if (prev == nullptr) {
-        // head update
-        list->head  =   curr->next;
-    } else if (curr == nullptr) {
-        // tail update
-        list->tail  =   nullptr;
-        prev->next  =   nullptr;
-    } else {
-        // arbitrary
-        prev->next  =   curr->next;
-    }
+    if   (prev == nullptr)          list->head  =   curr->next;     // head update
+    else                            prev->next  =   curr->next;     // arbritrary
+    if   (curr->next == nullptr)    list->tail  =   prev;           // tail update
     free_ll_node_(curr);
 }
 

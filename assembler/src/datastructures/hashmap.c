@@ -68,7 +68,7 @@ static void realloc_buckets_(hashmap *const hmap) {                             
  */
 [[nodiscard]] hashmap new_hashmap(const size_t buckets) {                       // hashmap creation on stack
     // hashmap internal setup
-    return  (hashmap){ .heads=hashmap_alloc_buckets_(buckets), .buckets=DFLT_BUCKETS, .elements=0 };
+    return  (hashmap){ .heads=hashmap_alloc_buckets_(buckets), .buckets=buckets, .elements=0 };
 }
 
 /**
