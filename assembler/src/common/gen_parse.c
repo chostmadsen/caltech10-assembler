@@ -208,8 +208,9 @@
     }
 
     // parse number
-    char    n_str[MAX_PARSE + 1]        =   { '\0' };
-    size_t  s_idx                       =   0;
+    char                n_str[MAX_PARSE + 1]    =   { '\0' };
+    size_t              s_idx                   =   0;
+    const   msg_info    num_err                 =   { .type=msg_err_t, .header="invalid number", .report_f=err_f };
     for (size_t i = 0; str[i] == NUM_SEP || is_alphanum(str[i]); ++i) {
         // skip number seperators
         if (str[i] != NUM_SEP)  n_str[s_idx++]  =   str[i];
@@ -217,8 +218,7 @@
             err_f->ln   =   sptr->ln;
             err_f->col  =   start + offs;
             err_f->len  =   i;
-            cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid number", .report_f=err_f },
-                        "number too large to parse (maximally %d-bit)", MAX_PARSE                  );
+            cit10a_msg(&num_err, "number too large to parse (maximally %d-bit)", MAX_PARSE);
             return  -1;
         }
     }
@@ -226,8 +226,7 @@
         err_f->ln   =   sptr->ln;
         err_f->col  =   start + offs;
         err_f->len  =   1;
-        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid number", .report_f=err_f },
-                    "missing number", MAX_PARSE                                                );
+        cit10a_msg(&num_err, "missing number", MAX_PARSE);
         return  -1;
     }
 
@@ -239,7 +238,7 @@
         err_f->ln   =   sptr->ln;
         err_f->col  =   start;
         err_f->len  =   sptr->col - start;
-        cit10a_msg(&(msg_info){ .type=msg_err_t, .header="number parse error", .report_f=err_f}, "invalid number");
+        cit10a_msg(&num_err, "number parse fail");
         ret         =   -1;
     }
     return  ret;
@@ -263,6 +262,7 @@
     if (neg || pos)                 inc_strptr(sptr);
 
     // get value
+    err_f->ln       =   sptr->ln;
     if (!is_num_strt_ns(*sptr->str)) {
         err_f->col  =   sptr->col;
         err_f->len  =   1;
@@ -304,6 +304,7 @@
     cit10a_asrt(sptr != nullptr && sptr->str != nullptr);
     cit10a_asrt(err_f != nullptr);
 
+    err_f->ln       =   sptr->ln;
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
 
     // get value
@@ -321,7 +322,6 @@
     if (const_v == -1)          return  -1;
 
     if (const_v > (int)MAX_ADRS) {
-        err_f->ln                   =   sptr->ln;
         err_f->col                  =   p_strt;
         err_f->len                  =   sptr->col - p_strt;
         cit10a_msg( &(msg_info){ .type=msg_err_t, .header="number overflow", .report_f=err_f },

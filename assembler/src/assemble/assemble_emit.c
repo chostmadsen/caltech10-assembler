@@ -9,6 +9,7 @@
 #include    "helpers/general.h"
 #include    "output/external.h"
 #include    "output/errors.h"
+#include    "output/messages.h"
 #include    "datastructures/stackmap.h"
 #include    "common/hash_tables/pseudo.h"
 #include    "common/kwrds.h"
@@ -189,7 +190,7 @@ static void asm_emit_instr_(       FILE *const fp,
             case tok_code:
                 fprintf(fp, CMMT_STRT "%s\n", ln);
                 break;
-            case tok_incl:  cit10a_asrt(!"invalid for now");
+            case tok_incl:  cit10a_asrt(!".include invalid for now");
             default:        return  i;
         } continue; }
 
@@ -236,9 +237,9 @@ void emit_asm( const char    *const f_name, const src_f   *const source,
     FILE   *const           fp      =   fopen(f_name, "wb");
     if (fp == nullptr) {
         const   rprt_f      err_f   =   { .file=&(src_f){ .f_name=f_name } };
-        const   msg_info    f_err   =   { .type=msg_err_t, .header="file error", .report_f=&err_f };
         // invalid file
-        cit10a_msg(&f_err, "couldn't open / read output file");
+        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="file error", .report_f=&err_f },
+                    "couldn't open / read output file"                                      );
         cit10a_exit(OUTPUT_ERRNO);
     }
 

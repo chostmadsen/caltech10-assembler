@@ -23,6 +23,7 @@
  * Global compilation arguments; every stage references this, so global is preferred.
  */
 assemble_args   c_args      =   { 0 };
+static  bool    c_arg_s     =   false;
 
 /*-FLAG-USAGE-HELPER-FUNCTIONS----------------------------------------------------------------------------------------*/
 
@@ -321,24 +322,6 @@ static void process_strm_f_( const flag_itm *const         flag,
 /*-ARGUMENT-PARSER----------------------------------------------------------------------------------------------------*/
 
 /**
- * Resets assembler flags at `c_args`.
- */
-void reset_args(void) {                                                         // reset assembler arguments
-    memset(&c_args, 0, sizeof(c_args));
-
-    // special field reset
-    for (size_t i = 0; i < arr_s(a_flg); ++i) {
-        const   flag_itm    *const  flag    =   a_flg[i];
-
-        // set default value if applicable
-        if (flag->type == flag_val_t) {
-            int     *const  field   =   (int*)((char*)&c_args + flag->offset);
-            *field                  =   flag->dflt;
-        }
-    }
-}
-
-/**
  * Compilation flag parser. Saves arguments to global variable `c_args`.
  * Use `reset_args` to reset `c_args`. Resetting should be done prior to every call.
  *
@@ -369,7 +352,6 @@ void reset_args(void) {                                                         
         if (arg[0] != '-') {
             if (c_args.target == nullptr) {
                 c_args.target   =   argv[i];
-                // TODO : maybe check file extension? also maybe not? for now too lazy
             } else {
                 cit10a_msg(&t_err, "multiple assembly targets given");
                 error   =   true;
@@ -420,21 +402,25 @@ void reset_args(void) {                                                         
         error   =   true;
     }
 
-
     // process special flags
+    if (c_args.n_thrds == 0)    c_args.n_thrds  =   sysconf(_SC_NPROCESSORS_ONLN);
     if (c_args.help)            arg_help_msg_();
     if (c_args.version)         cit10a_info();
 
-
-    // assembly target check
-    if (c_args.target == nullptr && !end_comp) {
-        // no build target
-        cit10a_msg(&t_err, "no assembler targets given");
-        error   =   true;
-    } else if (!end_comp && !verify_target(c_args.target)) {
-        // wrong file extension
-        cit10a_msg(&t_err, "invalid source file extension");
-        error   =   true;
+    if (!end_comp) {
+        // target check
+        if (c_args.target == nullptr) {
+            // no build target
+            cit10a_msg(&t_err, "no assembler targets given");
+            error   =   true;
+        } else if (!verify_target(c_args.target)) {
+            // wrong file extension
+            cit10a_msg(&t_err, "invalid source file extension");
+            error   =   true;
+        } else {
+            // get output
+            c_args.output           =   get_output(c_args.target, c_args.output);
+        }
     }
 
     // exit on error
@@ -442,21 +428,37 @@ void reset_args(void) {                                                         
         cit10a_msg(&(msg_info){ .type=msg_norm_t, .header="use the -h flag for assembler flag usage" }, nullptr);
         cit10a_exit(ARGPARSE_ERRNO);
     }
-
-    // get output
-    if (c_args.target != nullptr)   c_args.output   =   get_output(c_args.target, c_args.output);
-
-    // get processor number
-    if (c_args.n_thrds == 0)        c_args.n_thrds  =   sysconf(_SC_NPROCESSORS_ONLN);
+    c_arg_s     =   true;
     return  end_comp;
 }
 
 /*-ARGUMENT-PARSER-FREE-----------------------------------------------------------------------------------------------*/
 
 /**
- * Frees stuff from `c_args`.
+ * Resets assembler flags at `c_args`.
+ */
+void reset_args(void) {                                                         // reset assembler arguments
+    free_c_args();
+    memset(&c_args, 0, sizeof(c_args));
+
+    // special field reset
+    for (size_t i = 0; i < arr_s(a_flg); ++i) {
+        const   flag_itm    *const  flag    =   a_flg[i];
+
+        // set default value if applicable
+        if (flag->type == flag_val_t) {
+            int     *const  field   =   (int*)((char*)&c_args + flag->offset);
+            *field                  =   flag->dflt;
+        }
+    }
+    c_arg_s     =   false;
+}
+
+/**
+ * Frees items from `c_args`.
  */
 void free_c_args(void) {                                                        // c_args free
+    if (!c_arg_s)           return;
     free(c_args.output);
     free(c_args.inc.vals);
     free(c_args.src.vals);

@@ -400,15 +400,11 @@ ret_chck:
         ret             =   -ret;
     }
     if (ret > max_num || jloc - 1 < 0) {
-        err_f->col      =   p_strt;
-        err_f->len      =   sptr->col - p_strt;
-        if (jloc - 1 < 0) {
-            cit10a_msg( &(msg_info){ .type=msg_err_t, .header="relative jump range", .report_f=err_f },
-                        "relative jump to address -0x%04x", 1                                           );
-        } else {
-            cit10a_msg( &(msg_info){ .type=msg_err_t, .header="relative jump range", .report_f=err_f },
-                        "relative jump out of range (%c0x%04x)", (neg) ? '-' : '+', ret                 );
-        }
+        err_f->col                  =   p_strt;
+        err_f->len                  =   sptr->col - p_strt;
+        const   msg_info    jmp_err =   { .type=msg_err_t, .header="relative jump range", .report_f=err_f };
+        if   (jloc - 1 < 0)     cit10a_msg(&jmp_err, "relative jump to address -0x%04x", 1);
+        else                    cit10a_msg(&jmp_err, "relative jump out of range (%c0x%04x)", (neg) ? '-' : '+', ret);
         return  -1;
     }
 

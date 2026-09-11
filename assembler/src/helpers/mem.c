@@ -16,7 +16,7 @@
 static  const       msg_info    alloc_msg   =   { .type=msg_intrnl_t, .header="alloc error" };
 
 /**
- * mallocs the given size, then checks if the allocation was sucessful.
+ * Mallocs the given size, then checks if the allocation was sucessful.
  * If not, exits with the given item description in the message.
  *
  * @param       size            alloc size
@@ -37,7 +37,7 @@ static  const       msg_info    alloc_msg   =   { .type=msg_intrnl_t, .header="a
 }
 
 /**
- * callocs the given size, then checks if the allocation was sucessful.
+ * Callocs the given size, then checks if the allocation was sucessful.
  * If not, exits with the given item description in the message.
  *
  * @param       size            alloc element size
@@ -61,7 +61,7 @@ static  const       msg_info    alloc_msg   =   { .type=msg_intrnl_t, .header="a
 }
 
 /**
- * reallocs the given size, then checks if the allocation was sucessful.
+ * Reallocs the given size, then checks if the allocation was sucessful.
  * If not, exits with the given item description in the message.
  *
  * @param       ptr             previous pointer
@@ -85,7 +85,7 @@ static  const       msg_info    alloc_msg   =   { .type=msg_intrnl_t, .header="a
 }
 
 /**
- * aligned allocation for the given size, then check sif the allocation was successful.
+ * Aligned allocation for the given size, then check sif the allocation was successful.
  * If not, exits with the given item description in the message.
  *
  * @param       size            alloc size
@@ -95,7 +95,7 @@ static  const       msg_info    alloc_msg   =   { .type=msg_intrnl_t, .header="a
 [[nodiscard]] void *chckd_aln_alloc(const size_t size, const char *const itm) { // checked aligned alloc
     cit10a_asrt(size != 0);
 
-    const   size_t  pad     =   (size + CACHE_LN_S - 1) & ~((size_t)CACHE_LN_S - 1);
+    const   size_t  pad     =   (size + (size_t)CACHE_LN_S - 1) & ~((size_t)CACHE_LN_S - 1);
     errno                   =   0;
     void    *const  ret     =   aligned_alloc(CACHE_LN_S, pad);
     if (ret == nullptr) {
