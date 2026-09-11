@@ -40,11 +40,11 @@ You can verify proper installation with the following:
 
 > #### **File Information**
 > - [tools/vim/syntax/citobj.vim]
-> (https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/vim/syntax/citobj.vim) adds syntax
+>(https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/vim/syntax/citobj.vim) adds syntax
 > highlighting
 > - [tools/vim/ftplugin/citobj.vim]
-> (https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/vim/ftplugin/citobj.vim) adds
+>(https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/vim/ftplugin/citobj.vim) adds
 > buffer-local settings
 > - [tools/vim/ftdetect/citobj.vim]
-> (https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/vim/ftdetect/citobj.vim) recognizes
+>(https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/vim/ftdetect/citobj.vim) recognizes
 > `.obj` files correctly
