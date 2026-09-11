@@ -399,13 +399,20 @@ ret_chck:
         max_num         =   MAX_NUM_NEG;
         ret             =   -ret;
     }
-    if (ret > max_num || jloc - 1 < 0) {
+
+    if (ret > max_num) {
         err_f->col                  =   p_strt;
         err_f->len                  =   sptr->col - p_strt;
-        const   msg_info    jmp_err =   { .type=msg_err_t, .header="relative jump range", .report_f=err_f };
-        if   (jloc - 1 < 0)     cit10a_msg(&jmp_err, "relative jump to address -0x%04x", 1);
-        else                    cit10a_msg(&jmp_err, "relative jump out of range (%c0x%04x)", (neg) ? '-' : '+', ret);
+        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="relative jump range", .report_f=err_f },
+                    "relative jump out of range (%c0x%04x)", (neg) ? '-' : '+', ret                 );
         return  -1;
+    }
+    if (jloc == 0) {
+        // NOTE : if relative jumping to address 0x0000 is defined, remove this entire block
+        err_f->col                  =   p_strt;
+        err_f->len                  =   sptr->col - p_strt;
+        cit10a_msg( &(msg_info){ .type=msg_warn_t, .header="relative jump address 0", .report_f=err_f },
+                    "relative jumping to address 0x0000 might not work"                                  );
     }
 
     return  (neg) ? (int)(ret ^ MAX_NUM) + 1 : ret;

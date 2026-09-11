@@ -5,6 +5,7 @@
 
 #include    <stddef.h>
 #include    <stdlib.h>
+#include    <limits.h>
 
 #include    "helpers/general.h"
 #include    "output/errors.h"
@@ -352,8 +353,9 @@
 
     // convert number
     char   *end_chr;
-    int     ret             =   (int)strtol(n_str, &end_chr, base);
-    if (*end_chr != '\0') {
+    const   long    ret_l   =   strtol(n_str, &end_chr, base);
+    int             ret     =   (int)ret_l;
+    if (*end_chr != '\0' || ret_l > INT_MAX) {
         // conversion fail
         err_f->ln   =   sptr->ln;
         err_f->col  =   start;
