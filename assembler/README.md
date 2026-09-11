@@ -12,8 +12,8 @@ For detailed information about how the assembler works, read [man/caltech10_asse
 ## **Installation**
 
 To install the assembler, ensure you have the requirements at
-[assembler/INSTALL.md](https://github.com/chostmadsen/caltech10-assembler/assembler/INSTALL.md). This also has more
-information on installing the assembler.
+[assembler/INSTALL.md](https://github.com/chostmadsen/caltech10-assembler/blob/main/assembler/INSTALL.md). This also
+has more information on installing the assembler.
 
 For basic installation, you can compile the assembler with the following.
 
