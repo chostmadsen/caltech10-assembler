@@ -10,5 +10,4 @@
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
 
 void print_src_f(const src_f *source_f);                                        // one-lined raw print full source file
-
 void print_src_f_info(const src_f *source_f);                                   // print source file struct info

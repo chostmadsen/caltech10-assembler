@@ -43,4 +43,3 @@ extern      bool        werror_exit;                                            
 
 void cit10a_msg_v(const msg_info *info, const char *fmt, const va_list *args);  // assembler message emitter (va)
 void cit10a_msg(const msg_info *info, const char *fmt, ...);                    // assembler message emitter
-void find_file_loc(rprt_f *file, size_t idx);                                   // character locator
