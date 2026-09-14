@@ -1,0 +1,17 @@
+TODO
+I wrote almost 90% of this codebase in a week so there is a good chance there are some really bad logic bugs or easy
+ways to completely fry the assembler.
+
+ACTUAL TODOS
+- This thing does not work on Windows. The directory scanning is completely fucked because it uses dirent.h, which
+  is very much not supported on Windows. If that ever gets fixed, write a wrapper around file_chck.h to change FOLD_SEP
+  to '\\' instead of '/' and force -DNTHREAD and it should theoretically work on windows.
+
+ADDITIONAL WORK
+- An actual watered-down C-style preprocessor may be helpful, but kind of annoying given how files are read. I think I
+  have a vague idea of how this would work, but I'm too lazy to do this.
+- Something like a pratt parser to actually set up equations instead of just single values. If the compiler I'm writing
+  ever gets anywhere, I'll just port it over.
+- Possibly macros? Honestly shouldn't be too hard to write, but I am also still too lazy to do this.
+- Local headers, where maybe something like `~header:` is only recognized in a certain range, like most assemblers. This
+  is quite awful to do, however.

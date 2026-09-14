@@ -5,14 +5,14 @@
 
 // windows check
 #if     defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
-#define     NTHREAD
+#define     NTHREAD     // if this is ever not an error, make sure this is defined
 #error      "cit10a does not support windows"
 #endif
 
 // c version checks
 #if     !defined(__STDC_VERSION__) || __STDC_VERSION__ < 202311L
 // this will get buried under a large amount of other compiler warnings, but it is here
-#error      "cit10a requires c23+"
+#error      "cit10a requires c23+ (-std=c23)"
 #endif  /* !defined(__STDC_VERSION__) || __STDC_VERSION__ < 202311L */
 
 // threading checks
@@ -24,10 +24,8 @@
 #if     !__has_include(<pthread.h>)
 #warning    "cit10a requires posix threads if threading is not disabled via -DNTHREAD"
 #define     NTHREAD
-#endif  /* !defined(_POSIX_THREADS) || (_POSIX_THREADS <= 0) */
 #endif  /* !__has_include(<pthread.h>) */
-
-#include    <stdio.h>
+#endif  /* NTHREAD */
 
 #include    "output/external.h"
 #include    "output/errors.h"

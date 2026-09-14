@@ -5,13 +5,13 @@ Installing the Caltech10 assembler can be done if the following requirements are
 > #### **Requirements**
 >
 > - A C23-compliant compiler
-> - POSIX thread support
 > - git
 > - bash (some version, not too sure; brew install bash if something doesn't work)
+> - sometimes POSIX thread support (see below)
 >
 > These requirements should be pre-installed on macOS and GNU/Linux.
 
-Furthermore, the Caltech10 assembler will probably not compile on any non-Unix-based system, but you can try.
+Furthermore, the Caltech10 assembler will probably not compile on any non-Unix-based system (Windows), but you can try.
 To compile the assembler, run
 
 ```bash
@@ -26,6 +26,10 @@ be accepted, so you can provide that to get information.
 If the assembler breaks in an unexpected way, try compiling the assembler with the `-a` flag; this will turn on
 assertions, which should do a pretty good job at finding out what exactly happened, without too much performance
 decrease.
+
+Also, if you are running some archaic computer, compile it with the `-n` flag to turn off multithreading. This thing
+still will not compile on Windows, but the `-n` flag gets it pretty close. You don't need POSIX thread support if this
+is on.
 
 ------------------------------------------------------------------------------------------------------------------------
 

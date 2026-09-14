@@ -36,6 +36,8 @@ Then, invoke the assembler with `cit10a`. See [Usage](#usage) for more informati
 You can invoke the assembler with `cit10a` once it is installed. For more detailed usage, see
 [assembler/README.md](https://github.com/chostmadsen/caltech10-assembler/blob/main/assembler/README.md).
 
+The important sections are `.code`, where you put code, and `.data`, where you put data (like `db`).
+
 ------------------------------------------------------------------------------------------------------------------------
 
 ## **Contributing**

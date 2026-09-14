@@ -40,7 +40,7 @@ The assembler has a `.code` section, for code, `.data` for data, and `.none` to 
 You can include files with `.include`, and define numeric constants with `.const`. The assembler stays more or less
 fully compliant with the spec at 
 [man/caltech10_cpu_desc.pdf](https://github.com/chostmadsen/caltech10-assembler/blob/main/man/caltech10_cpu_desc.pdf).
-The only main difference is how operands are provided for load / store instructions. instead of the `+` syntax, the
+The only main difference is how operands are provided for load / store instructions. Instead of the `+` syntax, the
 syntax uses a comma instead, so something like
 
 ```asm
@@ -69,7 +69,7 @@ ld      s
 ```
 
 The compiler's opcodes and registers are case insensitive. The headers and constants are case insensitive by default,
-but this can be changed by providing the `-C` flag.
+but this can be changed by providing the `-C` flag (which will then treat things as case sensitive).
 
 There is a simulator under [tools/](https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/). For
 information on how to get it to run, see
