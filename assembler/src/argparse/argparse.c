@@ -403,7 +403,17 @@ static void process_strm_f_( const flag_itm *const         flag,
     }
 
     // process special flags
-    if (c_args.n_thrds == 0)    c_args.n_thrds  =   sysconf(_SC_NPROCESSORS_ONLN);
+    if (c_args.n_thrds == 0) {
+        // autodetect processors
+        const   long    n_proc      =   sysconf(_SC_NPROCESSORS_ONLN);
+        c_args.n_thrds              =   (int)n_proc;
+        if (n_proc > (long)MAX_THREADS) c_args.n_thrds  =   MAX_THREADS;
+        if (n_proc == -1) {
+            cit10a_msg( &(msg_info){ .type=msg_intrnl_wrn_t, .header="processor detection failure" },
+                        "error detecting processor count; defaulting to 1 thread (non-critical)"      );
+            c_args.n_thrds  =   1;
+        }
+    }
     if (c_args.help)            arg_help_msg_();
     if (c_args.version)         cit10a_info();
 

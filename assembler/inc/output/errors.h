@@ -46,13 +46,13 @@ void cit10a_exit_msg(unsigned code);                                            
 
 #include    "output/external.h"
 
-#define _STR_INDR_(x)   #x
-#define _STR_(x)        _STR_INDR_(x)
+#define STR_INDR_(x)    #x
+#define STR_(x)         STR_INDR_(x)
 
 #define cit10a_asrt(expr) (                                                                                            \
             (expr) ? (void)0 : (                                                                                       \
                 fputs( "\r\x1b[2K" ASSEMBLER_HEAD CLR_INTRNL "failed assertion"                                        \
-                       "\x1b[0m [ " __FILE__ "::"_STR_(__LINE__) " ] : " CLR_DIM #expr "\x1b[0m\n", stderr ),          \
+                       "\x1b[0m [ " __FILE__ "::"STR_(__LINE__) " ] : " CLR_DIM #expr "\x1b[0m\n", stderr ),           \
                 abort()                                                                                                \
             )                                                                                                          \
         )

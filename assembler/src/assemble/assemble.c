@@ -80,48 +80,52 @@ static void *asm_thread_(void *const asm_thrd_args_v) {                         
 
     // calculate required threads
     int             n_segs  =   ret.num_segs / (int)ASMS_PER_LN;
-    if (n_segs == 0)            n_segs  =   1;
     const   int     n_thrds =   (n_segs >= c_args.n_thrds) ? c_args.n_thrds : n_segs;
     int             n_lns   =   ret.num_segs / n_thrds;
     n_lns                   =   (n_lns + (int)ASMS_PER_LN - 1) & ~((int)ASMS_PER_LN - 1);
     if (n_lns == 0)             n_lns = (int)ASMS_PER_LN;
 
-    if (c_args.verbosity >= EXTRA_PRNT) {
-        // thread output
-        printf( CLR_DIM "%d new thread(s) (1 inline) | %d lines / thread | %d inline adjusted\x1b[0m\n",
-                n_thrds - 1, n_lns, ret.num_segs - n_thrds * n_lns                                       );
-    }
-
     // inline call
     if (n_thrds <= 1) {
         // singular call
         asm_thread_(&(asm_thrd_args){ .segmap=segmap, .target=ret.ln_asms, .start=0, .end=ret.num_segs });
-        // explicit end check
+        // explicit end checka
         if (atomic_load_explicit(&asm_end_flg, memory_order_relaxed))   cit10a_exit(ASSEMBLE_ERRNO);
         return  ret;
     }
 
     // init thread items
-    pthread_t       threads[n_thrds - 1];
-    bool            live[n_thrds - 1];
-    asm_thrd_args   args[n_thrds];
+    bool            live[MAX_THREADS - 1]       =   { 0 };
+    asm_thrd_args   args[MAX_THREADS];
+    pthread_t       threads[MAX_THREADS - 1];
 
-    // TODO : this logic is shit; can make better
     // setup thread items
-    for (int i = 0; i < n_thrds - 1; ++i)       live[i] =   false;
-    for (int seg = 0, i = 0; i < n_thrds; ++i) {
+    int             n_thrds_spwn    =   0;
+    int             seg             =   0;
+    for (int i = 0; i < n_thrds; ++i) {
         // arg setup
         args[i].segmap      =   segmap;
         args[i].target      =   ret.ln_asms;
-        args[i].start       =   seg > ret.num_segs ? ret.num_segs : seg;
+        args[i].start       =   seg;
         // offset calculation
         seg                 +=  n_lns;
-        args[i].end         =   ((i == n_thrds - 1) || (seg > ret.num_segs)) ? ret.num_segs : seg;
+        ++n_thrds_spwn;
+        if (seg >= ret.num_segs) {
+            // prevent additional threads
+            args[i].end     =   ret.num_segs;
+            break;
+        }
+        args[i].end         =   (i == n_thrds - 1) ? ret.num_segs : seg;
     }
-    args[n_thrds - 1].end   =   ret.num_segs;
+
+    if (c_args.verbosity >= EXTRA_PRNT) {
+        // thread output
+        printf( CLR_DIM "%d new thread(s) (1 inline) | %d lines / thread | %d inline adjusted\x1b[0m\n",
+                n_thrds_spwn - 1, n_lns, ret.num_segs - n_thrds_spwn * n_lns                             );
+    }
 
     // thread call
-    for (int thrd = 0; thrd < n_thrds - 1; ++thrd) {
+    for (int thrd = 0; thrd < n_thrds_spwn - 1; ++thrd) {
         if (pthread_create(&threads[thrd], nullptr, asm_thread_, &args[thrd])) {
             cit10a_msg( &(msg_info){ .type=msg_intrnl_wrn_t, .header="thread failure" },
                         "%d assembler thread spawn failure (non-critical)", thrd         );
@@ -129,10 +133,10 @@ static void *asm_thread_(void *const asm_thrd_args_v) {                         
         }
         live[thrd]      =   true;
     }
-    asm_thread_(&args[n_thrds - 1]);
+    asm_thread_(&args[n_thrds_spwn - 1]);
 
     // thread cleanup
-    for (int thrd = 0; thrd < n_thrds - 1; ++thrd) {
+    for (int thrd = 0; thrd < n_thrds_spwn - 1; ++thrd) {
         if   (live[thrd])       pthread_join(threads[thrd], nullptr);
         else                    asm_thread_(&args[thrd]);
     }

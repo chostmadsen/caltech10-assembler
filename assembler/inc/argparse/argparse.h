@@ -10,6 +10,10 @@
 #include    "helpers/general.h"
 #include    "argparse/file_chck.h"
 
+/*-CONSTANTS----------------------------------------------------------------------------------------------------------*/
+
+constexpr   int         MAX_THREADS         =   128;                            // maximum allowed threads
+
 /*-FLAG-BASE-INFORMATION-ITEMS----------------------------------------------------------------------------------------*/
 
 struct str_f_t {                                                                // string flag argument item
@@ -148,7 +152,7 @@ static  const   flag_itm        n_thrds_f   =   { .flag='t',            .desc="m
                                                                               "(0 to use processor count)",
                                                   .type=flag_val_t,     .offset=offsetof(assemble_args, n_thrds),
                                                   .exit=false,          .arg_itm="number",
-                                                  .min=0,               .max=0x7fff,
+                                                  .min=0,               .max=MAX_THREADS,
                                                   .dflt=0                                                             };
 
 static  const   flag_itm        max_recr_f  =   { .flag='r',            .desc="maximum file open recursion allowed",

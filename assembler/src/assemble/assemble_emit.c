@@ -311,7 +311,7 @@ void emit_asm( const char    *const f_name, const src_f   *const source,
         const   rprt_f      err_f   =   { .file=&(src_f){ .f_name=(char*)f_name }, .len=0 };
         // invalid file
         cit10a_msg( &(msg_info){ .type=msg_err_t, .header="file error", .report_f=&err_f },
-                    "couldn't open / read output file"                                      );
+                    "couldn't open output file"                                             );
         cit10a_exit(OUTPUT_ERRNO);
     }
 
@@ -327,7 +327,7 @@ void emit_asm( const char    *const f_name, const src_f   *const source,
 
     // debug information
     fputs("\n\n", fp);
-    fprintf(fp, VERS_STRT ".metadata | %d words | %d threads | ", asm_r->num_segs, c_args.n_thrds);
+    fprintf(fp, VERS_STRT ".metadata | %d word(s) | %d thread(s) | ", asm_r->num_segs, c_args.n_thrds);
     cit10a_version_f(fp, false);
     fputc('\n', fp);
 }
