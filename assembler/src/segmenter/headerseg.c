@@ -99,8 +99,9 @@ static void code_chck_dup_( const ln_info *const ln_inf,
  * @param       err_f           error report file
  */
 [[nodiscard]] static bool code_rnge_chck_( const int           ln,
-                                           const int           loc,
+                                                 int           loc,
                                                  rprt_f *const err_f ) {        // code range check
+    --loc;
     if (loc <= (int)MAX_ADRS)       return  false;
 
     // setup error information

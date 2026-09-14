@@ -59,6 +59,7 @@ struct wrn_t_ {                                                                 
     bool                err;
     bool                noverc;
     bool                noverd;
+    bool                nwrapj;
 };
 
 struct emit_t_ {                                                                // emit options
@@ -108,7 +109,10 @@ static  const   struct  str_f_t wrn_itm_[]  =   { { .arg="off",         .desc="w
                                                   { .arg="novercode",   .desc="suppress overlap warnings in .code",
                                                     .offset=offsetof(struct wrn_t_, noverc)                         },
                                                   { .arg="noverdata",   .desc="suppress overlap warnings in .data",
-                                                    .offset=offsetof(struct wrn_t_, noverd)                         } };
+                                                    .offset=offsetof(struct wrn_t_, noverd)                         },
+                                                  { .arg="njumpwrap",   .desc="supress warnings about implicit "
+                                                                              "wrapping of the program counter",
+                                                    .offset=offsetof(struct wrn_t_, nwrapj)                         } };
 static  const   flag_itm        warnings_f  =   { .flag='W',            .desc="assembly warning message level",
                                                   .type=flag_str_t,     .offset=offsetof(assemble_args, warnings), 
                                                   .exit=false,          .arg_itm="level",

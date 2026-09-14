@@ -153,7 +153,7 @@ void range_msg( const var_tok *const var,
     err_f->col  =   col - 1;
     err_f->len  =   var->head.key.len;
     cit10a_msg( &(msg_info){ .type=msg_t, .header="oob data", .report_f=err_f },
-                "Outside of the maximum range 0x%x (now at 0x%x)", max, loc);
+                "outside of the maximum range 0x%x (now at 0x%x)", max, loc);
 }
 
 /*-STACKMAP-REPEAT-OUTPUT-VERIFIER------------------------------------------------------------------------------------*/

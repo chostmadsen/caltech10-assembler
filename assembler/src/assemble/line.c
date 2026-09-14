@@ -282,9 +282,10 @@
 [[nodiscard]] static int jmp_parse_(       strptr   *const sptr,
                                      const stackmap *const headermap, 
                                      const int             loc, 
-                                           rprt_f   *const err_f) {             // jump parser
+                                           rprt_f   *const err_f      ) {       // jump parser
     cit10a_asrt(sptr != nullptr);
     cit10a_asrt(headermap != nullptr);
+    cit10a_asrt(loc >= 0);
 
     // return setup
     int             ret     =   0;
@@ -352,6 +353,7 @@
             return  -1;
         }
         ret             =   hvar->loc;
+        cit10a_asrt(ret >= 0);
     }
 
 ret_chck:
@@ -359,9 +361,10 @@ ret_chck:
     if (check_ln_end(sptr, err_f))      return  -1;
     if (ret < 0 || ret > (int)MAX_ADRS) {
         err_f->len  =   sptr->col - err_f->col;
-        cit10a_msg( &(msg_info){ .type=msg_err_t, .header="invalid jump", err_f }, 
-                "jump to outside of program memory (to 0x%x)", ret                 );
-        return  -1;
+        cit10a_msg( &(msg_info){ .type=msg_warn_t, .header="invalid jump", err_f },
+                "wrapped jump to inside of program memory (originally to %c0x%x)",
+                (ret < 0) ? '-' : '+', (ret < 0) ? -ret : ret                       );
+        return  ret & MAX_ADRS;
     }
     return  ret;
 }
@@ -378,44 +381,41 @@ ret_chck:
 [[nodiscard]] static int rjmp_(       strptr   *const sptr,
                                 const stackmap *const headermap, 
                                 const int             loc, 
-                                      rprt_f   *const err_f) {                  // relative jump
+                                      rprt_f   *const err_f      ) {            // relative jump
     cit10a_asrt(sptr != nullptr);
     cit10a_asrt(headermap != nullptr);
 
     // skip whitespace
     for (; is_whitespace(*sptr->str); inc_strptr(sptr));
-    size_t  p_strt      =   sptr->col;
+    const   size_t  p_strt  =   sptr->col;
 
     // get jump location
     const   int jloc    =   jmp_parse_(sptr, headermap, loc, err_f);
     if (jloc == -1)         return  -1;
-    int         ret     =   jloc - loc - 1;
+    // signed conversion
+    int         rel     =   (jloc - loc - 1) & MAX_ADRS;
+    rel                 =   (rel >= (int)(MAX_ADRS + 1) >> 1) ? rel - MAX_ADRS - 1 : rel;
 
-    // check jump range
-    bool    neg         =   false;
-    int     max_num     =   MAX_NUM_POS;
-    if (ret < 0) {
-        neg             =   true;
-        max_num         =   MAX_NUM_NEG;
-        ret             =   -ret;
-    }
-
-    if (ret > max_num) {
-        err_f->col                  =   p_strt;
-        err_f->len                  =   sptr->col - p_strt;
+    // range check
+    if (rel < -(int)MAX_NUM_NEG || rel > (int)MAX_NUM_POS) {
+        // jump range oob
+        err_f->col      =   p_strt;
+        err_f->len      =   sptr->col - p_strt;
         cit10a_msg( &(msg_info){ .type=msg_err_t, .header="relative jump range", .report_f=err_f },
-                    "relative jump out of range (%c0x%04x)", (neg) ? '-' : '+', ret                 );
+                    "relative jump out of range (%c0x%04x + 1)", (rel < 0) ? '-' : '+', (rel < 0) ? -rel : rel );
         return  -1;
     }
-    if (jloc == 0) {
-        // NOTE : if relative jumping to address 0x0000 is defined, remove this entire block
-        err_f->col                  =   p_strt;
-        err_f->len                  =   sptr->col - p_strt;
-        cit10a_msg( &(msg_info){ .type=msg_warn_t, .header="relative jump address 0", .report_f=err_f },
-                    "relative jumping to address 0x0000 might not work"                                  );
-    }
 
-    return  (neg) ? (int)(ret ^ MAX_NUM) + 1 : ret;
+    // overflow check
+    const   int rel_r   =   loc + 1 + rel;
+    if (!c_args.warnings.nwrapj && (rel_r < 0 || rel_r > (int)MAX_ADRS)) {
+        // program counter wrapping
+        err_f->col      =   p_strt;
+        err_f->len      =   sptr->col - p_strt;
+        cit10a_msg( &(msg_info){ .type=msg_warn_t, .header="implicit relative jump wrap", .report_f=err_f},
+                    "relative jump uses program counter overflow; this may be UB"                           );
+    }
+    return  rel & MAX_NUM;
 }
 
 /**
@@ -452,6 +452,7 @@ ret_chck:
                                     const ln_info *const ln_inf  ) {            // line assembler
     cit10a_asrt(segmap != nullptr);
     cit10a_asrt(ln_inf != nullptr);
+    cit10a_asrt(ln_inf->loc >= 0);
 
     const   src_f   *const  source  =   ln_inf->source;
     strptr                  sptr    =   { .ln=ln_inf->ln, .col=0, .str=src_f_getline(source, ln_inf->ln) };
