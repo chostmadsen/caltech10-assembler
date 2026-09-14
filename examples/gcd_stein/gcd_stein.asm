@@ -166,7 +166,7 @@ gcd_stein:
                 jnz     get_gcd
               ; jz      got_gcd
                 std     k                                           ; [*] store k && branch delay
-    
+
     got_gcd:    ldd     b_h                                         ; return gcd (b)
                 tax
                 ldd     b_l
