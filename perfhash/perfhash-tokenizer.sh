@@ -32,10 +32,10 @@ while getopts ":dnhc:l:" opt ; do
             cache_line="$OPTARG";
             ;;
         h)
-            printf "%b\n" "-d for debugging\n"
-                          "-n to disable multithreading\n"
-                          "-c [compiler] to specify a c compiler\n"
-                          "-l [line size] to specify cache line size";
+            printf "%b\n" "-d for debugging";
+            printf "%b\n" "-n to disable multithreading";
+            printf "%b\n" "-c [compiler] to specify a c compiler";
+            printf "%b\n" "-l [line size] to specify cache line size";
             exit 0;
             ;;
         \?)
