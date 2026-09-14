@@ -7,7 +7,10 @@
 #include    <stdlib.h>
 #include    <errno.h>
 
+#ifndef NTHREAD
 #include    "helpers/general.h"
+#endif  /* NTHREAD */
+
 #include    "output/messages.h"
 #include    "output/errors.h"
 
@@ -93,6 +96,7 @@ static  const       msg_info    alloc_msg   =   { .type=msg_intrnl_t, .header="a
  * @return                      allocated memory pointer
  */
 [[nodiscard]] void *chckd_aln_alloc(const size_t size, const char *const itm) { // checked aligned alloc
+#ifndef NTHREAD
     cit10a_asrt(size != 0);
 
     const   size_t  pad     =   (size + (size_t)CACHE_LN_S - 1) & ~((size_t)CACHE_LN_S - 1);
@@ -104,4 +108,8 @@ static  const       msg_info    alloc_msg   =   { .type=msg_intrnl_t, .header="a
         cit10a_exit(ALLOC_ERRNO);
     }
     return  ret;
+#else
+    // IMPORTANT : If this is actually critical, don't just fallback to chckd_malloc.
+    return  chckd_malloc(size, itm);
+#endif  /* NTHREAD */
 }

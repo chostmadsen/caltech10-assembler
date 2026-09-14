@@ -97,6 +97,7 @@ read_cleanup:
     size_t          idx_num     =   1;
     for (size_t i = 0; i < f_size; ++i) {
         // skip over non-newlines
+        if (file_buf[i] == '\r')                            file_buf[i] = '\0';
         if (file_buf[i] != '\n')                            continue;
         // replace newline
         file_buf[i]             =   '\0';
@@ -106,6 +107,7 @@ read_cleanup:
         // add new line index
         ln_idxs[idx_num++]      =   i + 1;
     }
+    cit10a_asrt(idx_num <= ln_num);
 
     // strcpy file name and return
     char    *const  file_name   =   chckd_malloc(strlen(f_name) + 1, "file_name char*");
@@ -151,6 +153,7 @@ void free_src_f(src_f *source_f) {                                              
     source_f->f_name    =   nullptr;
     source_f->ln_num    =   0;
     source_f->size      =   0;
+    source_f->len       =   0;
 #endif  /* NDEBUG */
 }
 
