@@ -75,8 +75,7 @@ void cit10a_msg_v( const msg_info *const info,
         fprintf( stderr, MSG_WARN_CLR "\x1b[0m : too many warnings; " "omitting further warnings [ -w%d ]\n",
                  c_args.max_warns                                                                             );
         warn_num_msg    =   true;
-
-        return;
+        goto    msg_end;
     }
 
     // output stream and message start
