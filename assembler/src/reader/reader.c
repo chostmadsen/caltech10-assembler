@@ -96,6 +96,7 @@ read_cleanup:
     // track lines
     size_t          idx_num     =   1;
     for (size_t i = 0; i < f_size; ++i) {
+        cit10a_asrt(idx_num <= ln_num);
         // skip over non-newlines
         if (file_buf[i] == '\r')                            file_buf[i] = '\0';
         if (file_buf[i] != '\n')                            continue;
@@ -107,7 +108,6 @@ read_cleanup:
         // add new line index
         ln_idxs[idx_num++]      =   i + 1;
     }
-    cit10a_asrt(idx_num <= ln_num);
 
     // strcpy file name and return
     char    *const  file_name   =   chckd_malloc(strlen(f_name) + 1, "file_name char*");
