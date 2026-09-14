@@ -29,11 +29,6 @@ cd caltech10-assembler/assembler
 
 Then, invoke the assembler with `cit10a`. See [Usage](#usage) for more information.
 
-If the assembler fails to compile, there is a chance I actually planned ahead and you were directed to some file within
-[tools/](https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/) (this should happen based on some compiler output).
-If you are directed there, read the
-[README](https://github.com/chostmadsen/caltech10-assembler/blob/main/tools/README.md) there for information.
-
 ------------------------------------------------------------------------------------------------------------------------
 
 ## **Usage**

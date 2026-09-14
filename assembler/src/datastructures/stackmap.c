@@ -338,12 +338,11 @@ void print_stackmap( const stackmap *const smap,
             printf("0x%0*x ] - " NULL_CHR "\n", prnt_pad, (int)i - 1);
             empty_prnt  =   false;
         }
-        // with the load factor, there always will be empty buckets, so padding is always correct
         printf("    [ 0x%0*x%*s ] - ", prnt_pad, (int)i, prnt_pad + (int)sizeof("::0x") - 1, "");
         for (int j = 0; j < head_st->len; ++j) {
             // item print function
             prnt_fn(peek_stack(head_st, j));
-            if (j != head_st->len - 1)      printf(", ");
+            if (j != head_st->len - 1)      fputs(", ", stdout);
         }
         fputc('\n', stdout);
     }
@@ -351,9 +350,7 @@ void print_stackmap( const stackmap *const smap,
     if (!empty_prnt)        return;
 
     // close out
-    if (empty_bck != smap->buckets - 1)     printf("0x%0*x", prnt_pad, (int)smap->buckets - 1);
-    else {
-        printf("\b\b%*s", prnt_pad + (int)sizeof("::0x") - 1, "");
-    }
+    if   (empty_bck != smap->buckets - 1)   printf("0x%0*x", prnt_pad, (int)smap->buckets - 1);
+    else                                    printf("\b\b%*s", prnt_pad + (int)sizeof("::0x") - 1, "");
     fputs(" ] - " NULL_CHR "\n", stdout);
 }

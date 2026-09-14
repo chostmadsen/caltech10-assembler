@@ -5,7 +5,6 @@
 
 #include    <stdlib.h>
 #include    <stdio.h>
-#include    <stdatomic.h>
 #include    <pthread.h>
 
 #include    "output/external.h"
@@ -39,7 +38,7 @@ void cit10a_exit_msg(const unsigned code) {                                     
     } else {
         stream  =   stderr;
         fprintf( stderr, " %u\x1b[0m " CLR_DIM "[ %d error%s generated",
-                 code, err_num, (err_num != 1) ? "s" : ""                       );
+                 code, err_num, (err_num != 1) ? "s" : ""                );
     }
 
     if (warn_num > 0) {

@@ -42,7 +42,7 @@ static void *asm_thread_(void *const asm_thrd_args_v) {                         
     const   asm_thrd_args   *const  args    =   (asm_thrd_args*)asm_thrd_args_v;
     for (int i = args->start; i < args->end; ++i) {
         const   ln_asm  ln_a    =   line_assemble(args->segmap, (ln_info*)peek_stack(&args->segmap->headmap.stmts, i));
-        if (ln_a.ln == -1) {
+        if (ln_a.la.ln == -1) {
             // set error
             err     =   true;
             continue;
@@ -106,6 +106,7 @@ static void *asm_thread_(void *const asm_thrd_args_v) {                         
     bool            live[n_thrds - 1];
     asm_thrd_args   args[n_thrds];
 
+    // TODO : this logic is shit; can make better
     // setup thread items
     for (int i = 0; i < n_thrds - 1; ++i)       live[i] =   false;
     for (int seg = 0, i = 0; i < n_thrds; ++i) {
@@ -154,8 +155,8 @@ void print_asm(const asm_ret *const asm_r) {                                    
 
     for (int i = 0; i < asm_r->num_segs; ++i) {
         // emit instructions
-        printf("%04x  %04x", asm_r->ln_asms[i].loc, asm_r->ln_asms[i].instr);
-        printf(CLR_DIM "  [[ %s::%d ]]\x1b[0m\n", asm_r->ln_asms[i].source->f_name, asm_r->ln_asms[i].ln + 1);
+        printf("%04x  %04x", asm_r->ln_asms[i].la.loc, asm_r->ln_asms[i].la.instr);
+        printf(CLR_DIM "  [[ %s::%d ]]\x1b[0m\n", asm_r->ln_asms[i].la.source->f_name, asm_r->ln_asms[i].la.ln + 1);
     }
 
     fputs(DEBUG_DELIM "\n", stdout);

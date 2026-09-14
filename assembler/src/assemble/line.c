@@ -469,7 +469,7 @@ ret_chck:
     }
 
     tok_itm     op_tok  =   opcode_hash_lu(sptr.str, n);
-    ln_asm      ret     =   {  .instr=op_tok.instr, .loc=ln_inf->loc, .source=source, .ln=ln_inf->ln };
+    ln_asm      ret     =   {{ .instr=op_tok.instr, .loc=ln_inf->loc, .source=source, .ln=ln_inf->ln }};
     rprt_f      err_f   =   { .file=source, .ln=ln_inf->ln, .col=sptr.col };
     adj_strptr(&sptr, n);
 
@@ -479,13 +479,13 @@ ret_chck:
             // no opcode
             err_f.len   =   (n > 0) ? n : 1;
             cit10a_msg(&(msg_info){ .type=msg_err_t, .header="unknown opcode", .report_f=&err_f}, "invalid opcode");
-            return  (ln_asm){ .ln=-1, .instr=-1 };
+            return  (ln_asm){{ .ln=-1, .instr=-1 }};
 
         case alu_offset_t:
             // alu offset
             const   int     alu_v   =   alu_offs_(&sptr, segmap, &err_f);
-            if (alu_v == -1)            return  (ln_asm){ .ln=-1, .instr=-1 };
-            ret.instr               +=  alu_v;
+            if (alu_v == -1)            return  (ln_asm){{ .ln=-1, .instr=-1 }};
+            ret.la.instr            +=  alu_v;
             break;
 
         case io_t:              [[fallthrough]];
@@ -493,8 +493,8 @@ ret_chck:
         case alu_immediate_t:
             // any immediate
             const   int     imd_v   =   get_immediate_(&sptr, &segmap->constmap, &err_f);
-            if (imd_v == -1)            return  (ln_asm){ .ln=-1, .instr=-1 };
-            ret.instr               +=  imd_v;
+            if (imd_v == -1)            return  (ln_asm){{ .ln=-1, .instr=-1 }};
+            ret.la.instr            +=  imd_v;
             break;
 
         case alu_lone_t:        [[fallthrough]];
@@ -503,36 +503,36 @@ ret_chck:
         case misc_t:            [[fallthrough]];
         case ind_reg_t:
             // any lone operation
-            if (check_ln_end(&sptr, &err_f))    return  (ln_asm){ .ln=-1, .instr=-1 };
+            if (check_ln_end(&sptr, &err_f))    return  (ln_asm){{ .ln=-1, .instr=-1 }};
             break;
 
         case ldst_direct_t:
             // load store direct
             const   int     dir_v   =   get_mem_(&sptr, &segmap->datamap, &err_f);
-            if (dir_v == -1)            return  (ln_asm){ .ln=-1, .instr=-1 };
-            ret.instr               +=  dir_v;
+            if (dir_v == -1)            return  (ln_asm){{ .ln=-1, .instr=-1 }};
+            ret.la.instr            +=  dir_v;
             break;
 
         case ldst_indexed_t:
             // load store indexed
             const   int     ldst_v  =   ldst_offs_(&sptr, segmap, &err_f);
-            if (ldst_v == -1)           return  (ln_asm){ .ln=-1, .instr=-1 };
-            ret.instr               +=  ldst_v;
+            if (ldst_v == -1)           return  (ln_asm){{ .ln=-1, .instr=-1 }};
+            ret.la.instr            +=  ldst_v;
             break;
 
         case jmp_relative_t:
             // relative jump
             const   int     rjmp_v  =   rjmp_(&sptr, &segmap->headmap.smap, ln_inf->loc, &err_f);
-            if (rjmp_v == -1)           return  (ln_asm){ .ln=-1, .instr=-1 };
-            ret.instr               +=  rjmp_v;
+            if (rjmp_v == -1)           return  (ln_asm){{ .ln=-1, .instr=-1 }};
+            ret.la.instr            +=  rjmp_v;
             break;
 
         case jmp_absolute_t:    [[fallthrough]];
         case subrout_st_adrs_t:
             // absolute pc adjustment
             const   int     ajmp_v  =   ajmp_(&sptr, &segmap->headmap.smap, ln_inf->loc, &err_f);
-            if (ajmp_v == -1)           return  (ln_asm){ .ln=-1, .instr=-1 };
-            ret.instr               +=  ajmp_v;
+            if (ajmp_v == -1)           return  (ln_asm){{ .ln=-1, .instr=-1 }};
+            ret.la.instr            +=  ajmp_v;
             break;
 
         default:

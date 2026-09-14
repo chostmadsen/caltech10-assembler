@@ -184,7 +184,7 @@ static void emit_asm_fp_(       FILE    *fp,
 
     // assembly reference
     int     asm_src     =   0;
-    int     src_loc     =   asm_r->ln_asms[0].ln;
+    int     src_loc     =   asm_r->ln_asms[0].la.ln;
 
     for (size_t i = strt; i < source->ln_num; ++i) {
         const   char    *const  ln          =   src_f_getline(source, i);
@@ -220,11 +220,11 @@ static void emit_asm_fp_(       FILE    *fp,
 
         // get code
         cit10a_asrt(asm_r->num_segs != 0);
-        for (; src_loc != (int)i; src_loc = asm_r->ln_asms[++asm_src].ln) {
+        for (; src_loc != (int)i; src_loc = asm_r->ln_asms[++asm_src].la.ln) {
             cit10a_asrt(asm_src + 1 < asm_r->num_segs);
         }
         const   ln_asm  asm_l   =   asm_r->ln_asms[asm_src];
-        asm_emit_instr_(fp, asm_l.loc, asm_l.instr, ln);
+        asm_emit_instr_(fp, asm_l.la.loc, asm_l.la.instr, ln);
     }
     return  -1;
 }
@@ -318,7 +318,7 @@ void emit_asm( const char    *const f_name, const src_f   *const source,
     if (c_args.bin) {
         // only binary
         for (int i = 0; i < asm_r->num_segs; ++i) {
-            asm_emit_instr_(fp, asm_r->ln_asms[i].loc, asm_r->ln_asms[i].instr, nullptr);
+            asm_emit_instr_(fp, asm_r->ln_asms[i].la.loc, asm_r->ln_asms[i].la.instr, nullptr);
         }
         return;
     }

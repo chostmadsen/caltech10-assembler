@@ -60,6 +60,11 @@ void cit10a_msg_v( const msg_info *const info,
 
     // warning message suppression
     if (c_args.warnings.off && info->type == msg_warn_t)            return;
+
+    // mutex lock
+    pthread_mutex_lock(&io_mutex);
+
+    // -w overflow
     if (warn_num >= c_args.max_warns && info->type == msg_warn_t) {
         if (warn_num_msg)       return;
         fprintf( stderr, MSG_WARN_CLR "\x1b[0m : too many warnings; " "omitting further warnings [ -w%d ]\n",
@@ -68,9 +73,6 @@ void cit10a_msg_v( const msg_info *const info,
 
         return;
     }
-
-    // mutex lock
-    pthread_mutex_lock(&io_mutex);
 
     // output stream and message start
     FILE       *stream;

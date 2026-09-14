@@ -51,5 +51,22 @@ void dec_strptr(strptr *ptr);                                                   
  * Wrapper to get array size.
  *
  * @param       arr             array
+ * @return                      array size
  */
 #define arr_s(arr)      (sizeof(arr) / sizeof(arr[0]))
+
+/**
+ * Wrapper to get next power of 2 (up to 512). If the number is a power of 2, returns the number.
+ *
+ * @param       num             number
+ * @return                      next power of 2
+ */
+#define nptwo_cap(num)  ( (num <=   1) ?   1 :                                                                         \
+                          (num <=   2) ?   2 :                                                                         \
+                          (num <=   4) ?   4 :                                                                         \
+                          (num <=   8) ?   8 :                                                                         \
+                          (num <=  16) ?  16 :                                                                         \
+                          (num <=  32) ?  32 :                                                                         \
+                          (num <=  64) ?  64 :                                                                         \
+                          (num <= 128) ? 128 :                                                                         \
+                          (num <= 256) ? 256 : 512 )
