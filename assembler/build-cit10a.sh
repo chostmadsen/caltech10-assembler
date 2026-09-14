@@ -22,7 +22,8 @@ cache_line=0;
 cache_line_def=0;
 native=0;
 profile=0;
-while getopts ":hc:asl:np" opt ; do
+nthread=0;
+while getopts ":hc:asl:mpn" opt ; do
     case $opt in
         h)
             build_flag_help;
@@ -42,11 +43,14 @@ while getopts ":hc:asl:np" opt ; do
             cache_line_def=1;
             cache_line="$OPTARG";
             ;;
-        n)
+        m)
             native=1;
             ;;
         p)
             profile=1;
+            ;;
+        n)
+            nthread=1;
             ;;
         \?)
             printf "%b\n" "$build_n$err_msg unknown build flag \`-$OPTARG\`";
@@ -69,8 +73,15 @@ flags=(
     -Wall
     -Wextra
     -Wpedantic
-    -pthread
 );
+
+if (( !nthread )) ; then
+    # threading on
+    flags+=( -pthread );
+else
+    # threading off
+    flags+=( -DNTHREAD );
+fi
 
 if (( !asserts )) ; then
     # assertions on

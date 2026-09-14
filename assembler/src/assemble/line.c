@@ -394,7 +394,7 @@ ret_chck:
     if (jloc == -1)         return  -1;
     // signed conversion
     int         rel     =   (jloc - loc - 1) & MAX_ADRS;
-    rel                 =   (rel >= (int)(MAX_ADRS + 1) >> 1) ? rel - MAX_ADRS - 1 : rel;
+    rel                 =   (rel >= (int)(MAX_ADRS + 1) >> 1) ? rel - (int)MAX_ADRS - 1 : rel;
 
     // range check
     if (rel < -(int)MAX_NUM_NEG || rel > (int)MAX_NUM_POS) {

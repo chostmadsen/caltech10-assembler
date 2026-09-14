@@ -3,17 +3,29 @@
  * Main assembler call.
  */
 
+// windows check
 #if     defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
-#error  "cit10a does not support windows"
+#define     NTHREAD
+#error      "cit10a does not support windows"
 #endif
 
-#include    <unistd.h>
+// c version checks
+#if     !defined(__STDC_VERSION__) || __STDC_VERSION__ < 202311L
+// this will get buried under a large amount of other compiler warnings, but it is here
+#error      "cit10a requires c23+"
+#endif  /* !defined(__STDC_VERSION__) || __STDC_VERSION__ < 202311L */
+
+// threading checks
+#ifndef NTHREAD
 #ifdef  __STDC_NO_ATOMICS__
-#error  "cit10a requires atomics"
-#endif
-#if     !defined(_POSIX_THREADS) || (_POSIX_THREADS <= 0)
-#error  "cit10a requires posix threads"
-#endif
+#warning    "cit10a requires atomics if threading is not disabled via -DNTHREAD"
+#define     NTHREAD
+#endif  /* __STDC_NO_ATOMICS__ */
+#if     !__has_include(<pthread.h>)
+#warning    "cit10a requires posix threads if threading is not disabled via -DNTHREAD"
+#define     NTHREAD
+#endif  /* !defined(_POSIX_THREADS) || (_POSIX_THREADS <= 0) */
+#endif  /* !__has_include(<pthread.h>) */
 
 #include    <stdio.h>
 

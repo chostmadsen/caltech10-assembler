@@ -6,15 +6,18 @@
 #pragma     once
 
 #include    <stdio.h>
+
+#ifndef NTHREAD
 #include    <pthread.h>
+#endif  /* NTHREAD */
 
 /*-CONSTANTS----------------------------------------------------------------------------------------------------------*/
 
 #define                 ASSEMBLER_NAME          "cit10a"                        // assembler name
 #define                 OUT_INDENT              "       "                       // output indent size
 #define                 ASSEMBLER_INDENT              " "                       // assembler output indent size
-#define                 ASSEMBLER_VERSION       "1.0.0"                         // assembler version
-#define                 ASSEMBLER_DATE          "2026.09.12"                    // assembler release date
+#define                 ASSEMBLER_VERSION       "1.0.1"                         // assembler version
+#define                 ASSEMBLER_DATE          "2026.09.14"                    // assembler release date
 
 #define                 CLR_BOLD                "\x1b[1m"                       // bold color code
 #define                 CLR_DIM                 "\x1b[2m"                       // dim color code
@@ -59,7 +62,9 @@ constexpr   int         EXIT_PRNT           =   1;                              
 
 /*-GLOBAL-MUTEXES-----------------------------------------------------------------------------------------------------*/
 
+#ifndef NTHREAD
 extern      pthread_mutex_t     io_mutex;                                       // input / output mutex
+#endif  /* NTHREAD */
 
 /*-FUNCTIONS----------------------------------------------------------------------------------------------------------*/
 

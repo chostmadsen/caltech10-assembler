@@ -5,7 +5,10 @@
 
 #include    <stdlib.h>
 #include    <stdio.h>
+
+#ifndef NTHREAD
 #include    <pthread.h>
+#endif  /* NTHREAD */
 
 #include    "output/external.h"
 #include    "output/errors.h"
@@ -60,8 +63,10 @@ void cit10a_exit_msg(const unsigned code) {                                     
  * @param       code            exit code
  */
 [[noreturn]] void cit10a_exit(const unsigned code) {                            // assembler exit
+#ifndef NTHREAD
     // io mutex perma-lock
     pthread_mutex_lock(&io_mutex);
+#endif  /* NTHREAD */
 
     // message and exit
     cit10a_exit_msg(code);

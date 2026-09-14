@@ -7,7 +7,10 @@
 #include    <stdlib.h>
 #include    <stdio.h>
 #include    <stdarg.h>
+
+#ifndef NTHREAD
 #include    <pthread.h>
+#endif  /* NTHREAD */
 
 #include    "output/external.h"
 #include    "output/errors.h"
@@ -61,8 +64,10 @@ void cit10a_msg_v( const msg_info *const info,
     // warning message suppression
     if (c_args.warnings.off && info->type == msg_warn_t)            return;
 
+#ifndef NTHREAD
     // mutex lock
     pthread_mutex_lock(&io_mutex);
+#endif  /* NTHREAD */
 
     // -w overflow
     if (warn_num >= c_args.max_warns && info->type == msg_warn_t) {
@@ -196,8 +201,10 @@ msg_end:
         exit((int)EXCESS_ERRNO);
     }
 
+#ifndef NTHREAD
     // mutex unlock
     pthread_mutex_unlock(&io_mutex);
+#endif  /* NTHREAD */
 }
 
 /**

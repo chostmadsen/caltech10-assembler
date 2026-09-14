@@ -152,12 +152,14 @@ static  const   flag_itm        case_sens_f =   { .flag='C',            .desc="c
                                                   .type=flag_bool_t,    .offset=offsetof(assemble_args, case_sens),
                                                   .exit=false,          .arg_itm=nullptr                              };
 
+#ifndef NTHREAD
 static  const   flag_itm        n_thrds_f   =   { .flag='t',            .desc="maximum number of threads deployed "
                                                                               "(0 to use processor count)",
                                                   .type=flag_val_t,     .offset=offsetof(assemble_args, n_thrds),
                                                   .exit=false,          .arg_itm="number",
                                                   .min=0,               .max=MAX_THREADS,
                                                   .dflt=0                                                             };
+#endif  /* NTHREAD */
 
 static  const   flag_itm        max_recr_f  =   { .flag='r',            .desc="maximum file open recursion allowed",
                                                   .type=flag_val_t,     .offset=offsetof(assemble_args, max_recurs),
@@ -189,7 +191,10 @@ static  const   flag_itm        output_f    =   { .flag='o',            .desc="a
 
 // flag item arrays
 static  const   flag_itm    *const  a_flg[] =   { &verbosity_f, &warnings_f,    &emit_f,        &max_errs_f,
-                                                  &max_warns_f, &bin_f,         &case_sens_f,   &n_thrds_f,
+                                                  &max_warns_f, &bin_f,         &case_sens_f,
+#ifndef NTHREAD
+                                                  &n_thrds_f,
+#endif  /* NTHREAD */
                                                   &max_recr_f,  &help_f,        &version_f,
                                                   &inc_f,       &sourc_f,       &output_f                    };
 

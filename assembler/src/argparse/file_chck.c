@@ -15,17 +15,15 @@
 /*-FILE-PATH-CLEANER--------------------------------------------------------------------------------------------------*/
 
 /**
- * Gets the "realpath" of a file (gets the) final actual file
+ * Gets the "basename" of a file.
  * 
  * @param       path            path
  * @return                      realpath
  */
-[[nodiscard]] static const char *realpath_(const char *const path) {            // gets the realpath
+[[nodiscard]] static const char *basename_(const char *const path) {            // gets the basename
     cit10a_asrt(path != nullptr);
-    for (int i = strlen(path) - 1; i >= 0; --i) {
-        if (path[i] == FOLD_SEP)    return  path + i + 1;
-    }
-    return  path;
+    const   char    *const  sep     =   strrchr(path, FOLD_SEP);
+    return  (sep != nullptr) ? sep + 1 : path;
 }
 
 /*-FILE-CHECKER-HELPERS-----------------------------------------------------------------------------------------------*/
@@ -43,8 +41,8 @@
     for (int i = f_len - 1; i >= 0; --i) {
         // valid file extension
         if (f_nm[i] == FILE_EXTNS_CHR) {
-            if    (i != f_len)              return  f_nm + i + 1;
-            else                            return  nullptr;
+            if    (i != f_len - 1 && i != 0)    return  f_nm + i + 1;
+            else                                return  nullptr;
         }
     }
     return  nullptr;
@@ -53,14 +51,15 @@
 /*-FILE-CHECKERS------------------------------------------------------------------------------------------------------*/
 
 /**
- * Get the file extension of a string. nullptr for no extension.
+ * Get the file extension of a string. empty string for no extension.
  * 
  * @param       f_nm            file name
  * @return                      pointer to extension
  */
 [[nodiscard]] const char *file_extension(const char *const f_nm) {              // gets file extension
     cit10a_asrt(f_nm != nullptr);
-    return  file_extnsn_(f_nm, strlen(f_nm));
+    const   char    *const  dot     =   strrchr(f_nm, FILE_EXTNS_CHR);
+    return  (dot != nullptr && dot != f_nm) ? dot + 1 : "";
 }
 
 /**
@@ -71,7 +70,7 @@
  */
 [[nodiscard]] src_slice file_extension_slc(const src_slice *const slc) {        // gets file extension
     cit10a_asrt(slc != nullptr);
-    const   char    *const  extnsn  =   file_extnsn_(slc->str, slc->len);
+    const   char    *const  extnsn  =   file_extnsn_(slc->str, (int)slc->len);
     if (extnsn == nullptr)              return  (src_slice){ .str=nullptr, .len=0 };
     return  (src_slice){ .str=extnsn, .len=slc->len + (slc->str - extnsn)};
 }
@@ -113,7 +112,7 @@
 
     cit10a_asrt(target != nullptr);
     // create output
-    const   char    *const  targ_pth    =   realpath_(target);
+    const   char    *const  targ_pth    =   basename_(target);
     const   int             f_targ_len  =   file_extension(targ_pth) - targ_pth - 1;
     const   int             f_targ_tot  =   f_targ_len + sizeof(OBJ_EXTENSION);
     char    *const          outp        =   chckd_malloc(f_targ_tot * sizeof(char), "output char*");

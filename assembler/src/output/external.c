@@ -4,7 +4,10 @@
  */
 
 #include    <stdio.h>
+
+#ifndef NTHREAD
 #include    <pthread.h>
+#endif  /* NTHREAD */
 
 #include    "helpers/general.h"
 #include    "output/errors.h"
@@ -13,10 +16,12 @@
 
 /*-INPUT-/-OUTPUT-MUTEX-----------------------------------------------------------------------------------------------*/
 
+#ifndef NTHREAD
 /**
  * Output mutex to prevent input / output message interleaving.
  */
 pthread_mutex_t             io_mutex        =   PTHREAD_MUTEX_INITIALIZER;      // input / output mutex
+#endif  /* NTHREAD */
 
 /*-RAW-STRING-PRINTER-------------------------------------------------------------------------------------------------*/
 
@@ -61,6 +66,11 @@ void cit10a_version_f(FILE *const fp, const bool ansi) {                        
 #else
     fputc('-', fp);
 #endif  /* NDEBUG */
+#ifndef NTHREAD
+    fputc('-', fp);
+#else
+    fputc('n', fp);
+#endif  /* NTHREAD */
     fprintf(fp, "%uB@" ASSEMBLER_DATE, CACHE_LN_S);
 }
 
@@ -76,6 +86,9 @@ void cit10a_info(void) {                                                        
 #ifndef NSANITIZE 
     fputs(" " CLR_VRBSE "SANITIZED\x1b[0m", stdout);
 #endif  /* NSANITIZE */
+#ifdef  NTHREAD
+    fputs(" " CLR_DIM "NON-THREADED\x1b[0m", stdout);
+#endif  /* NTHREAD */
     fputc('\n', stdout);
 }
 

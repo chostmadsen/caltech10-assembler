@@ -7,7 +7,10 @@
 #include    <stdio.h>
 #include    <stdlib.h>
 #include    <string.h>
+
+#ifndef NTHREAD
 #include    <unistd.h>
+#endif  /* NTHREAD */
 
 #include    "helpers/general.h"
 #include    "helpers/mem.h"
@@ -402,7 +405,8 @@ static void process_strm_f_( const flag_itm *const         flag,
         error   =   true;
     }
 
-    // process special flags
+    // process thread items
+#ifndef NTHREAD
     if (c_args.n_thrds == 0) {
         // autodetect processors
         const   long    n_proc      =   sysconf(_SC_NPROCESSORS_ONLN);
@@ -414,6 +418,11 @@ static void process_strm_f_( const flag_itm *const         flag,
             c_args.n_thrds  =   1;
         }
     }
+#else
+    c_args.n_thrds          =   1;
+#endif  /* NTHREAD */
+
+    // process special flags
     if (c_args.help)            arg_help_msg_();
     if (c_args.version)         cit10a_info();
 

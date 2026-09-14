@@ -3,20 +3,28 @@
  * Segment orchestrator.
  */
 
+#ifndef NTHREAD
 #include    <pthread.h>
 #include    <stdatomic.h>
+#endif  /* NTHREAD */
 
 #include    "datastructures/stack.h"
 #include    "datastructures/stackmap.h"
 #include    "output/external.h"
 #include    "output/errors.h"
+
+#ifndef NTHREAD
 #include    "argparse/argparse.h"
+#endif  /* NTHREAD */
+
 #include    "reader/reader.h"
 #include    "preprocessor/folder_parse.h"
 #include    "segmenter/constseg.h"
 #include    "segmenter/dataseg.h"
 #include    "segmenter/headerseg.h"
 #include    "segmenter/seg_orch.h"
+
+#ifndef NTHREAD
 
 /*-STORAGE-ITEMS------------------------------------------------------------------------------------------------------*/
 
@@ -151,6 +159,42 @@ static void *headerseg_call(void *const hseg_v) {                               
     if (atomic_load_explicit(&seg_end_flg, memory_order_relaxed))   cit10a_exit(SEGMENT_ERRNO);
     return  segmap;
 }
+
+#else
+
+/*-SEGMENTER-ORCHESTRATOR-(NON-THREADED)------------------------------------------------------------------------------*/
+
+/**
+ * Segmenter orchestrator. non-threaded variant.
+ *
+ * @param       source          source file
+ * @param       srcs            sources
+ * @return                      segmaps
+ */
+[[nodiscard]] segmaps segment( const src_f   *const source,
+                               const sources *const srcs    ) {                 // segment orchestrator (non-threaded)
+    cit10a_asrt(source != nullptr);
+
+    // setup segmap
+    segmaps segmap  =   (segmaps){ .constmap=new_stackmap_aln(CONST_BUCKETS, sizeof(const_var)),
+                                   .datamap=new_stackmap_aln(DATA_BUCKETS, sizeof(data_var)),
+                                   .headmap={ .stmts=new_stack_aln(sizeof(ln_info), LINE_INIT),
+                                              .smap=new_stackmap_aln(HEADER_BUCKETS, sizeof(header_var)) } };
+
+    // segment calls
+    bool    err         =   false;
+    if (constseg(source, srcs, &segmap.constmap))               err =   true;
+    int     data_org    =   0;
+    if (dataseg(&data_org, source, srcs, &segmap.datamap))      err =   true;
+    int     head_org    =   0;
+    if (headerseg(&head_org, source, srcs, &segmap.headmap))    err =   true;
+
+    // error check and return
+    if (err)                cit10a_exit(SEGMENT_ERRNO);
+    return  segmap;
+}
+
+#endif  /* NTHREAD */
 
 /*-SEGMAP-PRINTER-FUNCTIONS-------------------------------------------------------------------------------------------*/
 

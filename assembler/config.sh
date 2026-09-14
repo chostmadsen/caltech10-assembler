@@ -33,8 +33,9 @@ build_flag_help() {
     printf "%b\n" "    \x1b[1m-a\x1b[0m                - code assertions enabled (helps catch some compiler bugs)";
     printf "%b\n" "    \x1b[1m-s\x1b[0m                - sanitizes build (recommended if -a doesn't work)";
     printf "%b\n" "    \x1b[1m-l \x1b[2m<line size>\x1b[0m    - manually set cache line size (must be 2^n)";
-    printf "%b\n" "    \x1b[1m-n\x1b[0m                - compile for native machine arch (-march=native)";
+    printf "%b\n" "    \x1b[1m-m\x1b[0m                - compile for native machine arch (-march=native)";
     printf "%b\n" "    \x1b[1m-p\x1b[0m                - compile for profiling build";
+    printf "%b\n" "    \x1b[1m-n\x1b[0m                - forcefully disable all multithreaded items";
 }
 install_flag_help() {
     printf "%b\n" "$instl_n$msg_msg install flags";

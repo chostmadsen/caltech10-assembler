@@ -3,18 +3,26 @@
  * Final assembler call.
  */
 
+#ifndef NTHREAD
 #include    <pthread.h>
 #include    <stdatomic.h>
+#endif  /* NTHREAD */
 
 #include    "helpers/mem.h"
 #include    "datastructures/stack.h"
 #include    "output/external.h"
 #include    "output/errors.h"
+
+#ifndef NTHREAD
 #include    "argparse/argparse.h"
+#endif  /* NTHREAD */
+
 #include    "segmenter/headerseg.h"
 #include    "segmenter/seg_orch.h"
 #include    "assemble/line.h"
 #include    "assemble/assemble.h"
+
+#ifndef NTHREAD
 
 /*-STORAGE-ITEMS------------------------------------------------------------------------------------------------------*/
 
@@ -144,6 +152,46 @@ static void *asm_thread_(void *const asm_thrd_args_v) {                         
     if (atomic_load_explicit(&asm_end_flg, memory_order_relaxed))   cit10a_exit(ASSEMBLE_ERRNO);
     return  ret;
 }
+
+#else
+
+/*-ASSEMBLER-ORCHESTRATOR-(NON-THREADED)------------------------------------------------------------------------------*/
+
+/**
+ * Assembles a file to binary, given the segmaps, which should include all the required lines. non-threaded variant.
+ *
+ * @param       segmap          segmaps
+ * @return                      assembly binary instructions
+ */
+[[nodiscard]] asm_ret assemble(const segmaps *const segmap) {                   // assembler assemble (non-threaded)
+    cit10a_asrt(segmap != nullptr);
+
+    // asm_ret setup
+    asm_ret         ret     =   { .num_segs=segmap->headmap.stmts.len };
+    if (ret.num_segs == 0) {
+        ret.ln_asms         =   nullptr;
+        return  ret;
+    }
+    ret.ln_asms             =   chckd_malloc(ret.num_segs * sizeof(ln_asm), "assemble ln_asm*");
+
+    // line assemble on everything
+    bool            err     =   false;
+    for (int i = 0; i < ret.num_segs; ++i) {
+        const   ln_asm  ln_a    =   line_assemble(segmap, (ln_info*)peek_stack(&segmap->headmap.stmts, i));
+        if (ln_a.la.ln == -1) {
+            // set error
+            err     =   true;
+            continue;
+        }
+        ret.ln_asms[i]          =   ln_a;
+    }
+
+    // error flag check
+    if (err)        cit10a_exit(ASSEMBLE_ERRNO);
+    return  ret;
+}
+
+#endif  /* NTHREAD */
 
 /*-ASSEMBLER-PRINTER-FUNCTIONS----------------------------------------------------------------------------------------*/
 
