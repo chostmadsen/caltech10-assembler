@@ -70,6 +70,7 @@
  * @return                      allocated memory pointer
  */
 [[nodiscard]] void *s_aln_alloc(const size_t size) {                            // safe aligned alloc
+#ifndef NTHREAD
     const   size_t  pad     =   (size + CACHE_LN_S - 1) & ~((size_t)CACHE_LN_S - 1);
     errno                   =   0;
     void    *const  ret     =   aligned_alloc(CACHE_LN_S, pad);
@@ -79,4 +80,8 @@
         exit(1);
     }
     return  ret;
+#else
+    // IMPORTANT : If this is actually critical, don't just fallback to chckd_malloc.
+    return  s_malloc(size);
+#endif  /* NTHREAD */
 }
