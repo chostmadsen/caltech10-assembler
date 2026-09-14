@@ -79,11 +79,11 @@
     const   char    (*extns)[ECL];
     size_t          extns_n;
     if (flag == INC_FLG) {
-        extns   =   SRC_EXTNS;
-        extns_n =   arr_s(SRC_EXTNS);
-    } else if (flag == SRC_FLG) {
         extns   =   INC_EXTNS;
         extns_n =   arr_s(INC_EXTNS);
+    } else if (flag == SRC_FLG) {
+        extns   =   SRC_EXTNS;
+        extns_n =   arr_s(SRC_EXTNS);
     } else {
         cit10a_asrt(!"invalid directory scan flag");
         cit10a_exit(INTRNL_ERRNO);
@@ -96,7 +96,7 @@
 
         // count sources
         for (size_t i = 0; i < extns_n; ++i) {
-            if (!strcmp(extns[i], file_extension(ent->d_name)))     continue;
+            if (strcmp(extns[i], file_extension(ent->d_name)))      continue;
             ++(*total);
             break;
         }
@@ -155,8 +155,8 @@
     if (strm->num == 0)     return  grp;
 
     // find file number and open dirs
-    size_t      total   =   0;
-    DIR        *dirs[strm->num];
+    size_t          total   =   0;
+    DIR     **const dirs    =   chckd_malloc(sizeof(DIR*) * strm->num, "directory DIR* scan");
     for (int i = 0; i < strm->num; ++i)     dirs[i] =   dir_scan_(strm->flag, strm->vals[i], &total);
     if (total == 0) {
         for (int i = 0; i < strm->num; ++i) if (dirs[i] != nullptr) closedir(dirs[i]);
@@ -176,11 +176,11 @@
         const   char    (*extns)[ECL];
         size_t          extns_n;
         if (strm->flag == INC_FLG) {
-            extns   =   SRC_EXTNS;
-            extns_n =   arr_s(SRC_EXTNS);
-        } else if (strm->flag == SRC_FLG) {
             extns   =   INC_EXTNS;
             extns_n =   arr_s(INC_EXTNS);
+        } else if (strm->flag == SRC_FLG) {
+            extns   =   SRC_EXTNS;
+            extns_n =   arr_s(SRC_EXTNS);
         } else {
             cit10a_asrt(!"invalid directory scan flag");
             cit10a_exit(INTRNL_ERRNO);
@@ -193,7 +193,7 @@
 
             // count sources
             for (size_t j = 0; j < extns_n; ++j) {
-                if (!strcmp(extns[j], file_extension(ent->d_name)))     continue;
+                if (strcmp(extns[j], file_extension(ent->d_name)))      continue;
 
                 // add file source
                 const   src_slice   slc     =   fname_esc_(ent->d_name);
@@ -211,6 +211,7 @@
                 const   rprt_f      err_f   =   { .file=&(src_f){ .f_name=ent->d_name }, .len=0 };
                 cit10a_msg( &(msg_info){ .type=msg_warn_t, .header="repeated file", .report_f=&err_f },
                             "repeated filename in -%c%s (source ignored)", strm->flag, strm->vals[i]    );
+                free((char*)slc.str);
                 break;
             }
         }
@@ -320,6 +321,7 @@
     va_list     args;
     va_start(args, count);
     for (size_t i = 0; i < count; ++i)      srcs.items[i]   =   file_setup_(va_arg(args, strm_arr*));
+    va_end(args);
     return  srcs;
 }
 
