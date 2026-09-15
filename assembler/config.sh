@@ -6,20 +6,16 @@ build_n="\x1b[0m\x1b[4m\x1b[3mcit10a-build\x1b[0m -";
 instl_n="\x1b[0m\x1b[4m\x1b[3mcit10a-install\x1b[0m -";
 unins_n="\x1b[0m\x1b[4m\x1b[3mcit10a-uninstall\x1b[0m -";
 
-dbg_clr="\x1b[36m";
-msg_clr="\x1b[34m";
-wrn_clr="\x1b[33m";
 err_clr="\x1b[31m";
 scs_clr="\x1b[32m";
 
-dbg_msg=" \x1b[36minfo\x1b[0m :";
+dbg_msg=" \x1b[32msuccess\x1b[0m :";
 msg_msg=" \x1b[34mnote\x1b[0m :";
 wrn_msg=" \x1b[33mwarning\x1b[0m :";
 err_msg=" \x1b[31merror\x1b[0m :";
 
 # exit strings
 err_exit="$err_clr exit code 1\x1b[0m";
-scs_exit="$scs_clr exit code 0\x1b[0m";
 
 # install paths
 user_path="$HOME/.local/bin";

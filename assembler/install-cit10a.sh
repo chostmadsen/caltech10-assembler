@@ -18,7 +18,6 @@ while getopts ":hg" opt ; do
     case $opt in
         h)
             install_flag_help;
-            printf "%b\n" "$instl_n$scs_exit";
             exit 0;
             ;;
         g)
@@ -57,5 +56,4 @@ fi
 # success log
 printf "%b\n" "$instl_n$dbg_msg installed at $install_dir/cit10a \x1b[2m[ $(date +"%Y-%m-%d") ]\x1b[0m";
 printf "%b\n" "$instl_n$msg_msg ./uninstall-cit10a.sh to uninstall";
-printf "%b\n" "$instl_n$scs_exit";
 exit 0;

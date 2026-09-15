@@ -15,7 +15,6 @@ while getopts ":h" opt ; do
     case $opt in
         h)
             uninstall_flag_help;
-            printf "%b\n" "$unins_n$scs_exit";
             exit 0;
             ;;
         \?)
@@ -48,5 +47,4 @@ if (( has_install )) ; then
 else
     printf "%b\n" "$unins_n$wrn_msg no cit10a installation";
 fi
-printf "%b\n" "$unins_n$scs_exit";
 exit 0;

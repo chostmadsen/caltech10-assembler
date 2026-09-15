@@ -82,7 +82,7 @@ int main(const int argc, const char *const *const argv) {                       
     if (werror_exit)            cit10a_exit(WARN_ERRNO);
     // emit assembly
     emit_asm(c_args.output, &source_f, &srcs, &smaps, &asm_r);
-    if (c_args.verbosity >= EXIT_PRNT)                          print_asm_emit_info(c_args.output);
+    if (c_args.verbosity >= INFO_PRNT)                          print_asm_emit_info(c_args.output);
 
     // end free
     free_src_f(&source_f);
@@ -90,9 +90,10 @@ int main(const int argc, const char *const *const argv) {                       
     free_segmap(&smaps);
     free_asm_ret(&asm_r);
 
+    cit10a_exit_msg(0);
+
 comp_exit:
     // assembler exit
     free_c_args();
-    if (c_args.verbosity >= EXIT_PRNT)      cit10a_exit_msg(0);
     return  0;
 }

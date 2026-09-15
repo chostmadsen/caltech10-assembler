@@ -13,6 +13,7 @@
 #include    "output/external.h"
 #include    "output/errors.h"
 #include    "output/messages.h"
+#include    "argparse/argparse.h"
 
 /*-EXITING-FUNCTIONS--------------------------------------------------------------------------------------------------*/
 
@@ -28,33 +29,37 @@ int                     err_num             =   0;                              
  * @param       code            exit code
  */
 void cit10a_exit_msg(const unsigned code) {                                     // assembler exit message
+    if (code >= EX_EXT_THRS) {
+        // critical error (do not ignore)
+        fprintf(stderr, CLR_INTRNL "exit code %u", code);
+        return;
+    }
+
     // exit message
-    if      (code == 0)               fputs(ASSEMBLER_HEAD CLR_OK     "exit code", stdout);
-    else if (code < EX_EXT_THRS)      fputs(ASSEMBLER_HEAD CLR_ERR    "exit code", stderr);
-    else                            { fputs(ASSEMBLER_HEAD CLR_INTRNL "exit code", stderr); return; }
+    FILE   *stream  =   (code == 0) ? stdout : stderr;
+    if (c_args.verbosity >= EXIT_PRNT) {
+        if   (code == 0)    fprintf(stream, CLR_OK  "assembled at \x1b[0m%s",  c_args.output);
+        else                fprintf(stream, CLR_ERR "exit code %u\x1b[0m ", code);
+    }
 
     // exit code
-    FILE   *stream;
-    if (code == 0) {
-        stream  =   stdout;
-        fprintf(stdout, " %u\x1b[0m", code);
-    } else {
-        stream  =   stderr;
-        fprintf( stderr, " %u\x1b[0m " CLR_DIM "[ %d error%s generated",
-                 code, err_num, (err_num != 1) ? "s" : ""                );
+    if (code != 0) {
+        fprintf(stream, CLR_DIM "[ %d error%s generated", err_num, (err_num != 1) ? "s" : "");
     }
 
     if (warn_num > 0) {
         // warning output
-        if    (code == 0)   fputs(" " CLR_DIM "[ ", stdout);
-        else                fputs(" | ", stderr);
+        if (code == 0 && c_args.verbosity >= EXIT_PRNT)     fputc(' ', stream);
+
+        if    (code == 0)   fputs(CLR_DIM "[ ", stream);
+        else                fputs(" | ", stream);
         fprintf( stream, CLR_DIM "%d warning%s generated ]\x1b[0m",
-                 warn_num, (warn_num != 0) ? "s" : ""                 );
+                 warn_num, (warn_num != 1) ? "s" : ""               );
     }
 
     // ender
-    if (warn_num <= 0 && code != 0)     fputs(" ]\x1b[0m", stderr);
-    fputc('\n', stream);
+    if (warn_num <= 0 && code != 0)                                     fputs(" ]\x1b[0m", stderr);
+    if (c_args.verbosity >= EXIT_PRNT || warn_num > 0 || code != 0)     fputc('\n', stream);
 }
 
 /**

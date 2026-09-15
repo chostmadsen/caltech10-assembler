@@ -100,7 +100,7 @@ static  const   flag_itm        verbosity_f =   { .flag='v',            .desc="v
                                                   .type=flag_val_t,     .offset=offsetof(assemble_args, verbosity),
                                                   .exit=false,          .arg_itm="verbosity",
                                                   .min=0,               .max=4,
-                                                  .dflt=0                                                             };
+                                                  .dflt=1                                                             };
 
 static  const   struct  str_f_t wrn_itm_[]  =   { { .arg="off",         .desc="warnings off",
                                                     .offset=offsetof(struct wrn_t_, off)                            },
@@ -110,7 +110,7 @@ static  const   struct  str_f_t wrn_itm_[]  =   { { .arg="off",         .desc="w
                                                     .offset=offsetof(struct wrn_t_, noverc)                         },
                                                   { .arg="noverdata",   .desc="suppress overlap warnings in .data",
                                                     .offset=offsetof(struct wrn_t_, noverd)                         },
-                                                  { .arg="njumpwrap",   .desc="supress warnings about implicit "
+                                                  { .arg="njumpwrap",   .desc="suppress warnings about implicit "
                                                                               "wrapping of the program counter",
                                                     .offset=offsetof(struct wrn_t_, nwrapj)                         } };
 static  const   flag_itm        warnings_f  =   { .flag='W',            .desc="assembly warning message level",

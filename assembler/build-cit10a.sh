@@ -27,7 +27,6 @@ while getopts ":hc:asl:mpn" opt ; do
     case $opt in
         h)
             build_flag_help;
-            printf "%b\n" "$build_n$scs_exit";
             exit 0;
             ;;
         c)
@@ -157,5 +156,4 @@ $compiler "${flags[@]}" $inc_dirs $src_fs -o bin/cit10a || {
 
 # success log
 printf "%b\n" "$build_n$dbg_msg built at $root/bin/cit10a \x1b[2m[ $(date +"%Y-%m-%d") ]\x1b[0m";
-printf "%b\n" "$build_n$scs_exit";
 exit 0;
