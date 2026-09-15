@@ -109,9 +109,10 @@ read_cleanup:
         ln_idxs[idx_num++]      =   i + 1;
     }
 
-    // strcpy file name and return
-    char    *const  file_name   =   chckd_malloc(strlen(f_name) + 1, "file_name char*");
-    strcpy(file_name, f_name);
+    // memcpy file name and return
+    const   size_t  mcpy_s      =   strlen(f_name) + 1;
+    char    *const  file_name   =   chckd_malloc(mcpy_s, "file_name char*");
+    memcpy(file_name, f_name, mcpy_s);
 
     // struct return
     return  (src_f){ .f_name=file_name, .text=file_buf,          .ln_idxs=ln_idxs, .ln_num=idx_num,
