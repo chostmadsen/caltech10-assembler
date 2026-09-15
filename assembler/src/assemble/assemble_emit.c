@@ -305,6 +305,17 @@ void emit_asm( const char    *const f_name, const src_f   *const source,
     cit10a_asrt(segmap != nullptr);
     cit10a_asrt(asm_r != nullptr);
 
+    // check for number of words
+    if (asm_r->num_segs == 0) {
+        // no code emitted
+        const   rprt_f      err_f   =   { .file=&(src_f){ .f_name=(char*)f_name }, .len=0 };
+        cit10a_msg( &(msg_info){ .type=msg_warn_t, .header="no code generated", .report_f=&err_f },
+                    "no words generated"                                                            );
+        cit10a_msg( &(msg_info){ .type=msg_norm_t, .header="code segment declaration", .report_f=&err_f },
+                    "rememeber to begin code with `.code` and data with `.data`"                           );
+        if (werror_exit)    cit10a_exit(WARN_ERRNO);
+    }
+
     // open file
     FILE   *const           fp      =   fopen(f_name, "wb");
     if (fp == nullptr) {
