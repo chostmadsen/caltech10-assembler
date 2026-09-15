@@ -87,21 +87,22 @@ static void dump_recurs_st_(void) {                                             
  *
  * @param       source          source file
  * @param       srcs            sources
- * @param       end_chck        check for ending tail at current sptr position
+ * @param       do_nln          whether to verify the end of the current line and skip to the next one or not
  * @return                      whether there was an invalid none section
  */
 [[nodiscard]] static bool verify_none_sctn_( rprt_f  *const err_f,
                                              sources *const srcs,
                                              strptr  *const sptr,
-                                             bool           end_chck ) {        // .none verifier
+                                             bool           do_nln ) {          // .none verifier
     cit10a_asrt(err_f != nullptr);
     cit10a_asrt(sptr != nullptr);
 
     // check section end
-    bool    ret     =   end_chck && check_ln_end(sptr, err_f);
+    bool    ret =   false;
+    if (do_nln)     ret =   check_ln_end(sptr, err_f);
 
-    while (end_chck && !newln_strptr(sptr, err_f->file)) {
-        end_chck    =   true;
+    while (!do_nln || !newln_strptr(sptr, err_f->file)) {
+        do_nln  =   true;
         // skip whitespace
         for(; is_whitespace(*sptr->str); inc_strptr(sptr));
 
@@ -121,7 +122,7 @@ static void dump_recurs_st_(void) {                                             
         }
 
         // check pseudo-ops
-        size_t  n   =   0;
+        size_t  n   =   1;
         for (inc_strptr(sptr); is_alphanum(sptr->str[n]); ++n);
         err_f->len  =   n;
 

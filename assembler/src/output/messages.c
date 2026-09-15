@@ -63,6 +63,7 @@ void cit10a_msg_v( const msg_info *const info,
 
     // warning message suppression
     if (c_args.warnings.off && info->type == msg_warn_t)            return;
+    if (warn_num_msg && info->type == msg_warn_t)                   return;
 
 #ifndef NTHREAD
     // mutex lock
@@ -71,7 +72,6 @@ void cit10a_msg_v( const msg_info *const info,
 
     // -w overflow
     if (warn_num >= c_args.max_warns && info->type == msg_warn_t) {
-        if (warn_num_msg)       goto    msg_end;
         fprintf( stderr, MSG_WARN_CLR "\x1b[0m : too many warnings; " "omitting further warnings [ -w%d ]\n",
                  c_args.max_warns                                                                             );
         warn_num_msg    =   true;
