@@ -64,14 +64,12 @@ static  const   hash_entry  pseudo_table[PSEUDO_TBL_S]  =   {                   
 [[nodiscard]] static tok_itm pseudo_hash_lu_h( const char     *const str,
                                                const size_t          n,
                                                const uint64_t        hash ) {   // pseudo hash table lookup (w/ hash)
-    if (n > PSEUDO_TBL_S)               return (tok_itm){ .tok=0, .grp=0 };
-
     // get table entry
     const   hash_entry  table_entry =   pseudo_table[hash & (PSEUDO_TBL_S - 1)];
 
     // check entry
-    if (n != table_entry.len)                           return  (tok_itm){ .tok=0, .grp=0 };
-    if (hash != table_entry.hash)                       return  (tok_itm){ .tok=0, .grp=0 };
+    if (n != table_entry.len)       return  (tok_itm){ .tok=0, .grp=0 };
+    if (hash != table_entry.hash)   return  (tok_itm){ .tok=0, .grp=0 };
     for(unsigned i = 0; i < table_entry.len; ++i) {
         const   char    chr_t   =   table_entry.str[i] | (uint8_t)((table_entry.str[i] - 'A') < 26) << 5;
         const   char    chr_l   =   str[i] | (uint8_t)((str[i] - 'A') < 26) << 5;
@@ -92,6 +90,9 @@ static  const   hash_entry  pseudo_table[PSEUDO_TBL_S]  =   {                   
  */
 [[maybe_unused]] [[nodiscard]]
 static tok_itm pseudo_hash_lu(const char *const str, const size_t n) {          // pseudo hash table lookup
+    // avoid unecessary hashing
+    if (n > PSEUDO_MAX_STR)         return  (tok_itm){ .tok=0, .grp=0 };
+
     // generate hash and lookup
     return  pseudo_hash_lu_h(str, n, pseudo_hash_fn(str, n));
 }

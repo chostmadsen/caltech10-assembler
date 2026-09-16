@@ -383,13 +383,11 @@ void hash_full( const hash_itm *const itm_arr,
     fprintf_repeat_(fp, ' ', to_cmt - fprintf_len_(fp, " const uint64_t        hash ) {"));
     fprintf(fp, "// %s hash table lookup (w/ hash)\n", name);
 
-    constexpr   int ret_pad =   20;
-    fprintf(fp, "    if (n > %s_TBL_S) %*sreturn (tok_itm){ .tok=0, .grp=0 };\n\n"
-                "    // get table entry\n"
+    fprintf(fp, "    // get table entry\n"
                 "    const   hash_entry  table_entry =   %s_table[hash & (%s_TBL_S - 1)];\n\n"
                 "    // check entry\n"
-                "    if (n != table_entry.len)                           return  (tok_itm){ .tok=0, .grp=0 };\n"
-                "    if (hash != table_entry.hash)                       return  (tok_itm){ .tok=0, .grp=0 };\n"
+                "    if (n != table_entry.len)       return  (tok_itm){ .tok=0, .grp=0 };\n"
+                "    if (hash != table_entry.hash)   return  (tok_itm){ .tok=0, .grp=0 };\n"
                 "    for(unsigned i = 0; i < table_entry.len; ++i) {\n"
                 "        const   char    chr_t   =   "
                 "table_entry.str[i] | (uint8_t)((table_entry.str[i] - 'A') < 26) << 5;\n"
@@ -399,7 +397,7 @@ void hash_full( const hash_itm *const itm_arr,
                 "    // return matched item\n"
                 "    return  table_entry.itm;\n"
                 "}\n\n",
-                name_upper, ret_pad - (int)strlen(name_upper), "", name, name_upper                              );
+                name, name_upper                                                                                 );
 
     // string lookup function
     fprintf(fp, "/**\n"
@@ -418,10 +416,13 @@ void hash_full( const hash_itm *const itm_arr,
                                       name                                                                  ) );
     fprintf(fp, "// %s hash table lookup\n", name);
 
-    fprintf(fp, "    // generate hash and lookup\n"
+    constexpr   int ret_pad =   14;
+    fprintf(fp, "    // avoid unecessary hashing\n"
+                "    if (n > %s_MAX_STR) %*sreturn  (tok_itm){ .tok=0, .grp=0 };\n\n"
+                "    // generate hash and lookup\n"
                 "    return  %s_hash_lu_h(str, n, %s_hash_fn(str, n));\n"
                 "}\n\n",
-                name, name                                                );
+                name_upper, ret_pad - (int)strlen(name_upper), "", name, name         );
 
     // end
     fprintf(fp, "#endif  /* %s_HASH_TABLE_ */\n", name_upper);
