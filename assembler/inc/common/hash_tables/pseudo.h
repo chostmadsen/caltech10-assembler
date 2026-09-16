@@ -64,6 +64,8 @@ static  const   hash_entry  pseudo_table[PSEUDO_TBL_S]  =   {                   
 [[nodiscard]] static tok_itm pseudo_hash_lu_h( const char     *const str,
                                                const size_t          n,
                                                const uint64_t        hash ) {   // pseudo hash table lookup (w/ hash)
+    if (n > PSEUDO_TBL_S)               return (tok_itm){ .tok=0, .grp=0 };
+
     // get table entry
     const   hash_entry  table_entry =   pseudo_table[hash & (PSEUDO_TBL_S - 1)];
 

@@ -134,6 +134,8 @@ static  const   hash_entry  opcode_table[OPCODE_TBL_S]  =   {                   
 [[nodiscard]] static tok_itm opcode_hash_lu_h( const char     *const str,
                                                const size_t          n,
                                                const uint64_t        hash ) {   // opcode hash table lookup (w/ hash)
+    if (n > OPCODE_TBL_S)               return (tok_itm){ .tok=0, .grp=0 };
+
     // get table entry
     const   hash_entry  table_entry =   opcode_table[hash & (OPCODE_TBL_S - 1)];
 

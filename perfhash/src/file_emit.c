@@ -333,13 +333,14 @@ void hash_full( const hash_itm *const itm_arr,
     fprintf(fp, "*/\n\n");
 
     fprintf(fp, "/**\n"
-                " * Generates the hash for the %s hash table based on a string and number of characters, lowercased.\n"
+                " * Generates the hash for the %s hash table based on a string and number of characters, "
+                "lowercased.\n"
                 " *\n"
                 " * @param       str             string to hash\n"
                 " * @param       n               character number\n"
                 " * @return                      hash\n"
                 " */\n", 
-                name                                                               );
+                name                                                                                       );
 
     fprintf_repeat_( fp, ' ',
                      CMT_ALN -
@@ -354,7 +355,7 @@ void hash_full( const hash_itm *const itm_arr,
                 "    }\n"
                 "    return  hash ^ (hash >> 32);\n"
                 "}\n\n",
-                name_upper                                                                    );
+                name_upper                                                                  );
     
     // hash table lookup functions
     fprintf_repeat_(fp, '-', LINE_MAX - 2 - fprintf_len_(fp, "/*-%s-HASH-TABLE-LOOKUP-FUNCTION", name_upper));
@@ -362,7 +363,8 @@ void hash_full( const hash_itm *const itm_arr,
 
     // hash lookup function
     fprintf(fp, "/**\n"
-                " * Performs a lookup in the %s hash table based on the provided string and hash (case insensitive).\n"
+                " * Performs a lookup in the %s hash table based on the provided string and hash "
+                "(case insensitive).\n"
                 " * (tok_itm){ .tok=0, .grp=0 } on lookup failure. (.instr uninitialized)\n"
                 " *\n"
                 " * @param       str             lookup string\n"
@@ -370,7 +372,7 @@ void hash_full( const hash_itm *const itm_arr,
                 " * @param       hash            string hash\n"
                 " * @return                      table entry\n"
                 " */\n",
-                name                                                                                 );
+                name                                                                               );
 
     const   int to_paren    =   fprintf_len_(fp, "[[nodiscard]] static tok_itm %s_hash_lu_h(", name);
     fprintf(fp, " const char     *const str,\n");
@@ -381,7 +383,9 @@ void hash_full( const hash_itm *const itm_arr,
     fprintf_repeat_(fp, ' ', to_cmt - fprintf_len_(fp, " const uint64_t        hash ) {"));
     fprintf(fp, "// %s hash table lookup (w/ hash)\n", name);
 
-    fprintf(fp, "    // get table entry\n"
+    constexpr   int ret_pad =   20;
+    fprintf(fp, "    if (n > %s_TBL_S) %*sreturn (tok_itm){ .tok=0, .grp=0 };\n\n"
+                "    // get table entry\n"
                 "    const   hash_entry  table_entry =   %s_table[hash & (%s_TBL_S - 1)];\n\n"
                 "    // check entry\n"
                 "    if (n != table_entry.len)                           return  (tok_itm){ .tok=0, .grp=0 };\n"
@@ -395,7 +399,7 @@ void hash_full( const hash_itm *const itm_arr,
                 "    // return matched item\n"
                 "    return  table_entry.itm;\n"
                 "}\n\n",
-                name, name_upper                                                                                   );
+                name_upper, ret_pad - (int)strlen(name_upper), "", name, name_upper                              );
 
     // string lookup function
     fprintf(fp, "/**\n"
@@ -406,7 +410,7 @@ void hash_full( const hash_itm *const itm_arr,
                 " * @param       n               character number\n"
                 " * @return                      table entry\n"
                 " */\n",
-                name                                                                        );
+                name                                                                                           );
     fprintf(fp, "[[maybe_unused]] [[nodiscard]]\n");
     fprintf_repeat_( fp, ' ',
                      CMT_ALN -
@@ -417,7 +421,7 @@ void hash_full( const hash_itm *const itm_arr,
     fprintf(fp, "    // generate hash and lookup\n"
                 "    return  %s_hash_lu_h(str, n, %s_hash_fn(str, n));\n"
                 "}\n\n",
-                name, name                                           );
+                name, name                                                );
 
     // end
     fprintf(fp, "#endif  /* %s_HASH_TABLE_ */\n", name_upper);
