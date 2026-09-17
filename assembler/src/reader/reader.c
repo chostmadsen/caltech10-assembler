@@ -47,7 +47,7 @@
     }
 
     // allocate file buffer
-    char    *const      buf     =   chckd_malloc((size_t)ftell_s + F_PAD + 1, "text buf char*");
+    char    *const      buf     =   chckd_malloc((size_t)ftell_s + F_PAD, "text buf char*");
     memset(buf + ftell_s, '\0', F_PAD * sizeof(char));
 
     // read file
@@ -115,8 +115,8 @@ read_cleanup:
     memcpy(file_name, f_name, mcpy_s);
 
     // struct return
-    return  (src_f){ .f_name=file_name, .text=file_buf,          .ln_idxs=ln_idxs, .ln_num=idx_num,
-                     .len=f_size,       .size=f_size + F_PAD + 1                                    };
+    return  (src_f){ .f_name=file_name, .text=file_buf,      .ln_idxs=ln_idxs, .ln_num=idx_num,
+                     .len=f_size,       .size=f_size + F_PAD                                    };
 }
 
 /*-SOURCE-FILE-STRUCT-GETLINE-----------------------------------------------------------------------------------------*/

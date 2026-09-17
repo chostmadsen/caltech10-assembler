@@ -65,6 +65,7 @@ int main(const int argc, const char *const *const argv) {                       
     // sources output
     if (c_args.verbosity >= INFO_PRNT)                          print_sources_info(&srcs);
     if (c_args.verbosity >= DUMP_PRNT || c_args.emit.files)     print_sources(&srcs);
+    if (c_args.verbosity >= DUMP_PRNT)                          print_sources_dump(&srcs);
 
     // segment processor
     segmaps     smaps           =   segment(&source_f, &srcs);

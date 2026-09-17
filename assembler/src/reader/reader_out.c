@@ -15,16 +15,16 @@
 /*-SOURCE-FILE-PRINTER------------------------------------------------------------------------------------------------*/
 
 /**
- * Prints source file struct as a raw text stream, with line index items.
+ * Prints source file struct as a raw text stream, with line index items. Raw call.
  *
  * @param       source_f        source file struct
  */
-void print_src_f(const src_f *const source_f) {                                 // one-lined raw print full source file
+void print_src_f_raw(const src_f *const source_f) {                             // raw one-lined full source file print
     cit10a_asrt(source_f != nullptr);
 
     // info
-    printf( DEBUG_DELIM CLR_DIM " [[ src_f %s::%zulns::%zuB ]]\x1b[0m\n",
-            source_f->f_name, source_f->ln_num, source_f->size            );
+    printf( CLR_DIM "[[ src_f %s::%zulns::%zuB ]]\x1b[0m\n",
+            source_f->f_name, source_f->ln_num, source_f->size );
     fputs(CLR_DIM "[0::0]\x1b[0m", stdout);
 
     // raw text stream
@@ -36,7 +36,19 @@ void print_src_f(const src_f *const source_f) {                                 
                                                     ++ln_idx;                                        }
         else                                        fputs(NULL_CHR, stdout);
     }
-    fputs("\n" DEBUG_DELIM "\n", stdout);
+    fputc('\n', stdout);
+}
+
+/**
+ * Prints source file struct as a raw text stream, with line index items.
+ *
+ * @param       source_f        source file struct
+ */
+void print_src_f(const src_f *const source_f) {                                 // one-lined raw print full source file
+    // info
+    fputs(DEBUG_DELIM " ", stdout);
+    print_src_f_raw(source_f);
+    fputs(DEBUG_DELIM "\n", stdout);
 }
 
 /*-SOURCE-FILE-INFO-PRINTER-------------------------------------------------------------------------------------------*/

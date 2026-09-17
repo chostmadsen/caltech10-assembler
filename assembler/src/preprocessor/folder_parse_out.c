@@ -10,6 +10,7 @@
 #include    "output/errors.h"
 #include    "output/messages.h"
 #include    "datastructures/stackmap.h"
+#include    "reader/reader_out.h"
 #include    "preprocessor/folder_parse.h"
 #include    "preprocessor/folder_parse_out.h"
 
@@ -62,6 +63,29 @@ void print_sources(const sources *const srcs) {                                 
         print_stackmap(&srcs->items[i].files, fname_itm_prnt_);
         fputs(CLR_DIM "cached files ", stdout);
         print_stackmap(&srcs->items[i].open_files, fcache_itm_prnt_);
+    }
+    fputs(DEBUG_DELIM "\n", stdout);
+}
+
+/**
+ * Full sources dump (cached file output).
+ *
+ * @param       srcs        sources
+ */
+void print_sources_dump(const sources *const srcs) {                            // prints file sources (dump)
+    cit10a_asrt(srcs != nullptr);
+
+    fputs(DEBUG_DELIM CLR_DIM " [[ sources (file dump) ]]\n", stdout);
+    for (size_t i = 0; i < srcs->num; ++i) {
+        printf(CLR_DIM "-%c files\x1b[0m\n", srcs->items[i].flag);
+        if (srcs->items[i].empty) {
+            fputs("(empty)\x1b[0m\n", stdout);
+            continue;
+        }
+        stackmap    c_smap  =   srcs->items[i].open_files;
+        for (size_t j = 0; j < c_smap.buckets; ++j)     for (int k = 0; k < c_smap.heads[j].len; ++k) {
+            print_src_f_raw(((src_f_sm*)peek_stack(&c_smap.heads[j], k))->source);
+        }
     }
     fputs(DEBUG_DELIM "\n", stdout);
 }
