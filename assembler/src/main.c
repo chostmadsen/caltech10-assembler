@@ -49,7 +49,10 @@
  */
 int main(const int argc, const char *const *const argv) {                       // main
     // get compilation flags
-    if (parse_args(argc, argv))             goto    comp_exit;
+    if (parse_args(argc, argv)) {
+        free_c_args();
+        return  0;
+    }
     if (c_args.verbosity >= EXTRA_PRNT)     cit10a_startup();
 
     // read source file
@@ -91,10 +94,8 @@ int main(const int argc, const char *const *const argv) {                       
     free_segmap(&smaps);
     free_asm_ret(&asm_r);
 
-    cit10a_exit_msg(0);
-
-comp_exit:
     // assembler exit
+    cit10a_exit_msg(0);
     free_c_args();
     return  0;
 }

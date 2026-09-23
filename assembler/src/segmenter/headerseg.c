@@ -139,22 +139,19 @@ static void code_chck_dup_( const ln_info *const ln_inf,
     const   smap_head   s_head      =   get_identifier(sptr, err_f);
     if (s_head.key.str == nullptr)      return  true;
     for(; is_whitespace(*sptr->str); inc_strptr(sptr));
-    if (*sptr->str != HEADER_CHR) {
-        // code line - skip
-        goto    add_code;
+
+    if (*sptr->str == HEADER_CHR) {
+        // add header
+        header_var          smap_itm    =   { .var={ .head=s_head,     .source=err_f->file,
+                                                     .ln=sptr->ln + 1, .col=slc_strt        },
+                                              .loc=*loc                                        };
+        ret                             =   identifier_verify(&((headermap*)(hmap_v))->smap, &smap_itm, err_f);
+
+        // check for additional code
+        for (inc_strptr(sptr); is_whitespace(*sptr->str); inc_strptr(sptr));
+        if (*sptr->str == CMMT_CHR || *sptr->str == '\0')   return  ret;
     }
 
-    // add header
-    header_var          smap_itm    =   { .var={ .head=s_head,     .source=err_f->file,
-                                                 .ln=sptr->ln + 1, .col=slc_strt        },
-                                          .loc=*loc                                        };
-    ret                             =   identifier_verify(&((headermap*)(hmap_v))->smap, &smap_itm, err_f);
-
-    // check for additional code
-    for (inc_strptr(sptr); is_whitespace(*sptr->str); inc_strptr(sptr));
-    if (*sptr->str == CMMT_CHR || *sptr->str == '\0')   return  ret;
-
-add_code:
     const   ln_info     ln_inf                  =   { .loc=(*loc)++, .source=err_f->file, .ln=sptr->ln };
     if (!code_rnge_chck_(sptr->ln, *loc, err_f))    code_chck_dup_(&ln_inf, &((headermap*)hmap_v)->stmts, err_f);
     push_stack(&((headermap*)hmap_v)->stmts, &ln_inf);
