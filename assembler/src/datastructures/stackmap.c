@@ -18,7 +18,7 @@
 #include    "datastructures/stack.h"
 #include    "datastructures/stackmap.h"
 
-/*-INTERNAL-HASHMAP-FUNCTIONS-----------------------------------------------------------------------------------------*/
+/*-INTERNAL-STACKMAP-FUNCTIONS----------------------------------------------------------------------------------------*/
 
 /**
  * Allocates stackmap stacks.
@@ -44,7 +44,7 @@
 /**
  * Doubles stackmap buckets, moving data to new stacks as appropriate and freeing old stacks.
  *
- * @param       hmap            pointer to hashmap
+ * @param       smap            pointer to stackmap
  */
 static void smap_realloc_buckets_(stackmap *const smap) {                       // stackmap bucket reallocation
     // bucket number update
